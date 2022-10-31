@@ -55,27 +55,32 @@ namespace PostGram.Api.Services
             return user;
         }
 
-        public async Task<UserModel> GetUser(Guid id)
+        private async Task<User> GetUserById(Guid id)
         {
-            User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Id== id);
+            User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Id == id);   
             if (user == null)
                 throw new UserNotFoundException(id: id);
+            return user;
+        }
+
+        public async Task<UserModel> GetUser(Guid id)
+        {
+            User user = await GetUserById(id);
             return _mapper.Map<UserModel>(user);
         }
 
-        public async Task<TokenModel> GetToken(string login, string password)
+        private TokenModel GenerateToken(User user)
         {
-            User user = await GetUserByCredential(login, password);
+            DateTime now = DateTime.Now;
 
+            //SecurityToken
             Claim[] claims =
             {
-                new(nameof(user.Name), user.Name),
+                new(ClaimsIdentity.DefaultNameClaimType, user.Name),
                 new(nameof(user.Login), user.Login),
                 new(nameof(user.Id), user.Id.ToString())
             };
-
-            DateTime now = DateTime.Now;
-            JwtSecurityToken token = new JwtSecurityToken(
+            JwtSecurityToken securityToken = new JwtSecurityToken(
                 issuer: _authConfig.Issuer,
                 audience: _authConfig.Audience,
                 notBefore: now,
@@ -83,9 +88,59 @@ namespace PostGram.Api.Services
                 expires: now.AddMinutes(_authConfig.LifeTime),
                 signingCredentials: new SigningCredentials(_authConfig.GetSymmetricSecurityKey(),
                     SecurityAlgorithms.HmacSha256));
-            string encodedToken = new JwtSecurityTokenHandler().WriteToken(token);
+            string encodedToken = new JwtSecurityTokenHandler().WriteToken(securityToken);
 
-            return new TokenModel(encodedToken);
+            //RefreshToken
+            claims = new Claim[]
+            {
+                new(nameof(user.Id), user.Id.ToString())
+            };
+            JwtSecurityToken refreshToken = new JwtSecurityToken(
+                notBefore: now,
+                claims: claims,
+                expires: now.AddHours(_authConfig.LifeTime),
+                signingCredentials: new SigningCredentials(_authConfig.GetSymmetricSecurityKey(),
+                    SecurityAlgorithms.HmacSha256));
+            string encodedRefreshToken = new JwtSecurityTokenHandler().WriteToken(refreshToken);
+
+            return new TokenModel(encodedToken, encodedRefreshToken);
+        }
+
+        public async Task<TokenModel> GetToken(string login, string password)
+        {
+            User user = await GetUserByCredential(login, password);
+            return GenerateToken(user);
+        }
+
+        public async Task<TokenModel> GetTokenByRefreshToken(string refreshToken)
+        {
+            TokenValidationParameters validationParameters = new ()
+            {
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                IssuerSigningKey = _authConfig.GetSymmetricSecurityKey()
+            };
+            var principal = new JwtSecurityTokenHandler().ValidateToken(refreshToken, validationParameters, out var securityToken);
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken
+                || !jwtSecurityToken.Header.Alg.Equals((SecurityAlgorithms.HmacSha256,
+                    StringComparison.InvariantCultureIgnoreCase)))
+            {
+                throw new SecurityTokenException("Invalid refresh token");
+            }
+
+            if (principal.Claims.FirstOrDefault(c => c.Type == nameof(User))?.Value is String userIdString
+                && Guid.TryParse(userIdString, out var userId))
+            {
+                User user = await GetUserById(userId);
+                return GenerateToken(user);
+            }
+            else
+            {
+                throw new SecurityTokenException("Invalid refresh token");
+            }
         }
     }
 }

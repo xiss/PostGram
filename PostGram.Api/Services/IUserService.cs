@@ -8,5 +8,6 @@ namespace PostGram.Api.Services
         Task<List<UserModel>> GetUsers();
         Task<TokenModel> GetToken(string login, string password);
         Task<UserModel> GetUser(Guid id);
+        Task<TokenModel> GetTokenByRefreshToken(string refreshToken);
     }
 }

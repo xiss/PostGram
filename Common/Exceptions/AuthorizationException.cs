@@ -3,6 +3,9 @@
 namespace PostGram.Common.Exceptions
 {
     //TODO Все ли тут ок?
+    // Может не стоит создавать свойства для логина итд, а просто указывать это в messege? 
+    // При обработке исключения не понятно какое именно свойство нужно использовать.
+    // Либо делать свойства закрытыми и вставлять их message при обращении к последнему
     [Serializable]
     public class AuthorizationException : Exception
     {
