@@ -31,16 +31,9 @@ namespace PostGram.Api.Controllers
             {
                 await _userService.CreateUser(model);
             }
-            catch (DbUpdateException e)
+            catch (DBCreatePostGramException e)
             {
-                Console.WriteLine(e);
-                return BadRequest("DatabaseError - " + e.Message);
-            }
-            catch (Exception e)
-            {
-                //TODO Логирование
-                Console.WriteLine(e);
-                return BadRequest(e.Message);
+                return StatusCode(500, e.Message);
             }
 
             return Ok();
@@ -55,10 +48,9 @@ namespace PostGram.Api.Controllers
             {
                 users = await _userService.GetUsers();
             }
-            catch (Exception e)
+            catch (AuthorizationPostGramException e)
             {
-                Console.WriteLine(e);
-                return BadRequest(e.Message);
+                return Forbid(e.Message);
             }
 
             return Ok(users);
@@ -66,29 +58,23 @@ namespace PostGram.Api.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<UserModel> > GetCurrentUser()
+        public async Task<ActionResult<UserModel>> GetCurrentUser()
         {
             try
             {
                 string? userIdStr = User.Claims.FirstOrDefault(c => c.Type == nameof(DAL.Entities.User.Id))?.Value;
                 if (Guid.TryParse(userIdStr, out var userId))
                     return await _userService.GetUser(userId);
-                throw new AuthorizationException(message: "You are not authorized");
+                throw new AuthorizationPostGramException("You are not authorized");
             }
-            catch (AuthorizationException e)
+            catch (UserNotFoundPostGramException e)
             {
-                return Unauthorized();
+                return NotFound(e.Message);
             }
-            catch (UserNotFoundException e)
+            catch (AuthorizationPostGramException e)
             {
-                return NotFound();
+                return Unauthorized(e.Message);
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return BadRequest(e.Message);
-            }
-
         }
     }
 }

@@ -20,6 +20,9 @@ namespace PostGram.Api.Services
         private readonly IMapper _mapper;
         private readonly DataContext _dataContext;
         private readonly AuthConfig _authConfig;
+        private const string ClaimTypeLogin = "login";
+        private const string ClaimTypeId = "id";
+
 
         public UserService(IMapper mapper, DataContext dataContext, IOptions<AuthConfig> config)
         {
@@ -32,8 +35,19 @@ namespace PostGram.Api.Services
         public async Task CreateUser(CreateUserModel model)
         {
             User user = _mapper.Map<User>(model);
-            await _dataContext.Users.AddAsync(user);
-            await _dataContext.SaveChangesAsync();
+            try
+            {
+                await _dataContext.Users.AddAsync(user);
+                await _dataContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null)
+                {
+                    throw new DBCreatePostGramException(e.InnerException. Message);
+                }
+                throw new DBPostGramException(e.Message);
+            }
         }
 
         [HttpGet]
@@ -47,19 +61,19 @@ namespace PostGram.Api.Services
             User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Login.ToLower() == login.ToLower());
 
             if (user == null)
-                throw new UserNotFoundException(login);
+                throw new UserNotFoundPostGramException("login: " + login);
 
             if (!HashHelper.Verify(password, user.PasswordHash))
-                throw new AuthorizationException(login);
+                throw new AuthorizationPostGramException("login: " + login);
 
             return user;
         }
 
         private async Task<User> GetUserById(Guid id)
         {
-            User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Id == id);   
+            User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
-                throw new UserNotFoundException(id: id);
+                throw new UserNotFoundPostGramException("id: " + id);
             return user;
         }
 
@@ -77,8 +91,8 @@ namespace PostGram.Api.Services
             Claim[] claims =
             {
                 new(ClaimsIdentity.DefaultNameClaimType, user.Name),
-                new(nameof(user.Login), user.Login),
-                new(nameof(user.Id), user.Id.ToString())
+                new(ClaimTypeLogin , user.Login),
+                new(ClaimTypeId, user.Id.ToString())
             };
             JwtSecurityToken securityToken = new JwtSecurityToken(
                 issuer: _authConfig.Issuer,
@@ -114,7 +128,7 @@ namespace PostGram.Api.Services
 
         public async Task<TokenModel> GetTokenByRefreshToken(string refreshToken)
         {
-            TokenValidationParameters validationParameters = new ()
+            TokenValidationParameters validationParameters = new()
             {
                 ValidateIssuer = false,
                 ValidateIssuerSigningKey = true,
@@ -128,7 +142,7 @@ namespace PostGram.Api.Services
                 || !jwtSecurityToken.Header.Alg.Equals((SecurityAlgorithms.HmacSha256,
                     StringComparison.InvariantCultureIgnoreCase)))
             {
-                throw new SecurityTokenException("Invalid refresh token");
+                throw new SecurityTokenPostGramException("Invalid security token");
             }
 
             if (principal.Claims.FirstOrDefault(c => c.Type == nameof(User))?.Value is String userIdString
@@ -139,7 +153,7 @@ namespace PostGram.Api.Services
             }
             else
             {
-                throw new SecurityTokenException("Invalid refresh token");
+                throw new SecurityTokenPostGramException("Invalid refresh token");
             }
         }
     }

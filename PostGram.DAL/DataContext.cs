@@ -11,13 +11,13 @@ namespace PostGram.DAL
 {
     public class DataContext : DbContext
     {
+        private const string MigrationsAssembly = "PostGram.Api";
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
         }
-        //TODO как убрать литерал? Или не надо убирать?
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql(ob => ob.MigrationsAssembly("PostGram.Api"));
+            optionsBuilder.UseNpgsql(ob => ob.MigrationsAssembly(MigrationsAssembly));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

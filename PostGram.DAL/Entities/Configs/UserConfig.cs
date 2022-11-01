@@ -12,7 +12,6 @@ namespace PostGram.DAL.Entities.Configs
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            //TODO Как правильно сделать отображение ошибок при попытке вставить дубль?
             builder.HasIndex(u => u.Login).IsUnique();
         }
     }

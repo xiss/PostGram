@@ -24,20 +24,14 @@ namespace PostGram.Api.Controllers
             {
                 return await _userService.GetToken(model.Login, model.Password);
             }
-            catch (UserNotFoundException e)
+            catch (UserNotFoundPostGramException e)
             {
                 return NotFound(e.Message);
             }
-            catch (AuthorizationException e)
+            catch (AuthorizationPostGramException e)
             {
                 return Unauthorized(e.Message);
-            }
-            catch (Exception e)
-            {
-                //TODO Логирование
-                Console.WriteLine(e);
-                return BadRequest(e.Message);
-            }
+            }           
         }
 
         [HttpPost]
@@ -47,15 +41,10 @@ namespace PostGram.Api.Controllers
             {
                 return await _userService.GetTokenByRefreshToken(model.RefreshToken);
             }
-            catch (SecurityTokenException e)
+            catch (AuthorizationPostGramException e)
             {
                 return Forbid(e.Message);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return BadRequest(e.Message);
-            }
+            }           
         }
     }
 }

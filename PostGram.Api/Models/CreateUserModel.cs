@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System;
+using System.Runtime.CompilerServices;
 
 namespace PostGram.Api.Models
 {
     public class CreateUserModel
     {
-        //TODO Сделать валидацию мыла, логина на проверку уникальности даты рождения на будущее время
         public CreateUserModel(string name, string surname, string patronymic, string email, string login, string password, string passwordRetry, DateTimeOffset birthDate)
         {
             Name = name;
@@ -15,12 +16,13 @@ namespace PostGram.Api.Models
             Password = password;
             PasswordRetry = passwordRetry;
             BirthDate = birthDate;
-        } 
+        }
 
         public string Name { get; set; }
         public string Surname { get; set; }
         public string Patronymic { get; set; }
         [Required]
+        [EmailAddress]
         public string Email { get; set; }
         [Required]
         public string Login { get; set; }
@@ -29,6 +31,8 @@ namespace PostGram.Api.Models
         public string Password { get; set; }
         [Required]
         public string PasswordRetry { get; set; }
+
+        // TODO Сделать проверку что дата не в будущем времени
         public DateTimeOffset BirthDate { get; set; }
     }
 }
