@@ -33,9 +33,9 @@ namespace PostGram.Api.Controllers
             }
             catch (DBCreatePostGramException e)
             {
-                return StatusCode(500, e.Message);
+               return StatusCode(500, e.Message);
             }
-
+            
             return Ok();
         }
 
