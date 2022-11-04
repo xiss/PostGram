@@ -32,7 +32,7 @@ namespace PostGram.Api.Services
         }
 
         [HttpPost]
-        public async Task CreateUser(CreateUserModel model)
+        public async Task<Guid> CreateUser(CreateUserModel model)
         {
             User user = _mapper.Map<User>(model);
             try
@@ -48,6 +48,8 @@ namespace PostGram.Api.Services
                 }
                 throw new DBPostGramException(e.Message);
             }
+
+            return user.Id;
         }
 
         [HttpGet]

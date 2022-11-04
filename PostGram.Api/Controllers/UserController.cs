@@ -10,6 +10,7 @@ using PostGram.Api.Services;
 using PostGram.Common.Exceptions;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
+using LogLevel = NLog.LogLevel;
 
 namespace PostGram.Api.Controllers
 {
@@ -18,10 +19,12 @@ namespace PostGram.Api.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly NLog.Logger _logger;
 
         public UserController(IUserService userService)
         {
             _userService = userService;
+            _logger = NLog.LogManager.GetCurrentClassLogger();
         }
 
         [HttpPost]
@@ -30,10 +33,12 @@ namespace PostGram.Api.Controllers
             try
             {
                 await _userService.CreateUser(model);
+                
             }
             catch (DBCreatePostGramException e)
             {
-               return StatusCode(500, e.Message);
+                _logger.Log(LogLevel.Warn, e);
+                return StatusCode(500, e.Message);
             }
             
             return Ok();
@@ -50,6 +55,7 @@ namespace PostGram.Api.Controllers
             }
             catch (AuthorizationPostGramException e)
             {
+                _logger.Log(LogLevel.Warn, e);
                 return Forbid(e.Message);
             }
 
@@ -69,10 +75,12 @@ namespace PostGram.Api.Controllers
             }
             catch (UserNotFoundPostGramException e)
             {
+                _logger.Log(LogLevel.Warn, e);
                 return NotFound(e.Message);
             }
             catch (AuthorizationPostGramException e)
             {
+                _logger.Log(LogLevel.Warn, e);
                 return Unauthorized(e.Message);
             }
         }

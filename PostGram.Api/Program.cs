@@ -19,6 +19,7 @@ try
     var authSection = builder.Configuration.GetSection(AuthConfig.SectionName);
     var authConfig = authSection.Get<AuthConfig>();
 
+    //TODO Перенести настройки Nlog в appsettings
     builder.Logging.ClearProviders();
     builder.Host.UseNLog();
 
@@ -102,10 +103,6 @@ try
     }
 
     // Configure the HTTP request pipeline.
-    //TODO добавить Nlog
-    //app.UseExceptionHandler();
-    app.UseExceptionHandlerMiddleware();
-
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
@@ -122,7 +119,6 @@ try
 
     app.Run();
 }
-//TODO Настроить логирование
 catch(Exception e)
 {
     logger.Error(e, "Stopped program because of exception");

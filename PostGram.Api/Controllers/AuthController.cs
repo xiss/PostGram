@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using PostGram.Api.Models;
 using PostGram.Api.Services;
 using PostGram.Common.Exceptions;
+using LogLevel = NLog.LogLevel;
 
 namespace PostGram.Api.Controllers
 {
@@ -11,9 +12,11 @@ namespace PostGram.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly NLog.Logger _logger;
 
         public AuthController(IUserService userService)
         {
+            _logger = NLog.LogManager.GetCurrentClassLogger();
             _userService = userService;
         }
 
@@ -26,10 +29,12 @@ namespace PostGram.Api.Controllers
             }
             catch (UserNotFoundPostGramException e)
             {
+                _logger.Log(LogLevel.Warn, e);
                 return NotFound(e.Message);
             }
             catch (AuthorizationPostGramException e)
             {
+                _logger.Log(LogLevel.Warn, e);
                 return Unauthorized(e.Message);
             }           
         }
@@ -43,6 +48,7 @@ namespace PostGram.Api.Controllers
             }
             catch (AuthorizationPostGramException e)
             {
+                _logger.Log(LogLevel.Warn, e);
                 return Forbid(e.Message);
             }           
         }
