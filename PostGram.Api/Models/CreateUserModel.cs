@@ -24,7 +24,6 @@ namespace PostGram.Api.Models
         [Required]
         [EmailAddress]
         public string Email { get; set; }
-        [Required]
         public string Login { get; set; }
         [Required]
         [Compare(nameof(PasswordRetry))]

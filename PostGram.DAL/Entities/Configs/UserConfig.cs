@@ -12,7 +12,7 @@ namespace PostGram.DAL.Entities.Configs
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.HasIndex(u => u.Login).IsUnique();
+            builder.HasIndex(u => u.Email).IsUnique();
         }
     }
 }
