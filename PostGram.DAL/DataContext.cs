@@ -26,5 +26,6 @@ namespace PostGram.DAL
         }
 
         public DbSet<User> Users => Set<User>();
+        public DbSet<UserSession> UserSessions => Set<UserSession>();
     }
 }

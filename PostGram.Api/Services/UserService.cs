@@ -1,6 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using AutoMapper;
+﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,8 +8,10 @@ using PostGram.Api.Configs;
 using PostGram.Api.Models;
 using PostGram.Common;
 using PostGram.Common.Exceptions;
-using PostGram.DAL.Entities;
 using PostGram.DAL;
+using PostGram.DAL.Entities;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace PostGram.Api.Services
 {
@@ -20,9 +20,6 @@ namespace PostGram.Api.Services
         private readonly IMapper _mapper;
         private readonly DataContext _dataContext;
         private readonly AuthConfig _authConfig;
-        private const string ClaimTypeLogin = "login";
-        private const string ClaimTypeId = "id";
-
 
         public UserService(IMapper mapper, DataContext dataContext, IOptions<AuthConfig> config)
         {
@@ -44,7 +41,7 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DBCreatePostGramException(e.InnerException. Message);
+                    throw new DBCreatePostGramException(e.InnerException.Message);
                 }
                 throw new DBPostGramException(e.Message);
             }
@@ -60,13 +57,13 @@ namespace PostGram.Api.Services
 
         private async Task<User> GetUserByCredential(string login, string password)
         {
-            User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Login.ToLower() == login.ToLower());
+            User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == login.ToLower());
 
             if (user == null)
                 throw new UserNotFoundPostGramException("login: " + login);
 
             if (!HashHelper.Verify(password, user.PasswordHash))
-                throw new AuthorizationPostGramException("login: " + login);
+                throw new AuthorizationPostGramException("Password incorrect for login: " + login);
 
             return user;
         }
@@ -75,7 +72,8 @@ namespace PostGram.Api.Services
         {
             User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
-                throw new UserNotFoundPostGramException("id: " + id);
+                throw new UserNotFoundPostGramException("refreshTokenId: " + id);
+
             return user;
         }
 
@@ -85,16 +83,17 @@ namespace PostGram.Api.Services
             return _mapper.Map<UserModel>(user);
         }
 
-        private TokenModel GenerateToken(User user)
+        private TokenModel GenerateTokens(UserSession session)
         {
             DateTime now = DateTime.Now;
 
             //SecurityToken
             Claim[] claims =
             {
-                new(ClaimsIdentity.DefaultNameClaimType, user.Name),
-                new(ClaimTypeLogin , user.Login),
-                new(ClaimTypeId, user.Id.ToString())
+                new(ClaimsIdentity.DefaultNameClaimType,  session.User.Name),
+                new(Constants.ClaimTypeLogin , session.User.Login),
+                new(Constants.ClaimTypeUserId, session.User.Id.ToString()),
+                new(Constants.ClaimTypeSessionId, session.Id.ToString())
             };
             JwtSecurityToken securityToken = new JwtSecurityToken(
                 issuer: _authConfig.Issuer,
@@ -109,7 +108,7 @@ namespace PostGram.Api.Services
             //RefreshToken
             claims = new Claim[]
             {
-                new(nameof(user.Id), user.Id.ToString())
+                new(Constants.ClaimTypeRefreshTokenId, session.RefreshTokenId.ToString()),
             };
             JwtSecurityToken refreshToken = new JwtSecurityToken(
                 notBefore: now,
@@ -125,7 +124,35 @@ namespace PostGram.Api.Services
         public async Task<TokenModel> GetToken(string login, string password)
         {
             User user = await GetUserByCredential(login, password);
-            return GenerateToken(user);
+
+            var session = await _dataContext.UserSessions.AddAsync(new()
+            {
+                Id = Guid.NewGuid(),
+                Created = DateTimeOffset.UtcNow,
+                RefreshTokenId = Guid.NewGuid(),
+                User = user
+            });
+            await _dataContext.SaveChangesAsync();
+            return GenerateTokens(session.Entity);
+        }
+
+        public async Task<UserSession> GetUserSessionById(Guid id)
+        {
+            UserSession? session = await _dataContext.UserSessions.FirstOrDefaultAsync(s => s.Id == id);
+            if (session == null)
+                throw new SessionNotFoundPostGramException("Session with Id " + id + " not found");
+
+            return session;
+        }
+        private async Task<UserSession> GetUserSessionByRefreshToken(Guid refreshTokenId)
+        {
+            UserSession? session = await _dataContext.UserSessions
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.RefreshTokenId == refreshTokenId);
+            if (session == null)
+                throw new SessionNotFoundPostGramException("Session with refreshTokenId " + refreshTokenId + " not found");
+
+            return session;
         }
 
         public async Task<TokenModel> GetTokenByRefreshToken(string refreshToken)
@@ -140,18 +167,29 @@ namespace PostGram.Api.Services
             };
             var principal = new JwtSecurityTokenHandler().ValidateToken(refreshToken, validationParameters, out var securityToken);
 
+
             if (securityToken is not JwtSecurityToken jwtSecurityToken
-                || !jwtSecurityToken.Header.Alg.Equals((SecurityAlgorithms.HmacSha256,
-                    StringComparison.InvariantCultureIgnoreCase)))
+                || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                    StringComparison.InvariantCultureIgnoreCase))
             {
+                //TODO почему если выкинуть здесь исключение и обработать в контроллере он выдает заголовок 500 и следующее:
+                //System.InvalidOperationException: No authentication handler is registered for the scheme 'Invalid security token'.
+                //The registered schemes are: Bearer.Did you forget to call AddAuthentication().Add[SomeAuthHandler]("Invalid security token", ...) ?
                 throw new SecurityTokenPostGramException("Invalid security token");
             }
 
-            if (principal.Claims.FirstOrDefault(c => c.Type == nameof(User))?.Value is String userIdString
-                && Guid.TryParse(userIdString, out var userId))
+            if (principal.Claims.FirstOrDefault((c => c.Type == Constants.ClaimTypeRefreshTokenId))?.Value is String refreshIdString
+                && Guid.TryParse(refreshIdString, out var refreshTokenId))
             {
-                User user = await GetUserById(userId);
-                return GenerateToken(user);
+                UserSession session = await GetUserSessionByRefreshToken(refreshTokenId);
+                if (!session.IsActive)
+                    throw new SessionIsInactivePostGramException("Session is inactive");
+
+                User user = session.User;
+
+                session.RefreshTokenId = Guid.NewGuid();
+                await _dataContext.SaveChangesAsync();
+                return GenerateTokens(session);
             }
             else
             {
