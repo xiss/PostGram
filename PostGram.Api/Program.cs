@@ -17,6 +17,7 @@ try
 
     //Configuration
     var authSection = builder.Configuration.GetSection(AuthConfig.SectionName);
+    var appSection = builder.Configuration.GetSection(AppConfig.SectionName);
     var authConfig = authSection.Get<AuthConfig>();
 
     //TODO Перенести настройки Nlog в appsettings
@@ -59,8 +60,10 @@ try
 
     builder.Services.AddAutoMapper(typeof(MapperProfile).Assembly);
     builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddScoped<IAttachService, AttachService>();
 
     builder.Services.Configure<AuthConfig>(authSection);
+    builder.Services.Configure<AppConfig>(appSection);
 
     builder.Services.AddDbContext<PostGram.DAL.DataContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql")));
@@ -110,7 +113,7 @@ try
         app.UseDeveloperExceptionPage();
     }
 
-    app.UseHttpsRedirection(); 
+    app.UseHttpsRedirection();
 
     app.UseAuthentication();
     app.UseAuthorization();
@@ -120,7 +123,7 @@ try
 
     app.Run();
 }
-catch(Exception e)
+catch (Exception e)
 {
     logger.Error(e, "Stopped program because of exception");
     throw;

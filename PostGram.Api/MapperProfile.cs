@@ -16,6 +16,8 @@ namespace PostGram.Api
                 .ForMember(u=>u.BirthDate,m=>m.MapFrom(s=>s.BirthDate.UtcDateTime));
 
             CreateMap<User, UserModel>();
+
+            CreateMap<Avatar, AttachModel>();
         }
     }
 }

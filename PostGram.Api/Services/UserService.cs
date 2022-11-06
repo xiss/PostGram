@@ -15,7 +15,7 @@ using System.Security.Claims;
 
 namespace PostGram.Api.Services
 {
-    public class UserService : IUserService
+    public class UserService : IUserService, IDisposable
     {
         private readonly IMapper _mapper;
         private readonly DataContext _dataContext;
@@ -28,9 +28,16 @@ namespace PostGram.Api.Services
             _authConfig = config.Value;
         }
 
-        [HttpPost]
+        public async Task<bool> CheckUserExist(string email)
+        {
+            return await _dataContext.Users.AnyAsync(u => u.Email.ToLower() == email.ToLower());
+        }
+
         public async Task<Guid> CreateUser(CreateUserModel model)
         {
+            if (await CheckUserExist(model.Email))
+                throw new DBCreatePostGramException("User with email already exist, email: " + model.Email);
+
             User user = _mapper.Map<User>(model);
             try
             {
@@ -49,7 +56,14 @@ namespace PostGram.Api.Services
             return user.Id;
         }
 
-        [HttpGet]
+        public async Task<Guid> DeleteUser(Guid userId)
+        {
+            User user = await GetUserById(userId);
+            _dataContext.Users.Remove(user);
+            await _dataContext.SaveChangesAsync();
+            return userId;
+        }
+
         public async Task<List<UserModel>> GetUsers()
         {
             return await _dataContext.Users.AsNoTracking().ProjectTo<UserModel>(_mapper.ConfigurationProvider).ToListAsync();
@@ -72,7 +86,7 @@ namespace PostGram.Api.Services
         {
             User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
-                throw new UserNotFoundPostGramException("refreshTokenId: " + id);
+                throw new UserNotFoundPostGramException("User not found, id: " + id);
 
             return user;
         }
@@ -81,6 +95,34 @@ namespace PostGram.Api.Services
         {
             User user = await GetUserById(id);
             return _mapper.Map<UserModel>(user);
+        }
+
+        public async Task AddAvatarToUser(Guid userId, MetadataModel model, string filePath)
+        {
+            User user = await GetUserById(userId);
+            Avatar avatar = new Avatar()
+            {
+                Author = user,
+                User = user,
+                Id = model.TempId,
+                MimeType = model.MimeType,
+                Name = model.Name,
+                Size = model.Size,
+                FilePath = filePath
+            };
+            try
+            {
+                _dataContext.Avatars.Add(avatar);
+                await _dataContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null)
+                {
+                    throw new DBCreatePostGramException(e.InnerException.Message);
+                }
+                throw new DBPostGramException(e.Message);
+            }
         }
 
         private TokenModel GenerateTokens(UserSession session)
@@ -195,6 +237,11 @@ namespace PostGram.Api.Services
             {
                 throw new SecurityTokenPostGramException("Invalid refresh token");
             }
+        }
+
+        public void Dispose()
+        {
+            _dataContext.Dispose();
         }
     }
 }

@@ -1,15 +1,11 @@
-﻿using System.Net;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using PostGram.Api.Configs;
 using PostGram.Api.Models;
 using PostGram.Api.Services;
+using PostGram.Common;
 using PostGram.Common.Exceptions;
-using PostGram.DAL;
-using PostGram.DAL.Entities;
 using LogLevel = NLog.LogLevel;
 
 namespace PostGram.Api.Controllers
@@ -19,12 +15,16 @@ namespace PostGram.Api.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IAttachService _attachService;
         private readonly NLog.Logger _logger;
+        private readonly AppConfig _appConfig;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, IOptions<AppConfig> config, IAttachService attachService)
         {
             _userService = userService;
             _logger = NLog.LogManager.GetCurrentClassLogger();
+            _appConfig = config.Value;
+            _attachService = attachService;
         }
 
         [HttpPost]
@@ -33,7 +33,6 @@ namespace PostGram.Api.Controllers
             try
             {
                 await _userService.CreateUser(model);
-                
             }
             catch (DBCreatePostGramException e)
             {
@@ -68,10 +67,7 @@ namespace PostGram.Api.Controllers
         {
             try
             {
-                string? userIdStr = User.Claims.FirstOrDefault(c => c.Type == nameof(DAL.Entities.User.Id))?.Value;
-                if (Guid.TryParse(userIdStr, out var userId))
-                    return await _userService.GetUser(userId);
-                throw new AuthorizationPostGramException("You are not authorized");
+                return await _userService.GetUser(GetCurrentUserId());
             }
             catch (UserNotFoundPostGramException e)
             {
@@ -84,5 +80,70 @@ namespace PostGram.Api.Controllers
                 return Unauthorized(e.Message);
             }
         }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult> AddAvatarToUser(MetadataModel model)
+        {
+            try
+            {
+                string destFile = await _attachService.MoveToAttaches(model.TempId.ToString());
+                await _userService.AddAvatarToUser(GetCurrentUserId(), model, destFile);
+                return Ok();
+            }
+            catch (UserNotFoundPostGramException e)
+            {
+                _logger.Log(LogLevel.Warn, e);
+                return NotFound(e.Message);
+            }
+            catch (AuthorizationPostGramException e)
+            {
+                _logger.Log(LogLevel.Warn, e);
+                return Unauthorized(e.Message);
+            }
+            catch (AttachPostGramException e)
+            {
+                _logger.Log(LogLevel.Error, e);
+                if (e.InnerException != null)
+                    return StatusCode(500, e.InnerException.Message);
+
+                return StatusCode(500, e.Message);
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetAvatarForUser(Guid userId)
+        {
+            try
+            {
+                AttachModel model = await _attachService.GetAvatarForUser(userId);
+                return File(await System.IO.File.ReadAllBytesAsync(model.FilePath), model.MimeType);
+            }
+            catch (AttachPostGramException e)
+            {
+                _logger.Log(LogLevel.Error, e);
+                return  StatusCode(500, e.Message);
+            }
+        }
+
+        private Guid GetCurrentUserId()
+        {
+            string? userIdStr = User.Claims.FirstOrDefault(c => c.Type == Constants.ClaimTypeUserId)?.Value;
+            if (Guid.TryParse(userIdStr, out var userId))
+                return userId;
+
+            throw new AuthorizationPostGramException("You are not authorized");
+        }
+
+        //public async Task RefreshPassword()
+        //{
+        //    //TODO RefreshPassword
+        //    throw new NotImplementedException();
+        //}
+        //public async Task RefreshLogin()
+        //{
+        //    //TODO RefreshLogin
+        //    throw new NotImplementedException();
+        //}
     }
 }

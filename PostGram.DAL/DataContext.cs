@@ -23,9 +23,12 @@ namespace PostGram.DAL
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new UserConfig());
+            modelBuilder.ApplyConfiguration(new AvatarConfig());
         }
 
         public DbSet<User> Users => Set<User>();
         public DbSet<UserSession> UserSessions => Set<UserSession>();
+        public DbSet<Attache> Attaches => Set<Attache>();
+        public DbSet<Avatar> Avatars => Set<Avatar>();
     }
 }

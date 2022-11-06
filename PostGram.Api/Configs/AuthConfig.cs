@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using Microsoft.Extensions.FileSystemGlobbing.Internal.Patterns;
 using Microsoft.IdentityModel.Tokens;
 
 namespace PostGram.Api.Configs
