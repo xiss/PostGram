@@ -5,6 +5,7 @@
         public AttachTempDirectoryIsNullPostGramException()
         {
         }
+
         public AttachTempDirectoryIsNullPostGramException(string message) : base(message)
         {
         }

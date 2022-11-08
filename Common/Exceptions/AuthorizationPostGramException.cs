@@ -5,6 +5,7 @@
         public AuthorizationPostGramException()
         {
         }
+
         public AuthorizationPostGramException(string message) : base(message)
         {
         }

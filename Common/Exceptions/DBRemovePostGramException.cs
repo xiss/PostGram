@@ -5,6 +5,7 @@
         public DBRemovePostGramException()
         {
         }
+
         public DBRemovePostGramException(string message) : base(message)
         {
         }

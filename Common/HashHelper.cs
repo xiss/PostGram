@@ -22,7 +22,7 @@ namespace PostGram.Common
 
         public static bool Verify(string input, string hash)
         {
-            return hash .Equals(GetHash(input),StringComparison.OrdinalIgnoreCase);
+            return hash.Equals(GetHash(input), StringComparison.OrdinalIgnoreCase);
         }
     }
 }

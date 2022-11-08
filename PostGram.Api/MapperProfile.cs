@@ -1,8 +1,6 @@
-﻿using System.Security.AccessControl;
-using AutoMapper;
+﻿using AutoMapper;
 using PostGram.Api.Models;
 using PostGram.DAL.Entities;
-
 
 namespace PostGram.Api
 {

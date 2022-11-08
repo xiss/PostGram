@@ -1,7 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System;
-using System.Runtime.CompilerServices;
-using PostGram.DAL.Entities;
 
 namespace PostGram.Api.Models
 {
@@ -22,13 +19,17 @@ namespace PostGram.Api.Models
         public string Name { get; set; }
         public string Surname { get; set; }
         public string Patronymic { get; set; }
+
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+
         public string Login { get; set; }
+
         [Required]
         [Compare(nameof(PasswordRetry))]
         public string Password { get; set; }
+
         [Required]
         public string PasswordRetry { get; set; }
 

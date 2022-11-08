@@ -5,6 +5,7 @@
         public InvalidTokenPostGramException()
         {
         }
+
         public InvalidTokenPostGramException(string message) : base(message)
         {
         }

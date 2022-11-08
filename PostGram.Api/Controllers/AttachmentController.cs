@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PostGram.Api.Models;
 using PostGram.Api.Services;
-using PostGram.Common;
 using PostGram.Common.Exceptions;
 using LogLevel = NLog.LogLevel;
 

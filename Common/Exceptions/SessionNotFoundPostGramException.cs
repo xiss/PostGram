@@ -5,6 +5,7 @@
         public SessionNotFoundPostGramException()
         {
         }
+
         public SessionNotFoundPostGramException(string message) : base(message)
         {
         }

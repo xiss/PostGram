@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using PostGram.Api.Configs;
 using PostGram.Api.Models;
 using PostGram.Api.Services;
-using PostGram.Common;
 using PostGram.Common.Exceptions;
 using LogLevel = NLog.LogLevel;
 
@@ -125,7 +124,7 @@ namespace PostGram.Api.Controllers
                 return StatusCode(500, e.Message);
             }
         }
-        
+
         //public async Task RefreshPassword()
         //{
         //    //TODO 3 RefreshPassword

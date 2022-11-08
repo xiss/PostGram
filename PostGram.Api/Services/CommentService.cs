@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using PostGram.Api.Models;
 using PostGram.Common.Exceptions;
@@ -80,7 +79,7 @@ namespace PostGram.Api.Services
             Comment comment = await GetCommentById(commentId);
             comment.IsDeleted = true;
             await UpdateComment(comment);
-            
+
             return commentId;
         }
 
@@ -91,7 +90,6 @@ namespace PostGram.Api.Services
             comment.Edited = DateTimeOffset.UtcNow;
             await UpdateComment(comment);
             return _mapper.Map<CommentModel>(comment);
-
         }
 
         private async Task UpdateComment(Comment comment)

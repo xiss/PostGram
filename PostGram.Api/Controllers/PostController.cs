@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using PostGram.Api.Models;
 using PostGram.Api.Services;
 using PostGram.Common.Exceptions;
@@ -69,6 +68,7 @@ namespace PostGram.Api.Controllers
                 return Forbid(e.Message);
             }
         }
+
         //TODO 2 DeletePost
         //TODO 2 UpdatePost
     }

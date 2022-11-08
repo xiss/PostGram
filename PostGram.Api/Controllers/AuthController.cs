@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using PostGram.Api.Models;
 using PostGram.Api.Services;
 using PostGram.Common.Exceptions;
@@ -36,7 +35,7 @@ namespace PostGram.Api.Controllers
             {
                 _logger.Log(LogLevel.Warn, e);
                 return Unauthorized(e.Message);
-            }           
+            }
         }
 
         [HttpPost]
@@ -50,7 +49,7 @@ namespace PostGram.Api.Controllers
             {
                 _logger.Log(LogLevel.Warn, e);
                 return Forbid(e.Message);
-            }           
+            }
         }
     }
 }

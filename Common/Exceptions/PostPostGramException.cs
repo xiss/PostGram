@@ -5,6 +5,7 @@
         public PostPostGramException()
         {
         }
+
         public PostPostGramException(string message) : base(message)
         {
         }

@@ -1,6 +1,6 @@
-﻿using PostGram.Common.Exceptions;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PostGram.Common;
+using PostGram.Common.Exceptions;
 
 namespace PostGram.Api
 {

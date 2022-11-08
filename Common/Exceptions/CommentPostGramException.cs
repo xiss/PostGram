@@ -5,6 +5,7 @@
         public CommentPostGramException()
         {
         }
+
         public CommentPostGramException(string message) : base(message)
         {
         }

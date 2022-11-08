@@ -7,6 +7,4 @@
         public virtual User Author { get; set; } = null!;
         public DateTimeOffset Created { get; set; }
     }
-
-
 }

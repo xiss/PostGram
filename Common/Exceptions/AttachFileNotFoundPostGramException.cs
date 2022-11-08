@@ -5,6 +5,7 @@
         public AttachFileNotFoundPostGramException()
         {
         }
+
         public AttachFileNotFoundPostGramException(string message) : base(message)
         {
         }

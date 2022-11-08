@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -199,6 +198,7 @@ namespace PostGram.Api.Services
 
             return session;
         }
+
         private async Task<UserSession> GetUserSessionByRefreshToken(Guid refreshTokenId)
         {
             UserSession? session = await _dataContext.UserSessions
@@ -221,7 +221,6 @@ namespace PostGram.Api.Services
                 IssuerSigningKey = _authConfig.GetSymmetricSecurityKey()
             };
             var principal = new JwtSecurityTokenHandler().ValidateToken(refreshToken, validationParameters, out var securityToken);
-
 
             if (securityToken is not JwtSecurityToken jwtSecurityToken
                 || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,

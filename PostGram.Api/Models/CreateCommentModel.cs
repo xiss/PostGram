@@ -6,6 +6,7 @@ namespace PostGram.Api.Models
     {
         [Required]
         public string Body { get; set; } = null!;
+
         public Guid PostId { get; set; }
     }
 }

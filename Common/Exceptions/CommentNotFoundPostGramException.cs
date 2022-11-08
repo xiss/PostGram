@@ -5,6 +5,7 @@
         public CommentNotFoundPostGramException()
         {
         }
+
         public CommentNotFoundPostGramException(string message) : base(message)
         {
         }

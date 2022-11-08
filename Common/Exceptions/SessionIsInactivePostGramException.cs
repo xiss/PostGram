@@ -5,6 +5,7 @@
         public SessionIsInactivePostGramException()
         {
         }
+
         public SessionIsInactivePostGramException(string message) : base(message)
         {
         }

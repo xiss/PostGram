@@ -6,6 +6,7 @@ namespace PostGram.Api
     public class TokenValidatorMiddleware
     {
         private readonly RequestDelegate _next;
+
         public TokenValidatorMiddleware(RequestDelegate next)
         {
             _next = next;
@@ -28,7 +29,7 @@ namespace PostGram.Api
             }
 
             if (flag)
-                await _next(context);  
+                await _next(context);
         }
     }
 
@@ -36,7 +37,6 @@ namespace PostGram.Api
     {
         public static IApplicationBuilder UseTokenValidator(this IApplicationBuilder builder)
         {
-            
             return builder.UseMiddleware<TokenValidatorMiddleware>();
         }
     }

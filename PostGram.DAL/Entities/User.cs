@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PostGram.DAL.Entities
+﻿namespace PostGram.DAL.Entities
 {
     public class User
     {

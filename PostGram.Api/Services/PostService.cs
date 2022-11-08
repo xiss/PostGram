@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using PostGram.Api.Controllers;
 using PostGram.Api.Models;
 using PostGram.Common.Exceptions;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
-using System;
 
 namespace PostGram.Api.Services
 {
@@ -14,6 +12,7 @@ namespace PostGram.Api.Services
         private readonly DataContext _dataContext;
         private readonly IMapper _mapper;
         private readonly IAttachmentService _attachmentService;
+
         public PostService(DataContext dataContext, IAttachmentService attachmentService, IMapper mapper)
         {
             _dataContext = dataContext;
@@ -65,7 +64,7 @@ namespace PostGram.Api.Services
         {
             Post? post = await _dataContext.Posts
                 .Include(p => p.Attachments)
-                .Include(p => p.Comments.Where(c => !c.IsDeleted).OrderBy(c=>c.Created))
+                .Include(p => p.Comments.Where(c => !c.IsDeleted).OrderBy(c => c.Created))
                 .FirstOrDefaultAsync(u => u.Id == postId && !u.IsDeleted);
             if (post == null)
                 throw new PostNotFoundPostGramException("Post not found: " + postId);

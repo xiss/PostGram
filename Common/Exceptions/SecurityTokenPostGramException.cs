@@ -5,6 +5,7 @@
         public SecurityTokenPostGramException()
         {
         }
+
         public SecurityTokenPostGramException(string message) : base(message)
         {
         }

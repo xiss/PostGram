@@ -5,6 +5,7 @@
         public UserNotFoundPostGramException()
         {
         }
+
         public UserNotFoundPostGramException(string message) : base(message)
         {
         }

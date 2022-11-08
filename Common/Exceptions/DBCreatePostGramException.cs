@@ -5,6 +5,7 @@
         public DBCreatePostGramException()
         {
         }
+
         public DBCreatePostGramException(string message) : base(message)
         {
         }

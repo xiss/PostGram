@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PostGram.Api.Configs;
@@ -15,6 +14,7 @@ namespace PostGram.Api.Services
         private readonly DataContext _dataContext;
         private readonly AppConfig _appConfig;
         private readonly IMapper _mapper;
+
         public AttachmentService(DataContext dataContext, IOptions<AppConfig> appConfig, IMapper mapper)
         {
             _dataContext = dataContext;
@@ -46,7 +46,7 @@ namespace PostGram.Api.Services
 
             return model;
         }
-        
+
         /// <summary>
         /// Save file in App directory
         /// </summary>

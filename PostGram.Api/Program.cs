@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NLog;
+using NLog.Web;
 using PostGram.Api;
 using PostGram.Api.Configs;
 using PostGram.Api.Services;
-using NLog;
-using NLog.Web;
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 
@@ -134,4 +133,3 @@ finally
 {
     NLog.LogManager.Shutdown();
 }
-
