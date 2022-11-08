@@ -15,13 +15,4 @@ namespace PostGram.DAL.Entities.Configs
             builder.HasIndex(u => u.Email).IsUnique();
         }
     }
-
-    internal class AvatarConfig : IEntityTypeConfiguration<Avatar>
-    {
-        public void Configure(EntityTypeBuilder<Avatar> builder)
-        {
-            builder.ToTable(nameof(DataContext.Avatars));
-            builder.HasIndex(a => a.UserId).IsUnique();
-        }
-    }
 }

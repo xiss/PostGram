@@ -10,13 +10,12 @@ using PostGram.DAL.Entities;
 
 namespace PostGram.Api.Services
 {
-    public class AttachService : IDisposable, IAttachService
+    public class AttachmentService : IDisposable, IAttachmentService
     {
         private readonly DataContext _dataContext;
         private readonly AppConfig _appConfig;
         private readonly IMapper _mapper;
-
-        public AttachService(DataContext dataContext, IOptions<AppConfig> appConfig, IMapper mapper)
+        public AttachmentService(DataContext dataContext, IOptions<AppConfig> appConfig, IMapper mapper)
         {
             _dataContext = dataContext;
             _appConfig = appConfig.Value;
@@ -34,7 +33,7 @@ namespace PostGram.Api.Services
             {
                 TempId = Guid.NewGuid(),
                 Name = file.FileName,
-                MimeType = file.ContentType, //TODO Сделать распознование по первой  строке файла
+                MimeType = file.ContentType, //TODO 3 Сделать распознование по первой  строке файла
                 Size = file.Length
             };
             string newPath = Path.Combine(Path.GetTempPath(), model.TempId.ToString());
@@ -47,8 +46,15 @@ namespace PostGram.Api.Services
 
             return model;
         }
-
-        public async Task<string> MoveToAttaches(string temporaryFileId)
+        
+        /// <summary>
+        /// Save file in App directory
+        /// </summary>
+        /// <param name="temporaryFileId"></param>
+        /// <returns>PathToFile</returns>
+        /// <exception cref="AttachFileNotFoundPostGramException"></exception>
+        /// <exception cref="AttachPostGramException"></exception>
+        public async Task<string> ApplyFile(string temporaryFileId)
         {
             FileInfo tempFile = new(Path.Combine(Path.GetTempPath(), temporaryFileId));
             if (!tempFile.Exists)
@@ -71,15 +77,26 @@ namespace PostGram.Api.Services
             }
         }
 
-        public async Task<AttachModel> GetAvatarForUser(Guid userId)
+        public async Task<AttachmentModel> GetAvatarForUser(Guid userId)
         {
             Avatar? avatar = await _dataContext.Avatars.FirstOrDefaultAsync(x => x.UserId == userId);
             if (avatar == null)
-                throw new AttachFileNotFoundPostGramException("Avatar not found in DB");
+                throw new AttachFileNotFoundPostGramException("Avatar not found in DB for user: " + userId);
 
             FileExists(avatar.FilePath);
 
-            return _mapper.Map<AttachModel>(avatar);
+            return _mapper.Map<AttachmentModel>(avatar);
+        }
+
+        public async Task<AttachmentModel> GetAttachment(Guid attachmentId)
+        {
+            Attachment? attachment = await _dataContext.Attachments.FirstOrDefaultAsync(a => a.Id == attachmentId);
+            if (attachment == null)
+                throw new AttachFileNotFoundPostGramException("Attachment not found in DB: " + attachmentId);
+
+            FileExists(attachment.FilePath);
+
+            return _mapper.Map<AttachmentModel>(attachment);
         }
 
         private bool FileExists(string filePath)

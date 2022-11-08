@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System;
 using System.Runtime.CompilerServices;
+using PostGram.DAL.Entities;
 
 namespace PostGram.Api.Models
 {
@@ -31,7 +32,7 @@ namespace PostGram.Api.Models
         [Required]
         public string PasswordRetry { get; set; }
 
-        // TODO Сделать проверку что дата не в будущем времени
+        // TODO 3 Сделать проверку что дата не в будущем времени
         public DateTimeOffset BirthDate { get; set; }
     }
 }

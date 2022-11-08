@@ -28,7 +28,9 @@ namespace PostGram.DAL
 
         public DbSet<User> Users => Set<User>();
         public DbSet<UserSession> UserSessions => Set<UserSession>();
-        public DbSet<Attache> Attaches => Set<Attache>();
+        public DbSet<Attachment> Attachments => Set<Attachment>();
         public DbSet<Avatar> Avatars => Set<Avatar>();
+        public DbSet<Comment> Comments => Set<Comment>();
+        public DbSet<Post> Posts => Set<Post>();
     }
 }

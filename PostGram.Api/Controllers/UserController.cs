@@ -15,16 +15,16 @@ namespace PostGram.Api.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IAttachService _attachService;
+        private readonly IAttachmentService _attachmentService;
         private readonly NLog.Logger _logger;
         private readonly AppConfig _appConfig;
 
-        public UserController(IUserService userService, IOptions<AppConfig> config, IAttachService attachService)
+        public UserController(IUserService userService, IOptions<AppConfig> config, IAttachmentService attachmentService)
         {
             _userService = userService;
             _logger = NLog.LogManager.GetCurrentClassLogger();
             _appConfig = config.Value;
-            _attachService = attachService;
+            _attachmentService = attachmentService;
         }
 
         [HttpPost]
@@ -39,7 +39,7 @@ namespace PostGram.Api.Controllers
                 _logger.Log(LogLevel.Warn, e);
                 return StatusCode(500, e.Message);
             }
-            
+
             return Ok();
         }
 
@@ -67,7 +67,7 @@ namespace PostGram.Api.Controllers
         {
             try
             {
-                return await _userService.GetUser(GetCurrentUserId());
+                return await _userService.GetUser(this.GetCurrentUserId());
             }
             catch (UserNotFoundPostGramException e)
             {
@@ -87,8 +87,8 @@ namespace PostGram.Api.Controllers
         {
             try
             {
-                string destFile = await _attachService.MoveToAttaches(model.TempId.ToString());
-                await _userService.AddAvatarToUser(GetCurrentUserId(), model, destFile);
+                string destFile = await _attachmentService.ApplyFile(model.TempId.ToString());
+                await _userService.AddAvatarToUser(this.GetCurrentUserId(), model, destFile);
                 return Ok();
             }
             catch (UserNotFoundPostGramException e)
@@ -116,33 +116,24 @@ namespace PostGram.Api.Controllers
         {
             try
             {
-                AttachModel model = await _attachService.GetAvatarForUser(userId);
+                AttachmentModel model = await _attachmentService.GetAvatarForUser(userId);
                 return File(await System.IO.File.ReadAllBytesAsync(model.FilePath), model.MimeType);
             }
             catch (AttachPostGramException e)
             {
                 _logger.Log(LogLevel.Error, e);
-                return  StatusCode(500, e.Message);
+                return StatusCode(500, e.Message);
             }
         }
-
-        private Guid GetCurrentUserId()
-        {
-            string? userIdStr = User.Claims.FirstOrDefault(c => c.Type == Constants.ClaimTypeUserId)?.Value;
-            if (Guid.TryParse(userIdStr, out var userId))
-                return userId;
-
-            throw new AuthorizationPostGramException("You are not authorized");
-        }
-
+        
         //public async Task RefreshPassword()
         //{
-        //    //TODO RefreshPassword
+        //    //TODO 3 RefreshPassword
         //    throw new NotImplementedException();
         //}
         //public async Task RefreshLogin()
         //{
-        //    //TODO RefreshLogin
+        //    //TODO 3 RefreshLogin
         //    throw new NotImplementedException();
         //}
     }

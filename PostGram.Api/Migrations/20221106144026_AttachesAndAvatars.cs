@@ -12,7 +12,7 @@ namespace PostGram.Api.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Attaches",
+                name: "Attachments",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -46,7 +46,7 @@ namespace PostGram.Api.Migrations
                     table.ForeignKey(
                         name: "FK_Avatars_Attaches_Id",
                         column: x => x.Id,
-                        principalTable: "Attaches",
+                        principalTable: "Attachments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -59,7 +59,7 @@ namespace PostGram.Api.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Attaches_AuthorId",
-                table: "Attaches",
+                table: "Attachments",
                 column: "AuthorId");
 
             migrationBuilder.CreateIndex(
@@ -76,7 +76,7 @@ namespace PostGram.Api.Migrations
                 name: "Avatars");
 
             migrationBuilder.DropTable(
-                name: "Attaches");
+                name: "Attachments");
         }
     }
 }

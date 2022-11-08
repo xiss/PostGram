@@ -25,7 +25,7 @@ namespace PostGram.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("PostGram.DAL.Entities.Attache", b =>
+            modelBuilder.Entity("PostGram.DAL.Entities.Attachment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -53,7 +53,7 @@ namespace PostGram.Api.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("Attaches");
+                    b.ToTable("Attachments");
 
                     b.UseTptMappingStrategy();
                 });
@@ -126,7 +126,7 @@ namespace PostGram.Api.Migrations
 
             modelBuilder.Entity("PostGram.DAL.Entities.Avatar", b =>
                 {
-                    b.HasBaseType("PostGram.DAL.Entities.Attache");
+                    b.HasBaseType("PostGram.DAL.Entities.Attachment");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -137,7 +137,7 @@ namespace PostGram.Api.Migrations
                     b.ToTable("Avatars", (string)null);
                 });
 
-            modelBuilder.Entity("PostGram.DAL.Entities.Attache", b =>
+            modelBuilder.Entity("PostGram.DAL.Entities.Attachment", b =>
                 {
                     b.HasOne("PostGram.DAL.Entities.User", "Author")
                         .WithMany()
@@ -161,7 +161,7 @@ namespace PostGram.Api.Migrations
 
             modelBuilder.Entity("PostGram.DAL.Entities.Avatar", b =>
                 {
-                    b.HasOne("PostGram.DAL.Entities.Attache", null)
+                    b.HasOne("PostGram.DAL.Entities.Attachment", null)
                         .WithOne()
                         .HasForeignKey("PostGram.DAL.Entities.Avatar", "Id")
                         .OnDelete(DeleteBehavior.Cascade)

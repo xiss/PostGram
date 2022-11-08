@@ -1,4 +1,6 @@
-﻿namespace PostGram.Api.Models
+﻿using PostGram.DAL.Entities;
+
+namespace PostGram.Api.Models
 {
     public class UserModel
     {

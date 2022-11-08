@@ -13,9 +13,9 @@ namespace PostGram.DAL.Entities
         public string Surname { get; set; } = "empty";
         public string Patronymic { get; set; } = "empty";
         public string Email { get; set; } = "empty";
-         public string Login { get; set; } = "empty";
+        public string Login { get; set; } = "empty";
         public string PasswordHash { get; set; } = "empty";
-        public  DateTimeOffset BirthDate { get; set; }
-        public virtual ICollection<UserSession>? Sessions { get; set; }
+        public DateTimeOffset BirthDate { get; set; }
+        public virtual ICollection<UserSession>? Sessions { get; set; } = new List<UserSession>();
     }
 }

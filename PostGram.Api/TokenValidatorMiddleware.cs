@@ -36,6 +36,7 @@ namespace PostGram.Api
     {
         public static IApplicationBuilder UseTokenValidator(this IApplicationBuilder builder)
         {
+            
             return builder.UseMiddleware<TokenValidatorMiddleware>();
         }
     }

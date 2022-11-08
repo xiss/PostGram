@@ -20,7 +20,7 @@ try
     var appSection = builder.Configuration.GetSection(AppConfig.SectionName);
     var authConfig = authSection.Get<AuthConfig>();
 
-    //TODO Перенести настройки Nlog в appsettings
+    //TODO 3 Перенести настройки Nlog в appsettings
     builder.Logging.ClearProviders();
     builder.Host.UseNLog();
 
@@ -60,7 +60,9 @@ try
 
     builder.Services.AddAutoMapper(typeof(MapperProfile).Assembly);
     builder.Services.AddScoped<IUserService, UserService>();
-    builder.Services.AddScoped<IAttachService, AttachService>();
+    builder.Services.AddScoped<IAttachmentService, AttachmentService>();
+    builder.Services.AddScoped<ICommentService, CommentService>();
+    builder.Services.AddScoped<IPostService, PostService>();
 
     builder.Services.Configure<AuthConfig>(authSection);
     builder.Services.Configure<AppConfig>(appSection);

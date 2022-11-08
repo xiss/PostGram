@@ -59,8 +59,21 @@ namespace PostGram.Api.Services
         public async Task<Guid> DeleteUser(Guid userId)
         {
             User user = await GetUserById(userId);
-            _dataContext.Users.Remove(user);
-            await _dataContext.SaveChangesAsync();
+
+            try
+            {
+                _dataContext.Users.Remove(user);
+                await _dataContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null)
+                {
+                    throw new DBCreatePostGramException(e.InnerException.Message);
+                }
+                throw new DBPostGramException(e.Message);
+            }
+
             return userId;
         }
 
