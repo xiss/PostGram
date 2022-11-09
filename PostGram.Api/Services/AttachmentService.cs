@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PostGram.Api.Configs;
-using PostGram.Api.Models;
+using PostGram.Api.Models.Attachment;
 using PostGram.Common.Exceptions;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
@@ -47,18 +47,11 @@ namespace PostGram.Api.Services
             return model;
         }
 
-        /// <summary>
-        /// Save file in App directory
-        /// </summary>
-        /// <param name="temporaryFileId"></param>
-        /// <returns>PathToFile</returns>
-        /// <exception cref="AttachFileNotFoundPostGramException"></exception>
-        /// <exception cref="AttachPostGramException"></exception>
         public async Task<string> ApplyFile(string temporaryFileId)
         {
             FileInfo tempFile = new(Path.Combine(Path.GetTempPath(), temporaryFileId));
             if (!tempFile.Exists)
-                throw new AttachFileNotFoundPostGramException("File not found: " + tempFile.FullName);
+                throw new NotFoundPostGramException("File not found: " + tempFile.FullName);
             try
             {
                 var destFile = Path.Combine(Directory.GetCurrentDirectory(), _appConfig.AttachesFolderName,
@@ -73,7 +66,7 @@ namespace PostGram.Api.Services
             }
             catch (Exception e)
             {
-                throw new AttachPostGramException(e.Message, e);
+                throw new FilePostGramException(e.Message, e);
             }
         }
 
@@ -81,7 +74,7 @@ namespace PostGram.Api.Services
         {
             Avatar? avatar = await _dataContext.Avatars.FirstOrDefaultAsync(x => x.UserId == userId);
             if (avatar == null)
-                throw new AttachFileNotFoundPostGramException("Avatar not found in DB for user: " + userId);
+                throw new NotFoundPostGramException("Avatar not found in DB for user: " + userId);
 
             FileExists(avatar.FilePath);
 
@@ -92,7 +85,7 @@ namespace PostGram.Api.Services
         {
             Attachment? attachment = await _dataContext.Attachments.FirstOrDefaultAsync(a => a.Id == attachmentId);
             if (attachment == null)
-                throw new AttachFileNotFoundPostGramException("Attachment not found in DB: " + attachmentId);
+                throw new NotFoundPostGramException("Attachment not found in DB: " + attachmentId);
 
             FileExists(attachment.FilePath);
 
@@ -102,7 +95,7 @@ namespace PostGram.Api.Services
         private bool FileExists(string filePath)
         {
             if (!new FileInfo(filePath).Exists)
-                throw new AttachFileNotFoundPostGramException("File not found: " + filePath);
+                throw new NotFoundPostGramException("File not found: " + filePath);
 
             return true;
         }

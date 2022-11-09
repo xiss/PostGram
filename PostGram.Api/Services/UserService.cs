@@ -4,7 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PostGram.Api.Configs;
-using PostGram.Api.Models;
+using PostGram.Api.Models.Attachment;
+using PostGram.Api.Models.Token;
+using PostGram.Api.Models.User;
 using PostGram.Common;
 using PostGram.Common.Exceptions;
 using PostGram.DAL;
@@ -35,7 +37,7 @@ namespace PostGram.Api.Services
         public async Task<Guid> CreateUser(CreateUserModel model)
         {
             if (await CheckUserExist(model.Email))
-                throw new DBCreatePostGramException("User with email already exist, email: " + model.Email);
+                throw new DbPostGramException("User with email already exist, email: " + model.Email);
 
             User user = _mapper.Map<User>(model);
             try
@@ -47,9 +49,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DBCreatePostGramException(e.InnerException.Message);
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DBPostGramException(e.Message);
+                throw new DbPostGramException(e.Message, e);
             }
 
             return user.Id;
@@ -68,9 +70,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DBCreatePostGramException(e.InnerException.Message);
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DBPostGramException(e.Message);
+                throw new DbPostGramException(e.Message, e);
             }
 
             return userId;
@@ -86,7 +88,7 @@ namespace PostGram.Api.Services
             User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == login.ToLower());
 
             if (user == null)
-                throw new UserNotFoundPostGramException("login: " + login);
+                throw new NotFoundPostGramException("login: " + login);
 
             if (!HashHelper.Verify(password, user.PasswordHash))
                 throw new AuthorizationPostGramException("Password incorrect for login: " + login);
@@ -98,7 +100,7 @@ namespace PostGram.Api.Services
         {
             User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
-                throw new UserNotFoundPostGramException("User not found, id: " + id);
+                throw new NotFoundPostGramException("User not found, id: " + id);
 
             return user;
         }
@@ -131,9 +133,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DBCreatePostGramException(e.InnerException.Message);
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DBPostGramException(e.Message);
+                throw new DbPostGramException(e.Message, e);
             }
         }
 
@@ -194,7 +196,7 @@ namespace PostGram.Api.Services
         {
             UserSession? session = await _dataContext.UserSessions.FirstOrDefaultAsync(s => s.Id == id);
             if (session == null)
-                throw new SessionNotFoundPostGramException("Session with Id " + id + " not found");
+                throw new NotFoundPostGramException("Session with Id " + id + " not found");
 
             return session;
         }
@@ -205,7 +207,7 @@ namespace PostGram.Api.Services
                 .Include(s => s.User)
                 .FirstOrDefaultAsync(s => s.RefreshTokenId == refreshTokenId);
             if (session == null)
-                throw new SessionNotFoundPostGramException("Session with refreshTokenId " + refreshTokenId + " not found");
+                throw new NotFoundPostGramException("Session with refreshTokenId " + refreshTokenId + " not found");
 
             return session;
         }
@@ -226,10 +228,11 @@ namespace PostGram.Api.Services
                 || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
                     StringComparison.InvariantCultureIgnoreCase))
             {
-                //TODO почему если выкинуть здесь исключение и обработать в контроллере он выдает заголовок 500 и следующее:
+                //TODO почему если выкинуть здесь исключение и обработать в контроллере он выдает заголовок 500 и следующее, а не то что мы отдаем в контроллере:
+                ///throw new AuthorizationPostGramException("test");
                 //System.InvalidOperationException: No authentication handler is registered for the scheme 'Invalid security token'.
                 //The registered schemes are: Bearer.Did you forget to call AddAuthentication().Add[SomeAuthHandler]("Invalid security token", ...) ?
-                throw new SecurityTokenPostGramException("Invalid security token");
+                throw new AuthorizationPostGramException("Invalid security token");
             }
 
             if (principal.Claims.FirstOrDefault((c => c.Type == Constants.ClaimTypeRefreshTokenId))?.Value is String refreshIdString
@@ -237,7 +240,7 @@ namespace PostGram.Api.Services
             {
                 UserSession session = await GetUserSessionByRefreshToken(refreshTokenId);
                 if (!session.IsActive)
-                    throw new SessionIsInactivePostGramException("Session is inactive");
+                    throw new AuthorizationPostGramException("Session is inactive");
 
                 User user = session.User;
 
@@ -247,7 +250,7 @@ namespace PostGram.Api.Services
             }
             else
             {
-                throw new SecurityTokenPostGramException("Invalid refresh token");
+                throw new AuthorizationPostGramException("Invalid refresh token");
             }
         }
 

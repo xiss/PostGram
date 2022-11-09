@@ -1,5 +1,8 @@
 ﻿using AutoMapper;
-using PostGram.Api.Models;
+using PostGram.Api.Models.Attachment;
+using PostGram.Api.Models.Comment;
+using PostGram.Api.Models.Post;
+using PostGram.Api.Models.User;
 using PostGram.DAL.Entities;
 
 namespace PostGram.Api

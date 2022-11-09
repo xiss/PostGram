@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /internal-nlog-AspNetCore.txt
 /PostGram.Api/attaches
+/PostGram.Api.Tests

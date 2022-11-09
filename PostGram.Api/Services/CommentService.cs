@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using PostGram.Api.Models;
+using PostGram.Api.Models.Comment;
 using PostGram.Common.Exceptions;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
@@ -12,7 +12,6 @@ namespace PostGram.Api.Services
         private readonly DataContext _dataContext;
         private readonly NLog.Logger _logger;
         private readonly IMapper _mapper;
-        //TODO 1 Причесать все юзинги и лишние строки
 
         public CommentService(DataContext dataContext, IMapper mapper)
         {
@@ -35,9 +34,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DBCreatePostGramException(e.InnerException.Message);
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DBPostGramException(e.Message);
+                throw new DbPostGramException(e.Message, e);
             }
 
             return comment.Id;
@@ -47,7 +46,7 @@ namespace PostGram.Api.Services
         {
             Comment? comment = await _dataContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId && !c.IsDeleted);
             if (comment == null)
-                throw new CommentNotFoundPostGramException("Comment not found: " + commentId);
+                throw new NotFoundPostGramException("Comment not found: " + commentId);
             return comment;
         }
 
@@ -64,7 +63,7 @@ namespace PostGram.Api.Services
                 .OrderBy(c => c.Created)
                 .ToArrayAsync();
             if (comments.Length == 0)
-                throw new CommentNotFoundPostGramException("Comments not fount for post: " + postId);
+                throw new NotFoundPostGramException("Comments not fount for post: " + postId);
 
             return _mapper.Map<CommentModel[]>(comments);
         }
@@ -103,9 +102,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DBCreatePostGramException(e.InnerException.Message);
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DBPostGramException(e.Message);
+                throw new DbPostGramException(e.Message, e);
             }
         }
     }

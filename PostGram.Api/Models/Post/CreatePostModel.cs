@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using PostGram.Api.Models.Attachment;
 
-namespace PostGram.Api.Models
+namespace PostGram.Api.Models.Post
 {
     public class CreatePostModel
     {

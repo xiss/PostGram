@@ -1,4 +1,6 @@
-﻿using PostGram.Api.Models;
+﻿using PostGram.Api.Models.Attachment;
+using PostGram.Api.Models.Token;
+using PostGram.Api.Models.User;
 using PostGram.DAL.Entities;
 
 namespace PostGram.Api.Services

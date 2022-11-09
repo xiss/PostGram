@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using PostGram.Api.Configs;
-using PostGram.Api.Models;
+using PostGram.Api.Models.Attachment;
+using PostGram.Api.Models.User;
 using PostGram.Api.Services;
 using PostGram.Common.Exceptions;
 using LogLevel = NLog.LogLevel;
@@ -33,7 +34,7 @@ namespace PostGram.Api.Controllers
             {
                 await _userService.CreateUser(model);
             }
-            catch (DBCreatePostGramException e)
+            catch (DbPostGramException e)
             {
                 _logger.Log(LogLevel.Warn, e);
                 return StatusCode(500, e.Message);
@@ -68,15 +69,10 @@ namespace PostGram.Api.Controllers
             {
                 return await _userService.GetUser(this.GetCurrentUserId());
             }
-            catch (UserNotFoundPostGramException e)
+            catch (NotFoundPostGramException e)
             {
                 _logger.Log(LogLevel.Warn, e);
                 return NotFound(e.Message);
-            }
-            catch (AuthorizationPostGramException e)
-            {
-                _logger.Log(LogLevel.Warn, e);
-                return Unauthorized(e.Message);
             }
         }
 
@@ -90,17 +86,12 @@ namespace PostGram.Api.Controllers
                 await _userService.AddAvatarToUser(this.GetCurrentUserId(), model, destFile);
                 return Ok();
             }
-            catch (UserNotFoundPostGramException e)
+            catch (NotFoundPostGramException e)
             {
                 _logger.Log(LogLevel.Warn, e);
                 return NotFound(e.Message);
             }
-            catch (AuthorizationPostGramException e)
-            {
-                _logger.Log(LogLevel.Warn, e);
-                return Unauthorized(e.Message);
-            }
-            catch (AttachPostGramException e)
+            catch (FilePostGramException e)
             {
                 _logger.Log(LogLevel.Error, e);
                 if (e.InnerException != null)
@@ -116,20 +107,22 @@ namespace PostGram.Api.Controllers
             try
             {
                 AttachmentModel model = await _attachmentService.GetAvatarForUser(userId);
-                return File(await System.IO.File.ReadAllBytesAsync(model.FilePath), model.MimeType);
+                FileStream stream = new FileStream(model.FilePath, FileMode.Open);
+                return File(stream, model.MimeType);
             }
-            catch (AttachPostGramException e)
+            catch (NotFoundPostGramException e)
             {
                 _logger.Log(LogLevel.Error, e);
-                return StatusCode(500, e.Message);
+                return NotFound(e.Message);
             }
         }
 
-        //public async Task RefreshPassword()
+        //public async Task<ActionResult> RefreshPassword()
         //{
         //    //TODO 3 RefreshPassword
-        //    throw new NotImplementedException();
+        //    return StatusCode(501, "Not Implemented");
         //}
+
         //public async Task RefreshLogin()
         //{
         //    //TODO 3 RefreshLogin

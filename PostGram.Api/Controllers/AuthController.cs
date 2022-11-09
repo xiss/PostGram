@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PostGram.Api.Models;
+using PostGram.Api.Models.Token;
 using PostGram.Api.Services;
 using PostGram.Common.Exceptions;
 using LogLevel = NLog.LogLevel;
@@ -26,7 +26,7 @@ namespace PostGram.Api.Controllers
             {
                 return await _userService.GetToken(model.Login, model.Password);
             }
-            catch (UserNotFoundPostGramException e)
+            catch (NotFoundPostGramException e)
             {
                 _logger.Log(LogLevel.Warn, e);
                 return NotFound(e.Message);

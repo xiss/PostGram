@@ -1,4 +1,4 @@
-﻿using PostGram.Api.Models;
+﻿using PostGram.Api.Models.Attachment;
 
 namespace PostGram.Api.Services
 {

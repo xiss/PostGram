@@ -1,12 +1,16 @@
 ﻿namespace PostGram.Common.Exceptions
 {
-    public class DBPostGramException : CriticalPostGramException
+    public class DbPostGramException : CriticalPostGramException
     {
-        public DBPostGramException()
+        public DbPostGramException()
         {
         }
 
-        public DBPostGramException(string message) : base(message)
+        public DbPostGramException(string message) : base(message)
+        {
+        }
+
+        public DbPostGramException(string message, Exception inner) : base(message, inner)
         {
         }
     }

@@ -24,7 +24,6 @@ namespace PostGram.Api
                     flag = false;
                     context.Response.Clear();
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    //TODO Тут не нужно исключение выдавать или в лог писать?
                 }
             }
 

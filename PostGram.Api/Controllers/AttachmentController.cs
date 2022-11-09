@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PostGram.Api.Models;
+using PostGram.Api.Models.Attachment;
 using PostGram.Api.Services;
 using PostGram.Common.Exceptions;
 using LogLevel = NLog.LogLevel;
@@ -43,12 +43,14 @@ namespace PostGram.Api.Controllers
             try
             {
                 AttachmentModel model = await _attachmentService.GetAttachment(attahmentId);
-                return File(await System.IO.File.ReadAllBytesAsync(model.FilePath), model.MimeType);
+
+                FileStream stream = new FileStream(model.FilePath, FileMode.Open);
+                return File(stream, model.MimeType);
             }
-            catch (AttachPostGramException e)
+            catch (NotFoundPostGramException e)
             {
                 _logger.Log(LogLevel.Error, e);
-                return StatusCode(500, e.Message);
+                return NotFound(e.Message);
             }
         }
     }

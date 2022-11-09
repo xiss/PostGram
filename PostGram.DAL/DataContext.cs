@@ -23,7 +23,7 @@ namespace PostGram.DAL
             modelBuilder.ApplyConfiguration(new AvatarConfig());
         }
 
-        public DbSet<User> Users => Set<User>();
+        public DbSet<User> Users { get; set; } = null!;
         public DbSet<UserSession> UserSessions => Set<UserSession>();
         public DbSet<Attachment> Attachments => Set<Attachment>();
         public DbSet<Avatar> Avatars => Set<Avatar>();

@@ -1,4 +1,6 @@
-﻿namespace PostGram.Api.Models
+﻿using PostGram.Api.Models.Comment;
+
+namespace PostGram.Api.Models.Post
 {
     public class PostModel
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PostGram.Api.Models;
+using PostGram.Api.Models.Comment;
 using PostGram.Api.Services;
 using PostGram.Common.Exceptions;
 using LogLevel = NLog.LogLevel;
@@ -31,7 +31,7 @@ namespace PostGram.Api.Controllers
             try
             {
                 if (!await _postService.CheckPostExist(model.PostId))
-                    throw new CommentNotFoundPostGramException("Post not found: " + model.PostId);
+                    throw new NotFoundPostGramException("Post not found: " + model.PostId);
 
                 Guid commentId = await _commentService.CreateComment(model, userId);
                 return Ok(commentId);
@@ -41,15 +41,10 @@ namespace PostGram.Api.Controllers
                 _logger.Log(LogLevel.Error, e);
                 return StatusCode(500, e.Message);
             }
-            catch (CommentNotFoundPostGramException e)
-            {
-                _logger.Log(LogLevel.Error, e);
-                return StatusCode(500, e.Message);
-            }
-            catch (AuthorizationPostGramException e)
+            catch (NotFoundPostGramException e)
             {
                 _logger.Log(LogLevel.Warn, e);
-                return Forbid(e.Message);
+                return NotFound(e.Message);
             }
         }
 
@@ -61,10 +56,10 @@ namespace PostGram.Api.Controllers
                 CommentModel model = await _commentService.GetComment(commentId);
                 return Ok(model);
             }
-            catch (CommentPostGramException e)
+            catch (NotFoundPostGramException e)
             {
                 _logger.Log(LogLevel.Warn, e);
-                return Forbid(e.Message);
+                return NotFound(e.Message);
             }
         }
 
@@ -76,10 +71,10 @@ namespace PostGram.Api.Controllers
                 CommentModel[] model = await _commentService.GetCommentsForPost(postId);
                 return Ok(model);
             }
-            catch (CommentPostGramException e)
+            catch (NotFoundPostGramException e)
             {
                 _logger.Log(LogLevel.Warn, e);
-                return Forbid(e.Message);
+                return NotFound(e.Message);
             }
         }
 
@@ -96,15 +91,10 @@ namespace PostGram.Api.Controllers
                 _logger.Log(LogLevel.Error, e);
                 return StatusCode(500, e.Message);
             }
-            catch (CommentNotFoundPostGramException e)
+            catch (NotFoundPostGramException e)
             {
                 _logger.Log(LogLevel.Error, e);
-                return StatusCode(500, e.Message);
-            }
-            catch (AuthorizationPostGramException e)
-            {
-                _logger.Log(LogLevel.Warn, e);
-                return Forbid(e.Message);
+                return NotFound(e.Message);
             }
         }
 
@@ -121,15 +111,10 @@ namespace PostGram.Api.Controllers
                 _logger.Log(LogLevel.Error, e);
                 return StatusCode(500, e.Message);
             }
-            catch (CommentNotFoundPostGramException e)
+            catch (NotFoundPostGramException e)
             {
                 _logger.Log(LogLevel.Error, e);
-                return StatusCode(500, e.Message);
-            }
-            catch (AuthorizationPostGramException e)
-            {
-                _logger.Log(LogLevel.Warn, e);
-                return Forbid(e.Message);
+                return NotFound(e.Message);
             }
         }
     }

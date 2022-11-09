@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PostGram.Api.Models;
+using PostGram.Api.Models.Post;
 using PostGram.Api.Services;
 using PostGram.Common.Exceptions;
 using LogLevel = NLog.LogLevel;
@@ -29,20 +29,10 @@ namespace PostGram.Api.Controllers
                 Guid postId = await _postService.CreatePost(model, this.GetCurrentUserId());
                 return Ok(postId);
             }
-            catch (DBCreatePostGramException e)
+            catch (DbPostGramException e)
             {
                 _logger.Log(LogLevel.Error, e);
                 return StatusCode(500, e.Message);
-            }
-            catch (AuthorizationPostGramException e)
-            {
-                _logger.Log(LogLevel.Warn, e);
-                return Forbid(e.Message);
-            }
-            catch (DBPostGramException e)
-            {
-                _logger.Log(LogLevel.Error, e);
-                return Forbid(e.Message);
             }
         }
 
@@ -51,7 +41,7 @@ namespace PostGram.Api.Controllers
         {
             try
             {
-                PostModel postModel = await _postService.GetPost(postId);
+                PostModel postModel = await _postService.GetPost(postId);//TODO 0 переделать
                 for (int i = 0; i < postModel.Attachments.Length; i++)
                 {
                     postModel.Attachments[i] = Url.Action(
@@ -62,10 +52,15 @@ namespace PostGram.Api.Controllers
                 }
                 return Ok(postModel);
             }
-            catch (PostPostGramException e)
+            catch (CriticalPostGramException e)
             {
                 _logger.Log(LogLevel.Error, e);
-                return Forbid(e.Message);
+                return StatusCode(500, e.Message);
+            }
+            catch (CommonPostGramException e)
+            {
+                _logger.Log(LogLevel.Error, e);
+                return StatusCode(500, e.Message);
             }
         }
 

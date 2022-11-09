@@ -1,4 +1,4 @@
-﻿namespace PostGram.Api.Models
+﻿namespace PostGram.Api.Models.User
 {
     public class UserModel
     {

@@ -1,4 +1,4 @@
-﻿namespace PostGram.Api.Models
+﻿namespace PostGram.Api.Models.Comment
 {
     public class CommentModel
     {
@@ -7,6 +7,6 @@
         public Guid PostId { get; set; }
         public DateTimeOffset Created { get; set; }
         public DateTimeOffset? Edited { get; set; }
-        public string Body { get; set; } = null!;
+        public string Body { get; set; }
     }
 }

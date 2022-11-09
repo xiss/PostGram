@@ -9,5 +9,9 @@
         public CommonPostGramException(string message) : base(message)
         {
         }
+
+        public CommonPostGramException(string message, Exception inner) : base(message, inner)
+        {
+        }
     }
 }
