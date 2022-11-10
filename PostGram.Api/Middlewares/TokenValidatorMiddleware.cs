@@ -1,7 +1,7 @@
 ﻿using PostGram.Api.Services;
-using PostGram.Common;
+using PostGram.Common.Constants;
 
-namespace PostGram.Api
+namespace PostGram.Api.Middlewares
 {
     public class TokenValidatorMiddleware
     {
@@ -12,13 +12,13 @@ namespace PostGram.Api
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context, IUserService userService)
+        public async Task InvokeAsync(HttpContext context, IAuthService authService)
         {
             bool flag = true;
-            string? sessionIdString = context.User.Claims.FirstOrDefault(c => c.Type == Constants.ClaimTypeSessionId)?.Value;
+            string? sessionIdString = context.User.Claims.FirstOrDefault(c => c.Type == ClaimNames.SessionId)?.Value;
             if (Guid.TryParse(sessionIdString, out Guid sessionId))
             {
-                var session = await userService.GetUserSessionById(sessionId);
+                var session = await authService.GetUserSessionById(sessionId);
                 if (!session.IsActive)
                 {
                     flag = false;

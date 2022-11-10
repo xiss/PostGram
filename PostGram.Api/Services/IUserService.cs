@@ -1,7 +1,5 @@
 ﻿using PostGram.Api.Models.Attachment;
-using PostGram.Api.Models.Token;
 using PostGram.Api.Models.User;
-using PostGram.DAL.Entities;
 
 namespace PostGram.Api.Services
 {
@@ -9,15 +7,9 @@ namespace PostGram.Api.Services
     {
         Task<List<UserModel>> GetUsers();
 
-        Task<TokenModel> GetToken(string login, string password);
-
         Task<UserModel> GetUser(Guid id);
 
-        Task<TokenModel> GetTokenByRefreshToken(string refreshToken);
-
         Task<Guid> CreateUser(CreateUserModel model);
-
-        Task<UserSession> GetUserSessionById(Guid id);
 
         Task<bool> CheckUserExist(string email);
 

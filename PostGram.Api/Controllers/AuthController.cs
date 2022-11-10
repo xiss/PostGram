@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PostGram.Api.Models.Token;
+using PostGram.Api.Models.User;
 using PostGram.Api.Services;
 using PostGram.Common.Exceptions;
 using LogLevel = NLog.LogLevel;
@@ -11,20 +12,38 @@ namespace PostGram.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IAuthService _authService;
         private readonly NLog.Logger _logger;
 
-        public AuthController(IUserService userService)
+        public AuthController(IUserService userService, IAuthService authService)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
             _userService = userService;
+            _authService = authService;
         }
 
         [HttpPost]
-        public async Task<ActionResult<TokenModel>> Token(TokenRequestModel model)
+        public async Task<IActionResult> RegisterUser(CreateUserModel model)
         {
             try
             {
-                return await _userService.GetToken(model.Login, model.Password);
+                await _userService.CreateUser(model);
+            }
+            catch (DbPostGramException e)
+            {
+                _logger.Log(LogLevel.Warn, e);
+                return StatusCode(500, e.Message);
+            }
+
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<TokenModel>> GetToken(TokenRequestModel model)
+        {
+            try
+            {
+                return await _authService.GetToken(model.Login, model.Password);
             }
             catch (NotFoundPostGramException e)
             {
@@ -43,7 +62,7 @@ namespace PostGram.Api.Controllers
         {
             try
             {
-                return await _userService.GetTokenByRefreshToken(model.RefreshToken);
+                return await _authService.GetTokenByRefreshToken(model.RefreshToken);
             }
             catch (AuthorizationPostGramException e)
             {

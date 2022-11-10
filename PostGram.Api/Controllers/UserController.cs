@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using PostGram.Api.Configs;
+using PostGram.Api.Helpers;
 using PostGram.Api.Models.Attachment;
 using PostGram.Api.Models.User;
 using PostGram.Api.Services;
@@ -12,39 +11,21 @@ namespace PostGram.Api.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
         private readonly IAttachmentService _attachmentService;
         private readonly NLog.Logger _logger;
-        private readonly AppConfig _appConfig;
 
-        public UserController(IUserService userService, IOptions<AppConfig> config, IAttachmentService attachmentService)
+        public UserController(IUserService userService, IAttachmentService attachmentService)
         {
             _userService = userService;
             _logger = NLog.LogManager.GetCurrentClassLogger();
-            _appConfig = config.Value;
             _attachmentService = attachmentService;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateUser(CreateUserModel model)
-        {
-            try
-            {
-                await _userService.CreateUser(model);
-            }
-            catch (DbPostGramException e)
-            {
-                _logger.Log(LogLevel.Warn, e);
-                return StatusCode(500, e.Message);
-            }
-
-            return Ok();
-        }
-
         [HttpGet]
-        [Authorize]
         public async Task<ActionResult<IEnumerable<UserModel>>> GetUsers()
         {
             List<UserModel> users = new();
@@ -62,7 +43,6 @@ namespace PostGram.Api.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<ActionResult<UserModel>> GetCurrentUser()
         {
             try
@@ -77,7 +57,6 @@ namespace PostGram.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         public async Task<ActionResult> AddAvatarToUser(MetadataModel model)
         {
             try

@@ -6,6 +6,7 @@ using NLog;
 using NLog.Web;
 using PostGram.Api;
 using PostGram.Api.Configs;
+using PostGram.Api.Middlewares;
 using PostGram.Api.Services;
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -56,6 +57,7 @@ builder.Services.AddSwaggerGen(o =>
 });
 
 builder.Services.AddAutoMapper(typeof(MapperProfile).Assembly);
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
