@@ -76,9 +76,7 @@ namespace PostGram.Api.Services
             if (avatar == null)
                 throw new NotFoundPostGramException("Avatar not found in DB for user: " + userId);
 
-            FileExists(avatar.FilePath);
-
-            return _mapper.Map<AttachmentModel>(avatar);
+            return await GetAttachment(avatar.Id);
         }
 
         public async Task<AttachmentModel> GetAttachment(Guid attachmentId)

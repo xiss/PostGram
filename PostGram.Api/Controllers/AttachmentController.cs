@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PostGram.Api.Models.Attachment;
 using PostGram.Api.Services;
 using PostGram.Common.Exceptions;
@@ -8,6 +9,8 @@ namespace PostGram.Api.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
+
     public class AttachmentController : ControllerBase
     {
         private readonly IAttachmentService _attachmentService;

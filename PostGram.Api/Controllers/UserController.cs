@@ -26,12 +26,12 @@ namespace PostGram.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserModel>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<UserWithAvatarModel>>> GetUsers()
         {
-            List<UserModel> users = new();
+            List<UserWithAvatarModel> users = new();
             try
             {
-                users = await _userService.GetUsers();
+                users = await _userService.GetUsers(x =>  Url.Action(nameof(GetAvatarForUser), new { userId = x.Id }));
             }
             catch (AuthorizationPostGramException e)
             {
@@ -43,11 +43,11 @@ namespace PostGram.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<UserModel>> GetCurrentUser()
+        public async Task<ActionResult<UserWithAvatarModel>> GetCurrentUser()
         {
             try
             {
-                return await _userService.GetUser(this.GetCurrentUserId());
+                return await _userService.GetUser(this.GetCurrentUserId(),x  => Url.Action(nameof(GetAvatarForUser), new { userId = x.Id }));
             }
             catch (NotFoundPostGramException e)
             {

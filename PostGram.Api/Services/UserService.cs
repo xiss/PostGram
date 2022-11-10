@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using PostGram.Api.Models.Attachment;
 using PostGram.Api.Models.User;
@@ -69,24 +68,27 @@ namespace PostGram.Api.Services
             return userId;
         }
 
-        public async Task<List<UserModel>> GetUsers()
+        public async Task<List<UserWithAvatarModel>> GetUsers(Func<UserModel, string>? linkGenerator)
         {
-            return await _dataContext.Users.AsNoTracking().ProjectTo<UserModel>(_mapper.ConfigurationProvider).ToListAsync();
+            return await _dataContext
+                .Users
+                .AsNoTracking()
+                .Select(u => new UserWithAvatarModel(_mapper.Map<UserModel>(u), u.Avatar == null ? null : linkGenerator))
+                .ToListAsync();
         }
 
         private async Task<User> GetUserById(Guid id)
         {
-            User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+            User? user = await _dataContext.Users.Include(u => u.Avatar).FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
                 throw new NotFoundPostGramException("User not found, id: " + id);
-
             return user;
         }
 
-        public async Task<UserModel> GetUser(Guid id)
+        public async Task<UserWithAvatarModel> GetUser(Guid id, Func<UserModel, string>? linkGenerator)
         {
             User user = await GetUserById(id);
-            return _mapper.Map<UserModel>(user);
+            return new(_mapper.Map<UserModel>(user), user.Avatar == null ? null : linkGenerator);
         }
 
         public async Task AddAvatarToUser(Guid userId, MetadataModel model, string filePath)

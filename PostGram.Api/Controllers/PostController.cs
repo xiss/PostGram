@@ -10,6 +10,8 @@ namespace PostGram.Api.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
+
     public class PostController : ControllerBase
     {
         private readonly IPostService _postService;
@@ -22,7 +24,6 @@ namespace PostGram.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         public async Task<ActionResult<Guid>> CreatePost(CreatePostModel model)
         {
             try

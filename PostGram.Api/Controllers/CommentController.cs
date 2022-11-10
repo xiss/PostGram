@@ -10,6 +10,8 @@ namespace PostGram.Api.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
+
     public class CommentController : ControllerBase
     {
         private readonly ICommentService _commentService;

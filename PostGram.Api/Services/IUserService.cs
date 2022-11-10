@@ -5,9 +5,7 @@ namespace PostGram.Api.Services
 {
     public interface IUserService
     {
-        Task<List<UserModel>> GetUsers();
-
-        Task<UserModel> GetUser(Guid id);
+        Task<UserWithAvatarModel> GetUser(Guid id, Func<UserModel, string> linkGenerator);
 
         Task<Guid> CreateUser(CreateUserModel model);
 
@@ -16,5 +14,6 @@ namespace PostGram.Api.Services
         Task<Guid> DeleteUser(Guid userId);
 
         Task AddAvatarToUser(Guid userId, MetadataModel model, string filePath);
+        Task<List<UserWithAvatarModel>> GetUsers(Func<UserModel, string> linkGenerator);
     }
 }
