@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PostGram.DAL;
@@ -11,9 +12,11 @@ using PostGram.DAL;
 namespace PostGram.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221112143623_AddPostContent")]
+    partial class AddPostContent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,8 +134,8 @@ namespace PostGram.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("AvatarId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("AvatarId")
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("BirthDate")
                         .HasColumnType("timestamp with time zone");
@@ -162,9 +165,6 @@ namespace PostGram.Api.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AvatarId")
-                        .IsUnique();
 
                     b.HasIndex("Email")
                         .IsUnique();
@@ -217,7 +217,8 @@ namespace PostGram.Api.Migrations
                     b.Property<Guid>("PostId")
                         .HasColumnType("uuid");
 
-                    b.HasIndex("PostId");
+                    b.HasIndex("PostId")
+                        .IsUnique();
 
                     b.ToTable("PostContents", (string)null);
                 });
@@ -263,15 +264,6 @@ namespace PostGram.Api.Migrations
                     b.Navigation("Author");
                 });
 
-            modelBuilder.Entity("PostGram.DAL.Entities.User", b =>
-                {
-                    b.HasOne("PostGram.DAL.Entities.Avatar", "Avatar")
-                        .WithOne("User")
-                        .HasForeignKey("PostGram.DAL.Entities.User", "AvatarId");
-
-                    b.Navigation("Avatar");
-                });
-
             modelBuilder.Entity("PostGram.DAL.Entities.UserSession", b =>
                 {
                     b.HasOne("PostGram.DAL.Entities.User", "User")
@@ -290,6 +282,14 @@ namespace PostGram.Api.Migrations
                         .HasForeignKey("PostGram.DAL.Entities.Avatar", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("PostGram.DAL.Entities.User", "User")
+                        .WithOne("Avatar")
+                        .HasForeignKey("PostGram.DAL.Entities.Avatar", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("PostGram.DAL.Entities.PostContent", b =>
@@ -318,13 +318,9 @@ namespace PostGram.Api.Migrations
 
             modelBuilder.Entity("PostGram.DAL.Entities.User", b =>
                 {
-                    b.Navigation("Sessions");
-                });
+                    b.Navigation("Avatar");
 
-            modelBuilder.Entity("PostGram.DAL.Entities.Avatar", b =>
-                {
-                    b.Navigation("User")
-                        .IsRequired();
+                    b.Navigation("Sessions");
                 });
 #pragma warning restore 612, 618
         }

@@ -11,7 +11,7 @@ namespace PostGram.Api.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -26,28 +26,34 @@ namespace PostGram.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserWithAvatarModel>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<UserModel>>> GetUsers()
         {
-            List<UserWithAvatarModel> users = new();
             try
             {
-                users = await _userService.GetUsers(x =>  Url.Action(nameof(GetAvatarForUser), new { userId = x.Id }));
+                List<UserModel> models = await _userService.GetUsers();
+                foreach (UserModel user in models)
+                {
+                    if (user.Avatar != null)
+                        user.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, user.Id);
+                }
+
+                return Ok(models);
             }
             catch (AuthorizationPostGramException e)
             {
                 _logger.Log(LogLevel.Warn, e);
-                return Forbid(e.Message);
+                return Unauthorized(e.Message);
             }
-
-            return Ok(users);
         }
 
         [HttpGet]
-        public async Task<ActionResult<UserWithAvatarModel>> GetCurrentUser()
+        public async Task<ActionResult<UserModel>> GetCurrentUser()
         {
             try
             {
-                return await _userService.GetUser(this.GetCurrentUserId(),x  => Url.Action(nameof(GetAvatarForUser), new { userId = x.Id }));
+                UserModel model = await _userService.GetUser(this.GetCurrentUserId());
+                model.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Id);
+                return model;
             }
             catch (NotFoundPostGramException e)
             {
@@ -80,21 +86,7 @@ namespace PostGram.Api.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<ActionResult> GetAvatarForUser(Guid userId)
-        {
-            try
-            {
-                AttachmentModel model = await _attachmentService.GetAvatarForUser(userId);
-                FileStream stream = new FileStream(model.FilePath, FileMode.Open);
-                return File(stream, model.MimeType);
-            }
-            catch (NotFoundPostGramException e)
-            {
-                _logger.Log(LogLevel.Error, e);
-                return NotFound(e.Message);
-            }
-        }
+
 
         //public async Task<ActionResult> RefreshPassword()
         //{

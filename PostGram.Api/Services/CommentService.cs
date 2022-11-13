@@ -44,7 +44,8 @@ namespace PostGram.Api.Services
 
         private async Task<Comment> GetCommentById(Guid commentId)
         {
-            Comment? comment = await _dataContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId && !c.IsDeleted);
+            Comment? comment = await _dataContext.Comments
+                .FirstOrDefaultAsync(c => c.Id == commentId && !c.IsDeleted);
             if (comment == null)
                 throw new NotFoundPostGramException("Comment not found: " + commentId);
             return comment;
@@ -59,6 +60,7 @@ namespace PostGram.Api.Services
         public async Task<CommentModel[]> GetCommentsForPost(Guid postId)
         {
             Comment[]? comments = await _dataContext.Comments
+                .AsNoTracking()
                 .Where(c => c.PostId == postId && !c.IsDeleted && !c.Post.IsDeleted)
                 .OrderBy(c => c.Created)
                 .ToArrayAsync();

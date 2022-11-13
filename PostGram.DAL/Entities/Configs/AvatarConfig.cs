@@ -9,6 +9,10 @@ namespace PostGram.DAL.Entities.Configs
         {
             builder.ToTable(nameof(DataContext.Avatars));
             builder.HasIndex(a => a.UserId).IsUnique();
+            builder.HasOne(a => a.User)
+                .WithOne(u => u.Avatar)
+                .HasForeignKey(nameof(User));
+
         }
     }
 }

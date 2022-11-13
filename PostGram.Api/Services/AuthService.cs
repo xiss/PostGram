@@ -64,10 +64,6 @@ namespace PostGram.Api.Services
                 || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
                     StringComparison.InvariantCultureIgnoreCase))
             {
-                //TODO почему если выкинуть здесь исключение и обработать в контроллере он выдает заголовок 500 и следующее, а не то что мы отдаем в контроллере:
-                ///throw new AuthorizationPostGramException("test");
-                //System.InvalidOperationException: No authentication handler is registered for the scheme 'Invalid security token'.
-                //The registered schemes are: Bearer.Did you forget to call AddAuthentication().Add[SomeAuthHandler]("Invalid security token", ...) ?
                 throw new AuthorizationPostGramException("Invalid security token");
             }
 

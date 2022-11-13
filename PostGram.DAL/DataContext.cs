@@ -21,6 +21,7 @@ namespace PostGram.DAL
         {
             modelBuilder.ApplyConfiguration(new UserConfig());
             modelBuilder.ApplyConfiguration(new AvatarConfig());
+            modelBuilder.ApplyConfiguration(new PostContentConfig());
         }
 
         public DbSet<User> Users { get; set; } = null!;
@@ -29,5 +30,6 @@ namespace PostGram.DAL
         public DbSet<Avatar> Avatars => Set<Avatar>();
         public DbSet<Comment> Comments => Set<Comment>();
         public DbSet<Post> Posts => Set<Post>();
+        public DbSet<PostContent> PostContents => Set<PostContent>();
     }
 }

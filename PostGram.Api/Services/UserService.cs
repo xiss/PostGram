@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using PostGram.Api.Models.Attachment;
 using PostGram.Api.Models.User;
@@ -68,27 +69,24 @@ namespace PostGram.Api.Services
             return userId;
         }
 
-        public async Task<List<UserWithAvatarModel>> GetUsers(Func<UserModel, string>? linkGenerator)
+        public async Task<List<UserModel>> GetUsers()
         {
-            return await _dataContext
+            List<UserModel> models = await _dataContext
                 .Users
+                .Include(x => x.Avatar)
                 .AsNoTracking()
-                .Select(u => new UserWithAvatarModel(_mapper.Map<UserModel>(u), u.Avatar == null ? null : linkGenerator))
+                .ProjectTo<UserModel>(_mapper.ConfigurationProvider)
                 .ToListAsync();
+
+            if (models.Count == 0)
+                throw new NotFoundPostGramException("Users not found in DB");
+            return models;
         }
 
-        private async Task<User> GetUserById(Guid id)
+        public async Task<UserModel> GetUser(Guid UserId)
         {
-            User? user = await _dataContext.Users.Include(u => u.Avatar).FirstOrDefaultAsync(u => u.Id == id);
-            if (user == null)
-                throw new NotFoundPostGramException("User not found, id: " + id);
-            return user;
-        }
-
-        public async Task<UserWithAvatarModel> GetUser(Guid id, Func<UserModel, string>? linkGenerator)
-        {
-            User user = await GetUserById(id);
-            return new(_mapper.Map<UserModel>(user), user.Avatar == null ? null : linkGenerator);
+            User user = await GetUserById(UserId);
+            return _mapper.Map<UserModel>(user);
         }
 
         public async Task AddAvatarToUser(Guid userId, MetadataModel model, string filePath)
@@ -122,6 +120,16 @@ namespace PostGram.Api.Services
         public void Dispose()
         {
             _dataContext.Dispose();
+        }
+
+        private async Task<User> GetUserById(Guid id)
+        {
+            User? user = await _dataContext.Users
+                .Include(u => u.Avatar)
+                .FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+                throw new NotFoundPostGramException("User not found, UserId: " + id);
+            return user;
         }
     }
 }

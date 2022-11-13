@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PostGram.Api.Configs;
 using PostGram.Api.Models.Attachment;
@@ -13,13 +12,11 @@ namespace PostGram.Api.Services
     {
         private readonly DataContext _dataContext;
         private readonly AppConfig _appConfig;
-        private readonly IMapper _mapper;
 
-        public AttachmentService(DataContext dataContext, IOptions<AppConfig> appConfig, IMapper mapper)
+        public AttachmentService(DataContext dataContext, IOptions<AppConfig> appConfig)
         {
             _dataContext = dataContext;
             _appConfig = appConfig.Value;
-            _mapper = mapper;
         }
 
         public void Dispose()
@@ -70,32 +67,33 @@ namespace PostGram.Api.Services
             }
         }
 
-        public async Task<AttachmentModel> GetAvatarForUser(Guid userId)
+        public async Task<FileInfoModel> GetAvatarForUser(Guid userId)
         {
-            Avatar? avatar = await _dataContext.Avatars.FirstOrDefaultAsync(x => x.UserId == userId);
+            Avatar? avatar = await _dataContext.Avatars.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == userId);
             if (avatar == null)
                 throw new NotFoundPostGramException("Avatar not found in DB for user: " + userId);
 
-            return await GetAttachment(avatar.Id);
+            if (!FileExists(avatar.FilePath))
+                throw new NotFoundPostGramException("File not found: " + avatar.FilePath);
+
+            return new FileInfoModel(avatar.Name, avatar.MimeType, avatar.FilePath);
         }
 
-        public async Task<AttachmentModel> GetAttachment(Guid attachmentId)
+        public async Task<FileInfoModel> GetPostContent(Guid postContentId)
         {
-            Attachment? attachment = await _dataContext.Attachments.FirstOrDefaultAsync(a => a.Id == attachmentId);
-            if (attachment == null)
-                throw new NotFoundPostGramException("Attachment not found in DB: " + attachmentId);
+            PostContent? postContent = await _dataContext.PostContents.AsNoTracking().FirstOrDefaultAsync(a => a.Id == postContentId);
+            if (postContent == null)
+                throw new NotFoundPostGramException("PostContent not found in DB: " + postContentId);
 
-            FileExists(attachment.FilePath);
+            if (!FileExists(postContent.FilePath))
+                throw new NotFoundPostGramException("File not found: " + postContent.FilePath);
 
-            return _mapper.Map<AttachmentModel>(attachment);
+            return new FileInfoModel(postContent.Name, postContent.MimeType, postContent.FilePath);
         }
 
         private bool FileExists(string filePath)
         {
-            if (!new FileInfo(filePath).Exists)
-                throw new NotFoundPostGramException("File not found: " + filePath);
-
-            return true;
+            return !new FileInfo(filePath).Exists;
         }
     }
 }

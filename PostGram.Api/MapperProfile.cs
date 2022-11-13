@@ -20,19 +20,18 @@ namespace PostGram.Api
 
             CreateMap<Avatar, AttachmentModel>();
 
-            CreateMap<Attachment, AttachmentModel>();
-
             CreateMap<CreatePostModel, Post>()
                 .ForMember(p => p.Id, m => m.MapFrom(p => Guid.NewGuid()))
-                .ForMember(p => p.Attachments, m => m.MapFrom(p => new List<Attachment>()))
+                .ForMember(p => p.PostContents, m => m.MapFrom(p => new List<PostContent>()))
                 .ForMember(p => p.Created, m => m.MapFrom(p => DateTimeOffset.UtcNow));
 
             CreateMap<CreateCommentModel, Comment>()
                 .ForMember(c => c.Created, m => m.MapFrom(c => DateTimeOffset.UtcNow))
                 .ForMember(c => c.Id, m => m.MapFrom(c => Guid.NewGuid()));
 
-            CreateMap<Post, PostModel>()
-                .ForMember(p => p.Attachments, m => m.MapFrom(p => new string[p.Attachments.Count - 1]));
+            CreateMap<Post, PostModel>();
+
+            CreateMap<PostContent, AttachmentModel>();
 
             CreateMap<Comment, CommentModel>();
         }

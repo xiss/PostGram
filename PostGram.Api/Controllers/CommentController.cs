@@ -25,7 +25,6 @@ namespace PostGram.Api.Controllers
             _postService = postService;
         }
 
-        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Guid>> CreateComment(CreateCommentModel model)
         {
@@ -81,7 +80,6 @@ namespace PostGram.Api.Controllers
             }
         }
 
-        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Guid>> DeleteComment(Guid commentId)
         {
@@ -101,7 +99,6 @@ namespace PostGram.Api.Controllers
             }
         }
 
-        [Authorize]
         [HttpPost]
         public async Task<ActionResult<CommentModel>> UpdateComment(UpdateCommentModel model)
         {

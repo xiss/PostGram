@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PostGram.Api.Helpers;
+using PostGram.Api.Models.Attachment;
 using PostGram.Api.Models.Post;
 using PostGram.Api.Services;
 using PostGram.Common.Exceptions;
@@ -10,8 +11,7 @@ namespace PostGram.Api.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    [Authorize]
-
+    //[Authorize]
     public class PostController : ControllerBase
     {
         private readonly IPostService _postService;
@@ -43,16 +43,14 @@ namespace PostGram.Api.Controllers
         {
             try
             {
-                PostModel postModel = await _postService.GetPost(postId);//TODO 0 переделать
-                for (int i = 0; i < postModel.Attachments.Length; i++)
+                PostModel model = await _postService.GetPost(postId);
+                model.Author.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Author.Id);
+                foreach (AttachmentModel attachment in model.Content)
                 {
-                    postModel.Attachments[i] = Url.Action(
-                        nameof(AttachmentController.GetAttachment),
-                        "Attachment",
-                        new { attahmentId = postModel.Attachments[i] },
-                        null)!;
+                    attachment.Link = AttachmentController.GetLinkForPostContent(Url, attachment.Id);
                 }
-                return Ok(postModel);
+
+                return Ok(model);
             }
             catch (CriticalPostGramException e)
             {
@@ -68,5 +66,6 @@ namespace PostGram.Api.Controllers
 
         //TODO 2 DeletePost
         //TODO 2 UpdatePost
+        //TODO 2 GetPosts
     }
 }

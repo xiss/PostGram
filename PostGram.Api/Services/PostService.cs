@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using PostGram.Api.Models.Attachment;
 using PostGram.Api.Models.Post;
 using PostGram.Common.Exceptions;
 using PostGram.DAL;
@@ -29,7 +30,7 @@ namespace PostGram.Api.Services
             {
                 foreach (var metadataModel in model.Attachments)
                 {
-                    post.Attachments.Add(new Attachment()
+                    post.PostContents.Add(new PostContent()
                     {
                         AuthorId = userId,
                         Created = DateTimeOffset.UtcNow,
@@ -63,7 +64,10 @@ namespace PostGram.Api.Services
         public async Task<PostModel> GetPost(Guid postId)
         {
             Post? post = await _dataContext.Posts
-                .Include(p => p.Attachments)
+                .AsNoTracking()
+                .Include(p => p.PostContents)
+                .Include(p => p.Author)
+                .ThenInclude(a => a.Avatar)
                 .Include(p => p.Comments
                     .Where(c => !c.IsDeleted)
                 .OrderBy(c => c.Created))
@@ -71,10 +75,13 @@ namespace PostGram.Api.Services
             if (post == null)
                 throw new NotFoundPostGramException("Post not found: " + postId);
 
-            PostModel postModel = _mapper.Map<PostModel>(post);
-            postModel.Attachments = post.Attachments.Select(a => a.Id.ToString()).ToArray();
+            PostModel model = _mapper.Map<PostModel>(post);
+            model.Content = post.PostContents
+                .Select(pc => _mapper
+                .Map<AttachmentModel>(pc)).ToArray();
 
-            return postModel;
+            return model;
         }
+        //TODO 1 GetPosts
     }
 }

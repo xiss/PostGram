@@ -39,7 +39,7 @@ namespace PostGram.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<TokenModel>> GetToken(TokenRequestModel model)
+        public async Task<ActionResult<TokenModel>> Token(TokenRequestModel model)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace PostGram.Api.Controllers
             catch (AuthorizationPostGramException e)
             {
                 _logger.Log(LogLevel.Warn, e);
-                return Forbid(e.Message);
+                return Unauthorized();
             }
         }
     }
