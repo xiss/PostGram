@@ -11,5 +11,6 @@ namespace PostGram.Api.Services
         Task<MetadataModel> UploadFile(IFormFile file);
 
         Task<FileInfoModel> GetPostContent(Guid postContentId);
+        void DeleteFile(Guid id);
     }
 }

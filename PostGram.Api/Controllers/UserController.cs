@@ -5,7 +5,6 @@ using PostGram.Api.Models.Attachment;
 using PostGram.Api.Models.User;
 using PostGram.Api.Services;
 using PostGram.Common.Exceptions;
-using LogLevel = NLog.LogLevel;
 
 namespace PostGram.Api.Controllers
 {
@@ -16,87 +15,64 @@ namespace PostGram.Api.Controllers
     {
         private readonly IUserService _userService;
         private readonly IAttachmentService _attachmentService;
-        private readonly NLog.Logger _logger;
 
         public UserController(IUserService userService, IAttachmentService attachmentService)
         {
             _userService = userService;
-            _logger = NLog.LogManager.GetCurrentClassLogger();
             _attachmentService = attachmentService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserModel>>> GetUsers()
+        public async Task<IEnumerable<UserModel>> GetUsers()
         {
-            try
+            List<UserModel> models = await _userService.GetUsers();
+            foreach (UserModel user in models)
             {
-                List<UserModel> models = await _userService.GetUsers();
-                foreach (UserModel user in models)
-                {
-                    if (user.Avatar != null)
-                        user.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, user.Id);
-                }
-
-                return Ok(models);
+                if (user.Avatar != null)
+                    user.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, user.Id);
             }
-            catch (AuthorizationPostGramException e)
-            {
-                _logger.Log(LogLevel.Warn, e);
-                return Unauthorized(e.Message);
-            }
+            return models;
         }
 
         [HttpGet]
-        public async Task<ActionResult<UserModel>> GetCurrentUser()
+        public async Task<UserModel> GetCurrentUser()
         {
-            try
-            {
-                UserModel model = await _userService.GetUser(this.GetCurrentUserId());
-                model.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Id);
-                return model;
-            }
-            catch (NotFoundPostGramException e)
-            {
-                _logger.Log(LogLevel.Warn, e);
-                return NotFound(e.Message);
-            }
+            UserModel model = await _userService.GetUser(this.GetCurrentUserId());
+            model.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Id);
+            return model;
         }
 
         [HttpPost]
-        public async Task<ActionResult> AddAvatarToUser(MetadataModel model)
+        public async Task AddAvatarToUser(MetadataModel model)
         {
-            try
-            {
-                string destFile = await _attachmentService.ApplyFile(model.TempId.ToString());
-                await _userService.AddAvatarToUser(this.GetCurrentUserId(), model, destFile);
-                return Ok();
-            }
-            catch (NotFoundPostGramException e)
-            {
-                _logger.Log(LogLevel.Warn, e);
-                return NotFound(e.Message);
-            }
-            catch (FilePostGramException e)
-            {
-                _logger.Log(LogLevel.Error, e);
-                if (e.InnerException != null)
-                    return StatusCode(500, e.InnerException.Message);
-
-                return StatusCode(500, e.Message);
-            }
+            string destFile = await _attachmentService.ApplyFile(model.TempId.ToString());
+            await _userService.AddAvatarToUser(this.GetCurrentUserId(), model, destFile);
         }
+
+        //TODO 1 To test
+        [HttpDelete]
+        public async Task DeleteUserAvatar()
+        {
+            UserModel user = await _userService.GetUser(this.GetCurrentUserId());
+            if (user.Avatar == null)
+                throw new NotFoundPostGramException($"User {user.Id} dont have avatar");
+
+            _attachmentService.DeleteFile(user.Avatar.Id);
+            await _userService.DeleteAvatarForUser(user.Id);
+        }
+
 
 
 
         //public async Task<ActionResult> RefreshPassword()
         //{
-        //    //TODO 3 RefreshPassword
+        //    //TODO 4 RefreshPassword
         //    return StatusCode(501, "Not Implemented");
         //}
 
         //public async Task RefreshLogin()
         //{
-        //    //TODO 3 RefreshLogin
+        //    //TODO 4 RefreshLogin
         //    throw new NotImplementedException();
         //}
     }

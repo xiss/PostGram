@@ -14,5 +14,14 @@ namespace PostGram.Api.Helpers
 
             throw new AuthorizationPostGramException("You are not authorized");
         }
+
+        public static Guid GetCurrentSessionId(this ControllerBase controller)
+        {
+            string? sessionIdStr = controller.User.Claims.FirstOrDefault(c => c.Type == ClaimNames.SessionId)?.Value;
+            if (Guid.TryParse(sessionIdStr, out var userId))
+                return userId;
+
+            throw new AuthorizationPostGramException("You are not authorized");
+        }
     }
 }

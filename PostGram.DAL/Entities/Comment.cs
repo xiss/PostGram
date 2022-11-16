@@ -7,5 +7,6 @@
         public bool IsDeleted { get; set; } = false;
         public Guid PostId { get; set; }
         public Post Post { get; set; } = null!;
+        public ICollection<Like> Likes { get; set; } = new List<Like>();
     }
 }

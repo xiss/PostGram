@@ -61,7 +61,7 @@ builder.Services.AddAutoMapper(typeof(MapperProfile).Assembly);
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
-builder.Services.AddScoped<ICommentService, CommentService>();
+//builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IPostService, PostService>();
 
 builder.Services.Configure<AuthConfig>(authSection);
@@ -121,6 +121,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseTokenValidator();
 
+app.UseGlobalErrorHandlerMiddleWare();
 app.MapControllers();
 
 app.Run();

@@ -47,7 +47,7 @@ namespace PostGram.Api.Services
 
             return user.Id;
         }
-
+        //TODO 1 To Test
         public async Task<Guid> DeleteUser(Guid userId)
         {
             User user = await GetUserById(userId);
@@ -55,6 +55,7 @@ namespace PostGram.Api.Services
             try
             {
                 _dataContext.Users.Remove(user);
+                await _dataContext.UserSessions.Where(us => us.UserId == userId).ForEachAsync(us => us.IsActive = false);
                 await _dataContext.SaveChangesAsync();
             }
             catch (DbUpdateException e)
@@ -117,6 +118,28 @@ namespace PostGram.Api.Services
             }
         }
 
+        //TODO 1 To Test
+        public async Task DeleteAvatarForUser(Guid userId)
+        {
+            User user = await GetUserById(userId);
+            if (user.Avatar == null)
+                throw new NotFoundPostGramException($"User {userId} does't have avatar");
+
+            try
+            {
+                _dataContext.Avatars.Remove(user.Avatar);
+                await _dataContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null)
+                {
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                }
+                throw new DbPostGramException(e.Message, e);
+            }
+        }
+
         public void Dispose()
         {
             _dataContext.Dispose();
@@ -128,7 +151,7 @@ namespace PostGram.Api.Services
                 .Include(u => u.Avatar)
                 .FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
-                throw new NotFoundPostGramException("User not found, UserId: " + id);
+                throw new NotFoundPostGramException("User not found, userId: " + id);
             return user;
         }
     }

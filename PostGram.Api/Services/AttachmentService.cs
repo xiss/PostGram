@@ -48,7 +48,7 @@ namespace PostGram.Api.Services
         {
             FileInfo tempFile = new(Path.Combine(Path.GetTempPath(), temporaryFileId));
             if (!tempFile.Exists)
-                throw new NotFoundPostGramException("File not found: " + tempFile.FullName);
+                throw new NotFoundPostGramException("File not found: " + temporaryFileId);
             try
             {
                 var destFile = Path.Combine(Directory.GetCurrentDirectory(), _appConfig.AttachesFolderName,
@@ -65,6 +65,23 @@ namespace PostGram.Api.Services
             {
                 throw new FilePostGramException(e.Message, e);
             }
+        }
+
+        public void DeleteFile(Guid id)
+        {
+            FileInfo fileFile = new(Path.Combine(Directory.GetCurrentDirectory(), _appConfig.AttachesFolderName,
+                    id.ToString()));
+            if (!fileFile.Exists)
+                throw new NotFoundPostGramException($"File {id} not found");
+            try
+            {
+                fileFile.Delete();
+            }
+            catch (Exception e)
+            {
+                throw new FilePostGramException(e.Message, e);
+            }
+
         }
 
         public async Task<FileInfoModel> GetAvatarForUser(Guid userId)
@@ -86,14 +103,23 @@ namespace PostGram.Api.Services
                 throw new NotFoundPostGramException("PostContent not found in DB: " + postContentId);
 
             if (!FileExists(postContent.FilePath))
-                throw new NotFoundPostGramException("File not found: " + postContent.FilePath);
+                throw new NotFoundPostGramException("File not found: " + postContentId);
 
             return new FileInfoModel(postContent.Name, postContent.MimeType, postContent.FilePath);
         }
 
+        //private async Task<Attachment> GetAttachment(Guid attachmentId)
+        //{
+        //    Attachment? attachment = await _dataContext.Attachments.FirstOrDefaultAsync(a => a.Id == attachmentId);
+        //    if (attachment == null)
+        //        throw new NotFoundPostGramException($"File {attachmentId} not found");
+
+        //    _dataContext.Attachments.Remove(attachment);
+        //}
+
         private bool FileExists(string filePath)
         {
-            return !new FileInfo(filePath).Exists;
+            return new FileInfo(filePath).Exists;
         }
     }
 }

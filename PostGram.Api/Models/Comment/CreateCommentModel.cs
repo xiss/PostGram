@@ -6,7 +6,7 @@ namespace PostGram.Api.Models.Comment
     {
         [Required]
         public string Body { get; set; } = null!;
-
+        [Required]
         public Guid PostId { get; set; }
     }
 }

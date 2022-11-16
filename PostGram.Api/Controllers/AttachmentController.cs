@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using PostGram.Api.Helpers;
 using PostGram.Api.Models.Attachment;
 using PostGram.Api.Services;
-using PostGram.Common.Exceptions;
-using LogLevel = NLog.LogLevel;
 
 namespace PostGram.Api.Controllers
 {
@@ -15,12 +13,10 @@ namespace PostGram.Api.Controllers
     public class AttachmentController : ControllerBase
     {
         private readonly IAttachmentService _attachmentService;
-        private readonly NLog.Logger _logger;
 
         public AttachmentController(IAttachmentService attachmentService)
         {
             _attachmentService = attachmentService;
-            _logger = NLog.LogManager.GetCurrentClassLogger();
         }
 
         [HttpPost]
@@ -44,32 +40,16 @@ namespace PostGram.Api.Controllers
         [HttpGet]
         public async Task<ActionResult> GetPostContent(Guid postContentId, bool download = false)
         {
-            try
-            {
-                FileInfoModel model = await _attachmentService.GetPostContent(postContentId);
-                return RenderAttachment(model, download);
-            }
-            catch (NotFoundPostGramException e)
-            {
-                _logger.Log(LogLevel.Error, e);
-                return NotFound(e.Message);
-            }
+            FileInfoModel model = await _attachmentService.GetPostContent(postContentId);
+            return RenderAttachment(model, download);
         }
 
         [HttpGet]
         public async Task<ActionResult> GetAvatarForUser(Guid userId, bool download = false)
         {
-            try
-            {
-                FileInfoModel internalModel = await _attachmentService.GetAvatarForUser(userId);
-                return RenderAttachment(internalModel, download);
 
-            }
-            catch (NotFoundPostGramException e)
-            {
-                _logger.Log(LogLevel.Error, e);
-                return NotFound(e.Message);
-            }
+            FileInfoModel internalModel = await _attachmentService.GetAvatarForUser(userId);
+            return RenderAttachment(internalModel, download);
         }
 
         public static string GetLinkForPostContent(IUrlHelper urlHelper, Guid postContentId)

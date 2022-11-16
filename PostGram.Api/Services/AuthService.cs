@@ -86,6 +86,29 @@ namespace PostGram.Api.Services
             }
         }
 
+        public async Task Logout(Guid userId, Guid sessionId)
+        {
+            UserSession? session = await _dataContext.UserSessions
+               .FirstOrDefaultAsync(us => us.Id == sessionId);
+            if (session == null)
+                throw new NotFoundPostGramException($"Session: {sessionId} for user: {userId} not found");
+            session.IsActive = false;
+
+            try
+            {
+                _dataContext.UserSessions.Update(session);
+                await _dataContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null)
+                {
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                }
+                throw new DbPostGramException(e.Message, e);
+            }
+        }
+
         private async Task<User> GetUserByCredential(string login, string password)
         {
             User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == login.ToLower());

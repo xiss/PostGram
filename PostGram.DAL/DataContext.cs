@@ -31,5 +31,6 @@ namespace PostGram.DAL
         public DbSet<Comment> Comments => Set<Comment>();
         public DbSet<Post> Posts => Set<Post>();
         public DbSet<PostContent> PostContents => Set<PostContent>();
+        public DbSet<Like> Likes => Set<Like>();
     }
 }

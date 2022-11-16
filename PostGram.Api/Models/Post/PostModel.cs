@@ -14,6 +14,5 @@ namespace PostGram.Api.Models.Post
         public string Body { get; set; } = null!;
         public CommentModel[]? Comments { get; set; }
         public ICollection<AttachmentModel> Content { get; set; } = new List<AttachmentModel>();
-
     }
 }

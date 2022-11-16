@@ -15,5 +15,6 @@ namespace PostGram.Api.Services
 
         Task AddAvatarToUser(Guid userId, MetadataModel model, string filePath);
         Task<List<UserModel>> GetUsers();
+        Task DeleteAvatarForUser(Guid userId);
     }
 }
