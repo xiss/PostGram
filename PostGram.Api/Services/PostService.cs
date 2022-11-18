@@ -12,9 +12,9 @@ namespace PostGram.Api.Services
 {
     public class PostService : IPostService
     {
+        private readonly IAttachmentService _attachmentService;
         private readonly DataContext _dataContext;
         private readonly IMapper _mapper;
-        private readonly IAttachmentService _attachmentService;
 
         public PostService(DataContext dataContext, IAttachmentService attachmentService, IMapper mapper)
         {
@@ -23,17 +23,98 @@ namespace PostGram.Api.Services
             _attachmentService = attachmentService;
         }
 
-        public async Task<Guid> CreatePost(CreatePostModel model, Guid userId)
+        public async Task<bool> CheckCommentExist(Guid commentId)
+        {
+            return await _dataContext.Comments.AnyAsync(u => u.Id == commentId);
+        }
+
+        public async Task<bool> CheckPostExist(Guid postId)
+        {
+            return await _dataContext.Posts.AnyAsync(u => u.Id == postId);
+        }
+
+        public async Task<Guid> CreateComment(CreateCommentModel model, Guid currentUserId)
+        {
+            Comment comment = _mapper.Map<Comment>(model);
+            comment.AuthorId = currentUserId;
+
+            try
+            {
+                await _dataContext.Comments.AddAsync(comment);
+                await _dataContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null)
+                {
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                }
+                throw new DbPostGramException(e.Message, e);
+            }
+
+            return comment.Id;
+        }
+
+        public async Task<Guid> CreateLike(CreateLikeModel model, Guid currentUserId)
+        {
+            //Validate model
+            if (model.CommentId == null && model.PostId == null)
+                throw new BadRequestPostGramException("Bad model, Comment and Post cannot be null both");
+            if (model.PostId != null && model.CommentId != null)
+                throw new BadRequestPostGramException("Bad model, Comment and Post cannot be not null both");
+
+            Like like = _mapper.Map<Like>(model);
+            like.AuthorId = currentUserId;
+
+            if (await CheckLikeExist(like.AuthorId, like.PostId, like.CommentId))
+                throw new UnprocessableRequestPostGramException(
+                    $"User {like.AuthorId} already has like for post {like.PostId} " +
+                    $"or comment {like.CommentId}, use update action");
+
+            //Post
+            if (model.PostId != null)
+            {
+                if (await CheckPostExist(model.PostId.Value))
+                    like.PostId = model.PostId;
+                else
+                    throw new NotFoundPostGramException($"Post {model.PostId} not found");
+            }
+            //Comment
+            else if (model.CommentId != null)
+            {
+                if (await CheckCommentExist(model.CommentId.Value))
+                    like.CommentId = model.CommentId;
+                else
+                    throw new NotFoundPostGramException($"Comment {model.CommentId} not found");
+            }
+
+            try
+            {
+                _dataContext.Likes.Add(like);
+                await _dataContext.SaveChangesAsync();
+                return like.Id;
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null)
+                {
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                }
+                throw new DbPostGramException(e.Message, e);
+            }
+        }
+
+        public async Task<Guid> CreatePost(CreatePostModel model, Guid currentUserId)
         {
             Post post = _mapper.Map<Post>(model);
-            post.AuthorId = userId;
+            post.AuthorId = currentUserId;
 
             try
             {
                 foreach (var metadataModel in model.Attachments)
                 {
                     PostContent postContent = _mapper.Map<PostContent>(metadataModel);
-                    postContent.AuthorId = userId;
+                    postContent.AuthorId = currentUserId;
                     postContent.FilePath = await _attachmentService.ApplyFile(metadataModel.TempId.ToString());
                     post.PostContents.Add(postContent);
                 }
@@ -53,9 +134,71 @@ namespace PostGram.Api.Services
             return post.Id;
         }
 
-        public async Task<bool> CheckPostExist(Guid postId)
+        public async Task<Guid> DeleteComment(Guid commentId, Guid currentUserId)
         {
-            return await _dataContext.Posts.AnyAsync(u => u.Id == postId);
+            Comment comment = await GetCommentById(commentId);
+            if (comment.AuthorId != currentUserId)
+                throw new AuthorizationPostGramException("Cannot delete comment created by another user");
+            comment.IsDeleted = true;
+            await UpdateComment(comment);
+
+            return commentId;
+        }
+
+        public async Task<Guid> DeletePost(Guid postId, Guid currentUserId)
+        {
+            Post? post = await _dataContext.Posts
+                .Include(p => p.PostContents)
+                .Include(p => p.Comments)
+                .FirstOrDefaultAsync(p => p.Id == postId);
+
+            if (post == null)
+                throw new NotFoundPostGramException($"Post {postId} not found");
+
+            if (post.AuthorId != currentUserId)
+                throw new AuthorizationPostGramException("Cannot delete post created by another user id");
+
+            post.IsDeleted = true;
+
+            await DeletePostContents(post.PostContents);
+
+            foreach (Comment comment in post.Comments)
+                await DeleteComment(comment.Id, currentUserId);
+
+            try
+            {
+                _dataContext.Posts.Update(post);
+                await _dataContext.SaveChangesAsync();
+                return postId;
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null)
+                {
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                }
+                throw new DbPostGramException(e.Message, e);
+            }
+        }
+
+        public async Task<CommentModel> GetComment(Guid commentId)
+        {
+            Comment comment = await GetCommentById(commentId);
+            return _mapper.Map<CommentModel>(comment);
+        }
+
+        public async Task<CommentModel[]> GetCommentsForPost(Guid postId)
+        {
+            Comment[] comments = await _dataContext.Comments
+                .Include(c => c.Likes)
+                .AsNoTracking()
+                .Where(c => c.PostId == postId && !c.IsDeleted && !c.Post.IsDeleted)
+                .OrderBy(c => c.Created)
+                .ToArrayAsync();
+            if (comments.Length == 0)
+                throw new NotFoundPostGramException("Comments not found for post: " + postId);
+
+            return _mapper.Map<CommentModel[]>(comments);
         }
 
         public async Task<PostModel> GetPost(Guid postId)
@@ -63,11 +206,13 @@ namespace PostGram.Api.Services
             Post? post = await _dataContext.Posts
                 .AsNoTracking()
                 .Include(p => p.PostContents)
+                .Include(p => p.Likes)
                 .Include(p => p.Author)
                 .ThenInclude(a => a.Avatar)
                 .Include(p => p.Comments
-                .Where(c => !c.IsDeleted)
-                .OrderBy(c => c.Created))
+                    .Where(c => !c.IsDeleted)
+                    .OrderBy(c => c.Created))
+                .ThenInclude(c => c.Likes)
                 .FirstOrDefaultAsync(p => p.Id == postId && !p.IsDeleted);
             if (post == null)
                 throw new NotFoundPostGramException("Post not found: " + postId);
@@ -78,11 +223,15 @@ namespace PostGram.Api.Services
         public async Task<List<PostModel>> GetPosts(int take, int skip)
         {
             List<PostModel> model = await _dataContext.Posts
-                .AsNoTracking()
                 .Include(p => p.PostContents)
-                .Include(p => p.Comments)
+                .Include(p => p.Comments
+                    .Where(c => !c.IsDeleted)
+                    .OrderBy(c => c.Created))
+                .ThenInclude(c => c.Likes)
+                .Include(p => p.Likes)
                 .Include(p => p.Author)
                 .ThenInclude(a => a.Avatar)
+                .AsNoTracking()
                 .OrderByDescending(p => p.Created)
                 .Where(p => p.IsDeleted != true)
                 .Skip(skip)
@@ -95,33 +244,29 @@ namespace PostGram.Api.Services
             return model;
         }
 
-        public async Task DeletePost(Guid postId, Guid userId)
+        public async Task<CommentModel> UpdateComment(UpdateCommentModel model, Guid currentUserId)
         {
-            Post? post = await _dataContext.Posts
-                .Include(p => p.PostContents)
-                .Include(p => p.Comments)
-                .FirstOrDefaultAsync(p => p.Id == postId);
+            Comment comment = await GetCommentById(model.Id);
+            if (comment.AuthorId != currentUserId)
+                throw new AuthorizationPostGramException("Cannot modify comment created by another user");
+            comment.Body = model.NewBody;
+            comment.Edited = DateTimeOffset.UtcNow;
+            await UpdateComment(comment);
+            return _mapper.Map<CommentModel>(comment);
+        }
 
-            if (post == null)
-                throw new NotFoundPostGramException($"Post {postId} not found");
+        public async Task<LikeModel> UpdateLike(UpdateLikeModel model, Guid currentUserId)
+        {
+            Like? like = await _dataContext.Likes.FirstOrDefaultAsync(l => l.Id == model.Id);
+            if (like == null)
+                throw new NotFoundPostGramException($"Like {model.Id} not found in DB");
 
-            if (post.AuthorId != userId)
-                throw new AuthorizationPostGramException("Cannot delete post created by another user id");
+            if (like.AuthorId != currentUserId)
+                throw new AuthorizationPostGramException("Cannot modify like created by another user");
 
-            post.IsDeleted = true;
-
-            if (post.PostContents != null)
-                await DeletePostContents(post.PostContents);
-
-            if (post.Comments != null)
-            {
-                foreach (Comment comment in post.Comments)
-                    await DeleteComment(comment.Id);
-            }
-
+            like.IsLike = model.IsLike;
             try
             {
-                _dataContext.Posts.Update(post);
                 await _dataContext.SaveChangesAsync();
             }
             catch (DbUpdateException e)
@@ -132,22 +277,25 @@ namespace PostGram.Api.Services
                 }
                 throw new DbPostGramException(e.Message, e);
             }
+
+            return _mapper.Map<LikeModel>(like);
         }
 
-        public async Task<PostModel> UpdatePost(UpdatePostModel model, Guid curentUserId)
+        public async Task<PostModel> UpdatePost(UpdatePostModel model, Guid currentUserId)
         {
             Post? post = await _dataContext.Posts
                 .Include(p => p.PostContents)
+                .Include(p => p.Likes)
                 .Include(p => p.Author)
                 .ThenInclude(a => a.Avatar)
                 .Include(p => p.Comments
                     .Where(c => !c.IsDeleted)
-                .OrderBy(c => c.Created))
+                    .OrderBy(c => c.Created))
                 .FirstOrDefaultAsync(u => u.Id == model.Id && !u.IsDeleted);
             if (post == null)
                 throw new NotFoundPostGramException("Post not found: " + model.Id);
 
-            if (post.AuthorId != curentUserId)
+            if (post.AuthorId != currentUserId)
                 throw new AuthorizationPostGramException("Cannot modify post created by another user");
             //Body
             if (model.UpdatedBody != null)
@@ -168,7 +316,7 @@ namespace PostGram.Api.Services
                     {
                         Id = postContent.TempId,
                         PostId = post.Id,
-                        AuthorId = curentUserId,
+                        AuthorId = currentUserId,
                         Created = DateTimeOffset.UtcNow,
                         FilePath = await _attachmentService.ApplyFile(postContent.TempId.ToString()),
                         MimeType = postContent.MimeType,
@@ -202,128 +350,17 @@ namespace PostGram.Api.Services
 
             return _mapper.Map<PostModel>(post);
         }
-        public async Task<Guid> CreateComment(CreateCommentModel model, Guid userId)
+
+        private async Task<bool> CheckLikeExist(Guid authorId, Guid? postId, Guid? commentId)
         {
-            Comment comment = _mapper.Map<Comment>(model);
-            comment.AuthorId = userId;
-
-            try
-            {
-                await _dataContext.Comments.AddAsync(comment);
-                await _dataContext.SaveChangesAsync();
-            }
-            catch (DbUpdateException e)
-            {
-                if (e.InnerException != null)
-                {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
-                }
-                throw new DbPostGramException(e.Message, e);
-            }
-
-            return comment.Id;
-        }
-
-        public async Task<CommentModel> GetComment(Guid commentId)
-        {
-            Comment comment = await GetCommentById(commentId);
-            return _mapper.Map<CommentModel>(comment);
-        }
-
-        public async Task<CommentModel[]> GetCommentsForPost(Guid postId)
-        {
-            Comment[]? comments = await _dataContext.Comments
-                .AsNoTracking()
-                .Where(c => c.PostId == postId && !c.IsDeleted && !c.Post.IsDeleted)
-                .OrderBy(c => c.Created)
-                .ToArrayAsync();
-            if (comments.Length == 0)
-                throw new NotFoundPostGramException("Comments not found for post: " + postId);
-
-            return _mapper.Map<CommentModel[]>(comments);
-        }
-
-        public async Task<bool> CheckCommentExist(Guid commentId)
-        {
-            return await _dataContext.Comments.AnyAsync(u => u.Id == commentId);
-        }
-
-        public async Task<Guid> DeleteComment(Guid commentId)
-        {
-            Comment comment = await GetCommentById(commentId);
-            comment.IsDeleted = true;
-            await UpdateComment(comment);
-
-            return commentId;
-        }
-
-        public async Task<CommentModel> UpdateComment(UpdateCommentModel model)
-        {
-            Comment comment = await GetCommentById(model.Id);
-            comment.Body = model.NewBody;
-            comment.Edited = DateTimeOffset.UtcNow;
-            await UpdateComment(comment);
-            return _mapper.Map<CommentModel>(comment);
-        }
-
-        //TODO 1 To test
-        public async Task<Guid> CreateLike(CreateLikeModel model, Guid curentUserId)
-        {
-            if (model.CommentId == null && model.PostId == null)
-                throw new BadRequestPostGramException("Bad model, Comment and Post cannot be null both");
-            if (model.PostId != null && model.CommentId != null)
-                throw new BadRequestPostGramException("Bad model, Comment and Post cannot be not null both");
-
-            Like like = _mapper.Map<Like>(model);
-            like.AuthorId = curentUserId;
-
-            //Post
-            if (model.PostId != null && await CheckPostExist(model.PostId.Value))
-                like.PostId = model.PostId;
-            else
-                throw new NotFoundPostGramException($"Post {model.PostId} not found");
-            //Comment
-            if (model.CommentId != null && await CheckCommentExist(model.CommentId.Value))
-                like.CommentId = model.CommentId;
-            else
-                throw new NotFoundPostGramException($"Comment {model.CommentId} not found");
-
-            try
-            {
-                _dataContext.Likes.Add(like);
-                await _dataContext.SaveChangesAsync();
-                return like.Id;
-            }
-            catch (DbUpdateException e)
-            {
-                if (e.InnerException != null)
-                {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
-                }
-                throw new DbPostGramException(e.Message, e);
-            }
-        }
-
-        private async Task UpdateComment(Comment comment)
-        {
-            try
-            {
-                _dataContext.Comments.Update(comment);
-                await _dataContext.SaveChangesAsync();
-            }
-            catch (DbUpdateException e)
-            {
-                if (e.InnerException != null)
-                {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
-                }
-                throw new DbPostGramException(e.Message, e);
-            }
+            return await _dataContext.Likes.AnyAsync(l =>
+                l.AuthorId == authorId
+                && l.CommentId == commentId
+                && l.PostId == postId);
         }
 
         private async Task DeletePostContents(ICollection<PostContent> postContents)
         {
-
             foreach (var item in postContents)
             {
                 _attachmentService.DeleteFile(item.Id);
@@ -343,10 +380,20 @@ namespace PostGram.Api.Services
             }
         }
 
+        private async Task<Comment> GetCommentById(Guid commentId)
+        {
+            Comment? comment = await _dataContext.Comments
+                .Include(p => p.Likes)
+                .FirstOrDefaultAsync(c => c.Id == commentId && !c.IsDeleted);
+            if (comment == null)
+                throw new NotFoundPostGramException("Comment not found: " + commentId);
+            return comment;
+        }
+
         private async Task<List<PostContent>> GetPostContents(List<Guid> postContentIds)
         {
             if (postContentIds.Count == 0 || postContentIds == null)
-                throw new ArgumentPostGramException("Input colection is empty or null");
+                throw new ArgumentPostGramException("Input collection is empty or null");
 
             List<PostContent> postContent = await _dataContext.PostContents
                 .Where(pc => postContentIds
@@ -357,13 +404,21 @@ namespace PostGram.Api.Services
             return postContent;
         }
 
-        private async Task<Comment> GetCommentById(Guid commentId)
+        private async Task UpdateComment(Comment comment)
         {
-            Comment? comment = await _dataContext.Comments
-                .FirstOrDefaultAsync(c => c.Id == commentId && !c.IsDeleted);
-            if (comment == null)
-                throw new NotFoundPostGramException("Comment not found: " + commentId);
-            return comment;
+            try
+            {
+                _dataContext.Comments.Update(comment);
+                await _dataContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null)
+                {
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                }
+                throw new DbPostGramException(e.Message, e);
+            }
         }
     }
 }

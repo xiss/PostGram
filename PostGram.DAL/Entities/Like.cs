@@ -2,7 +2,7 @@
 {
     public class Like : CreationBase
     {
-        public bool IsLike { get; set; }
+        public bool? IsLike { get; set; }
         public Guid? PostId { get; set; }
         public virtual Comment? Comment { get; set; }
         public Guid? CommentId { get; set; }

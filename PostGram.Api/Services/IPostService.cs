@@ -6,29 +6,32 @@ namespace PostGram.Api.Services
 {
     public interface IPostService
     {
-        Task<bool> CheckPostExist(Guid postId);
-
-        Task<Guid> CreatePost(CreatePostModel model, Guid userId);
-
-        Task DeletePost(Guid postId, Guid userId);
-
-        Task<PostModel> GetPost(Guid postId);
-
-        Task<List<PostModel>> GetPosts(int take, int skip);
-
-        Task<PostModel> UpdatePost(UpdatePostModel model, Guid curentUserId);
-
         Task<bool> CheckCommentExist(Guid commentId);
 
-        Task<Guid> CreateComment(CreateCommentModel model, Guid userId);
+        Task<bool> CheckPostExist(Guid postId);
 
-        Task<Guid> DeleteComment(Guid commentId);
+        Task<Guid> CreateComment(CreateCommentModel model, Guid currentUserId);
+
+        Task<Guid> CreateLike(CreateLikeModel model, Guid currentUserId);
+
+        Task<Guid> CreatePost(CreatePostModel model, Guid currentUserId);
+
+        Task<Guid> DeleteComment(Guid commentId, Guid currentUserId);
+
+        Task<Guid> DeletePost(Guid postId, Guid currentUserId);
 
         Task<CommentModel> GetComment(Guid commentId);
 
         Task<CommentModel[]> GetCommentsForPost(Guid postId);
 
-        Task<CommentModel> UpdateComment(UpdateCommentModel model);
-        Task<Guid> CreateLike(CreateLikeModel model, Guid curentUserId);
+        Task<PostModel> GetPost(Guid postId);
+
+        Task<List<PostModel>> GetPosts(int take, int skip);
+
+        Task<CommentModel> UpdateComment(UpdateCommentModel model, Guid currentUserId);
+
+        Task<LikeModel> UpdateLike(UpdateLikeModel model, Guid currentUserId);
+
+        Task<PostModel> UpdatePost(UpdatePostModel model, Guid currentUserId);
     }
 }

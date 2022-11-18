@@ -11,13 +11,44 @@ namespace PostGram.Api.Services
 {
     public class UserService : IUserService, IDisposable
     {
-        private readonly IMapper _mapper;
         private readonly DataContext _dataContext;
+        private readonly IMapper _mapper;
 
         public UserService(IMapper mapper, DataContext dataContext)
         {
             _mapper = mapper;
             _dataContext = dataContext;
+        }
+
+        public async Task AddAvatarToUser(Guid userId, MetadataModel model, string filePath)
+        {
+            User user = await GetUserById(userId);
+            if (user.Avatar != null)
+                throw new UnprocessableRequestPostGramException($"User {user.Id} already has avatar {user.AvatarId}. Delete it before add new.");
+            Avatar avatar = new Avatar()
+            {
+                UserId = user.Id,
+                AuthorId = user.Id,
+                Id = model.TempId,
+                MimeType = model.MimeType,
+                Name = model.Name,
+                Size = model.Size,
+                FilePath = filePath
+            };
+            user.Avatar = avatar;
+            try
+            {
+                _dataContext.Avatars.Add(avatar);
+                await _dataContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null)
+                {
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                }
+                throw new DbPostGramException(e.Message, e);
+            }
         }
 
         public async Task<bool> CheckUserExist(string email)
@@ -47,7 +78,31 @@ namespace PostGram.Api.Services
 
             return user.Id;
         }
-        //TODO 1 To Test
+
+        public async Task<Guid> DeleteAvatarForUser(Guid userId)
+        {
+            User user = await GetUserById(userId);
+            if (user.Avatar == null)
+                throw new NotFoundPostGramException($"User {userId} does't have avatar.");
+            Guid avatarId = user.AvatarId!.Value;
+            try
+            {
+                _dataContext.Avatars.Remove(user.Avatar);
+                await _dataContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null)
+                {
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                }
+                throw new DbPostGramException(e.Message, e);
+            }
+
+            return avatarId;
+        }
+
+        //TODO 2 Нужно добавить статус у юзера активен, и делать на нем пометку, а при запросах отдавать только по тем юзерам у кого статус активен
         public async Task<Guid> DeleteUser(Guid userId)
         {
             User user = await GetUserById(userId);
@@ -70,6 +125,17 @@ namespace PostGram.Api.Services
             return userId;
         }
 
+        public void Dispose()
+        {
+            _dataContext.Dispose();
+        }
+
+        public async Task<UserModel> GetUser(Guid UserId)
+        {
+            User user = await GetUserById(UserId);
+            return _mapper.Map<UserModel>(user);
+        }
+
         public async Task<List<UserModel>> GetUsers()
         {
             List<UserModel> models = await _dataContext
@@ -82,67 +148,6 @@ namespace PostGram.Api.Services
             if (models.Count == 0)
                 throw new NotFoundPostGramException("Users not found in DB");
             return models;
-        }
-
-        public async Task<UserModel> GetUser(Guid UserId)
-        {
-            User user = await GetUserById(UserId);
-            return _mapper.Map<UserModel>(user);
-        }
-
-        public async Task AddAvatarToUser(Guid userId, MetadataModel model, string filePath)
-        {
-            User user = await GetUserById(userId);
-            Avatar avatar = new Avatar()
-            {
-                Author = user,
-                User = user,
-                Id = model.TempId,
-                MimeType = model.MimeType,
-                Name = model.Name,
-                Size = model.Size,
-                FilePath = filePath
-            };
-            try
-            {
-                _dataContext.Avatars.Add(avatar);
-                await _dataContext.SaveChangesAsync();
-            }
-            catch (DbUpdateException e)
-            {
-                if (e.InnerException != null)
-                {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
-                }
-                throw new DbPostGramException(e.Message, e);
-            }
-        }
-
-        //TODO 1 To Test
-        public async Task DeleteAvatarForUser(Guid userId)
-        {
-            User user = await GetUserById(userId);
-            if (user.Avatar == null)
-                throw new NotFoundPostGramException($"User {userId} does't have avatar");
-
-            try
-            {
-                _dataContext.Avatars.Remove(user.Avatar);
-                await _dataContext.SaveChangesAsync();
-            }
-            catch (DbUpdateException e)
-            {
-                if (e.InnerException != null)
-                {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
-                }
-                throw new DbPostGramException(e.Message, e);
-            }
-        }
-
-        public void Dispose()
-        {
-            _dataContext.Dispose();
         }
 
         private async Task<User> GetUserById(Guid id)

@@ -10,38 +10,13 @@ namespace PostGram.Api.Services
 {
     public class AttachmentService : IDisposable, IAttachmentService
     {
-        private readonly DataContext _dataContext;
         private readonly AppConfig _appConfig;
+        private readonly DataContext _dataContext;
 
         public AttachmentService(DataContext dataContext, IOptions<AppConfig> appConfig)
         {
             _dataContext = dataContext;
             _appConfig = appConfig.Value;
-        }
-
-        public void Dispose()
-        {
-            _dataContext.Dispose();
-        }
-
-        public async Task<MetadataModel> UploadFile(IFormFile file)
-        {
-            MetadataModel model = new()
-            {
-                TempId = Guid.NewGuid(),
-                Name = file.FileName,
-                MimeType = file.ContentType, //TODO 3 Сделать распознование по первой  строке файла
-                Size = file.Length
-            };
-            string newPath = Path.Combine(Path.GetTempPath(), model.TempId.ToString());
-            FileInfo fileInfo = new FileInfo(newPath);
-
-            using (var stream = System.IO.File.Create(newPath))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            return model;
         }
 
         public async Task<string> ApplyFile(string temporaryFileId)
@@ -81,7 +56,11 @@ namespace PostGram.Api.Services
             {
                 throw new FilePostGramException(e.Message, e);
             }
+        }
 
+        public void Dispose()
+        {
+            _dataContext.Dispose();
         }
 
         public async Task<FileInfoModel> GetAvatarForUser(Guid userId)
@@ -106,6 +85,26 @@ namespace PostGram.Api.Services
                 throw new NotFoundPostGramException("File not found: " + postContentId);
 
             return new FileInfoModel(postContent.Name, postContent.MimeType, postContent.FilePath);
+        }
+
+        public async Task<MetadataModel> UploadFile(IFormFile file)
+        {
+            MetadataModel model = new()
+            {
+                TempId = Guid.NewGuid(),
+                Name = file.FileName,
+                MimeType = file.ContentType, //TODO 3 Сделать распознование по первой  строке файла
+                Size = file.Length
+            };
+            string newPath = Path.Combine(Path.GetTempPath(), model.TempId.ToString());
+            FileInfo fileInfo = new FileInfo(newPath);
+
+            using (var stream = System.IO.File.Create(newPath))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return model;
         }
 
         //private async Task<Attachment> GetAttachment(Guid attachmentId)

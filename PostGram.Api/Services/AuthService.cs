@@ -15,8 +15,8 @@ namespace PostGram.Api.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly DataContext _dataContext;
         private readonly AuthConfig _authConfig;
+        private readonly DataContext _dataContext;
 
         public AuthService(DataContext dataContext, IOptions<AuthConfig> authConfig)
         {
@@ -37,15 +37,6 @@ namespace PostGram.Api.Services
             });
             await _dataContext.SaveChangesAsync();
             return GenerateTokens(session.Entity);
-        }
-
-        public async Task<UserSession> GetUserSessionById(Guid id)
-        {
-            UserSession? session = await _dataContext.UserSessions.FirstOrDefaultAsync(s => s.Id == id);
-            if (session == null)
-                throw new NotFoundPostGramException("Session with Id " + id + " not found");
-
-            return session;
         }
 
         public async Task<TokenModel> GetTokenByRefreshToken(string refreshToken)
@@ -86,6 +77,15 @@ namespace PostGram.Api.Services
             }
         }
 
+        public async Task<UserSession> GetUserSessionById(Guid id)
+        {
+            UserSession? session = await _dataContext.UserSessions.FirstOrDefaultAsync(s => s.Id == id);
+            if (session == null)
+                throw new NotFoundPostGramException("Session with Id " + id + " not found");
+
+            return session;
+        }
+
         public async Task Logout(Guid userId, Guid sessionId)
         {
             UserSession? session = await _dataContext.UserSessions
@@ -107,19 +107,6 @@ namespace PostGram.Api.Services
                 }
                 throw new DbPostGramException(e.Message, e);
             }
-        }
-
-        private async Task<User> GetUserByCredential(string login, string password)
-        {
-            User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == login.ToLower());
-
-            if (user == null)
-                throw new NotFoundPostGramException("login: " + login);
-
-            if (!HashHelper.Verify(password, user.PasswordHash))
-                throw new AuthorizationPostGramException("Password incorrect for login: " + login);
-
-            return user;
         }
 
         private TokenModel GenerateTokens(UserSession session)
@@ -158,6 +145,19 @@ namespace PostGram.Api.Services
             string encodedRefreshToken = new JwtSecurityTokenHandler().WriteToken(refreshToken);
 
             return new TokenModel(encodedToken, encodedRefreshToken);
+        }
+
+        private async Task<User> GetUserByCredential(string login, string password)
+        {
+            User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == login.ToLower());
+
+            if (user == null)
+                throw new NotFoundPostGramException("login: " + login);
+
+            if (!HashHelper.Verify(password, user.PasswordHash))
+                throw new AuthorizationPostGramException("Password incorrect for login: " + login);
+
+            return user;
         }
 
         private async Task<UserSession> GetUserSessionByRefreshToken(Guid refreshTokenId)

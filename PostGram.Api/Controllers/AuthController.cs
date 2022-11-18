@@ -11,13 +11,25 @@ namespace PostGram.Api.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IUserService _userService;
         private readonly IAuthService _authService;
-
+        private readonly IUserService _userService;
         public AuthController(IUserService userService, IAuthService authService)
         {
             _userService = userService;
             _authService = authService;
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task Logout()
+        {
+            await _authService.Logout(this.GetCurrentUserId(), this.GetCurrentSessionId());
+        }
+
+        [HttpPost]
+        public async Task<TokenModel> RefreshToken(RefreshTokenRequestModel model)
+        {
+            return await _authService.GetTokenByRefreshToken(model.RefreshToken);
         }
 
         [HttpPost]
@@ -30,21 +42,6 @@ namespace PostGram.Api.Controllers
         public async Task<TokenModel> Token(TokenRequestModel model)
         {
             return await _authService.GetToken(model.Login, model.Password);
-        }
-
-        [HttpPost]
-        public async Task<TokenModel> RefreshToken(RefreshTokenRequestModel model)
-        {
-            return await _authService.GetTokenByRefreshToken(model.RefreshToken);
-        }
-
-        [Authorize]
-        [HttpPost]
-        public async Task Logout()
-        {
-            {
-                await _authService.Logout(this.GetCurrentUserId(), this.GetCurrentSessionId());
-            }
         }
     }
 }

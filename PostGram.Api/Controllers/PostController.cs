@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using PostGram.Api.Helpers;
 using PostGram.Api.Models.Attachment;
 using PostGram.Api.Models.Comment;
-using PostGram.Api.Models.Post;
 using PostGram.Api.Models.Like;
+using PostGram.Api.Models.Post;
 using PostGram.Api.Services;
 using PostGram.Common.Exceptions;
 
@@ -23,10 +23,54 @@ namespace PostGram.Api.Controllers
         }
 
         [HttpPost]
+        public async Task<Guid> CreateComment(CreateCommentModel model)
+        {
+            Guid userId = this.GetCurrentUserId();
+            if (!await _postService.CheckPostExist(model.PostId))
+                throw new NotFoundPostGramException("Post not found: " + model.PostId);
+
+            Guid commentId = await _postService.CreateComment(model, userId);
+            return commentId;
+        }
+
+        [HttpPost]
+        public async Task<Guid> CreateLike(CreateLikeModel model)
+        {
+            return await _postService.CreateLike(model, this.GetCurrentUserId());
+        }
+
+        [HttpPost]
         public async Task<Guid> CreatePost(CreatePostModel model)
         {
             Guid postId = await _postService.CreatePost(model, this.GetCurrentUserId());
             return postId;
+        }
+
+        [HttpDelete]
+        public async Task<Guid> DeleteComment(Guid commentId)
+        {
+            return await _postService.DeleteComment(commentId, this.GetCurrentUserId());
+        }
+
+        [HttpDelete]
+        public async Task<Guid> DeletePost(Guid postId)
+        {
+            await _postService.DeletePost(postId, this.GetCurrentUserId());
+            return postId;
+        }
+
+        [HttpGet]
+        public async Task<CommentModel> GetComment(Guid commentId)
+        {
+            CommentModel model = await _postService.GetComment(commentId);
+            return model;
+        }
+
+        [HttpGet]
+        public async Task<CommentModel[]> GetCommentsForPost(Guid postId)
+        {
+            CommentModel[] model = await _postService.GetCommentsForPost(postId);
+            return model;
         }
 
         [HttpGet]
@@ -47,7 +91,8 @@ namespace PostGram.Api.Controllers
             List<PostModel> models = await _postService.GetPosts(take, skip);
             foreach (PostModel model in models)
             {
-                model.Author.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Author.Id);
+                if (model.Author.Avatar != null)
+                    model.Author.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Author.Id);
                 foreach (AttachmentModel attachment in model.Content)
                 {
                     attachment.Link = AttachmentController.GetLinkForPostContent(Url, attachment.Id);
@@ -56,11 +101,10 @@ namespace PostGram.Api.Controllers
             return models;
         }
 
-        [HttpDelete]
-        public async Task<Guid> DeletePost(Guid postId)
+        [HttpPut]
+        public async Task<CommentModel> UpdateComment(UpdateCommentModel model)
         {
-            await _postService.DeletePost(postId, this.GetCurrentUserId());
-            return postId;
+            return await _postService.UpdateComment(model, this.GetCurrentUserId());
         }
 
         [HttpPut]
@@ -69,48 +113,12 @@ namespace PostGram.Api.Controllers
             return await _postService.UpdatePost(model, this.GetCurrentUserId());
         }
 
-        [HttpPost]
-        public async Task<Guid> CreateComment(CreateCommentModel model)
-        {
-            Guid userId = this.GetCurrentUserId();
-            if (!await _postService.CheckPostExist(model.PostId))
-                throw new NotFoundPostGramException("Post not found: " + model.PostId);
-
-            Guid commentId = await _postService.CreateComment(model, userId);
-            return commentId;
-        }
-
-        [HttpGet]
-        public async Task<CommentModel> GetComment(Guid commentId)
-        {
-            CommentModel model = await _postService.GetComment(commentId);
-            return model;
-        }
-
-        [HttpGet]
-        public async Task<CommentModel[]> GetCommentsForPost(Guid postId)
-        {
-            CommentModel[] model = await _postService.GetCommentsForPost(postId);
-            return model;
-        }
-
-        [HttpDelete]
-        public async Task<Guid> DeleteComment(Guid commentId)
-        {
-            return await _postService.DeleteComment(commentId);
-        }
-
         [HttpPut]
-        public async Task<CommentModel> UpdateComment(UpdateCommentModel model)
+        public async Task<LikeModel> UpdateLike(UpdateLikeModel model)
         {
-            return await _postService.UpdateComment(model);
+            return await _postService.UpdateLike(model, this.GetCurrentUserId());
         }
 
-        [HttpPost]
-        public async Task<Guid> CreateLike(CreateLikeModel model)
-        {
-            return await _postService.CreateLike(model, this.GetCurrentUserId());
-        }
         //TODO 2 разделить на несколько апишек
         //TODO 2 Сделать подписки пользователей
         //TODO 2 Сделать лайки постов

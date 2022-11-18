@@ -25,6 +25,12 @@ namespace PostGram.Api.Middlewares
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsJsonAsync(e.Message);
             }
+            catch (UnprocessableRequestPostGramException e)
+            {
+                _logger.Log(LogLevel.Warn, e);
+                context.Response.StatusCode = 422;
+                await context.Response.WriteAsJsonAsync(e.Message);
+            }
             catch (NotFoundPostGramException e)
             {
                 _logger.Log(LogLevel.Warn, e);

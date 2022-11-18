@@ -31,18 +31,23 @@ namespace PostGram.Api
                 .ForMember(d => d.PostContents, m => m.MapFrom(s => new List<PostContent>()))
                 .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow));
             CreateMap<Post, PostModel>()
-                .ForMember(d => d.Content, m => m.MapFrom(s => s.PostContents));
+                .ForMember(d => d.Content, m => m.MapFrom(s => s.PostContents))
+                .ForMember(d => d.DislikeCount, m => m.MapFrom(s => s.Likes.Count(l => l.IsLike == false)))
+                .ForMember(d => d.LikeCount, m => m.MapFrom(s => s.Likes.Count(l => l.IsLike == true)));
 
             //Comment
             CreateMap<CreateCommentModel, Comment>()
                 .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow))
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()));
-            CreateMap<Comment, CommentModel>();
+            CreateMap<Comment, CommentModel>()
+                .ForMember(d => d.DislikeCount, m => m.MapFrom(s => s.Likes.Count(l => l.IsLike == false)))
+                .ForMember(d => d.LikeCount, m => m.MapFrom(s => s.Likes.Count(l => l.IsLike == true)));
 
             //Like
             CreateMap<CreateLikeModel, Like>()
                 .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow))
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()));
+            CreateMap<Like, LikeModel>();
         }
     }
 }
