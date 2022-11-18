@@ -7,9 +7,7 @@ namespace PostGram.DAL.Entities.Configs
     {
         public void Configure(EntityTypeBuilder<Like> builder)
         {
-            // Один индекс по трем полям не работает, так как поля могут содержать null
-            builder.HasIndex(u => new { u.AuthorId, u.PostId }).IsUnique();
-            builder.HasIndex(u => new { u.AuthorId, u.CommentId }).IsUnique();
+            builder.HasIndex(u => new { u.AuthorId, Entity = u.EntityId }).IsUnique();
         }
     }
 }

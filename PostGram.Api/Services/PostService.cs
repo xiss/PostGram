@@ -4,6 +4,7 @@ using PostGram.Api.Models.Attachment;
 using PostGram.Api.Models.Comment;
 using PostGram.Api.Models.Like;
 using PostGram.Api.Models.Post;
+using PostGram.Common.Enums;
 using PostGram.Common.Exceptions;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
@@ -57,35 +58,31 @@ namespace PostGram.Api.Services
 
         public async Task<Guid> CreateLike(CreateLikeModel model, Guid currentUserId)
         {
-            //Validate model
-            if (model.CommentId == null && model.PostId == null)
-                throw new BadRequestPostGramException("Bad model, Comment and Post cannot be null both");
-            if (model.PostId != null && model.CommentId != null)
-                throw new BadRequestPostGramException("Bad model, Comment and Post cannot be not null both");
-
             Like like = _mapper.Map<Like>(model);
             like.AuthorId = currentUserId;
 
-            if (await CheckLikeExist(like.AuthorId, like.PostId, like.CommentId))
+            if (await CheckLikeExist(currentUserId, like.EntityId))
                 throw new UnprocessableRequestPostGramException(
-                    $"User {like.AuthorId} already has like for post {like.PostId} " +
-                    $"or comment {like.CommentId}, use update action");
+                    $"User {like.AuthorId} already has like for entity '{like.EntityType}' - {like.EntityId}");
 
-            //Post
-            if (model.PostId != null)
+            switch (like.EntityType)
             {
-                if (await CheckPostExist(model.PostId.Value))
-                    like.PostId = model.PostId;
-                else
-                    throw new NotFoundPostGramException($"Post {model.PostId} not found");
-            }
-            //Comment
-            else if (model.CommentId != null)
-            {
-                if (await CheckCommentExist(model.CommentId.Value))
-                    like.CommentId = model.CommentId;
-                else
-                    throw new NotFoundPostGramException($"Comment {model.CommentId} not found");
+                case LikableEntities.Post:
+                    Post? post = await _dataContext.Posts.FirstOrDefaultAsync(p => p.Id == like.EntityId);
+                    if (post == null)
+                        throw new NotFoundPostGramException($"Post {like.EntityId} not found");
+                    post.Likes.Add(like);
+                    break;
+
+                case LikableEntities.Comment:
+                    Comment? comment = await _dataContext.Comments.FirstOrDefaultAsync(c => c.Id == like.EntityId);
+                    if (comment == null)
+                        throw new NotFoundPostGramException($"Comment {like.EntityId} not found");
+                    comment.Likes.Add(like);
+                    break;
+
+                default:
+                    throw new CriticalPostGramException("Unregistered entity type");
             }
 
             try
@@ -351,12 +348,9 @@ namespace PostGram.Api.Services
             return _mapper.Map<PostModel>(post);
         }
 
-        private async Task<bool> CheckLikeExist(Guid authorId, Guid? postId, Guid? commentId)
+        private async Task<bool> CheckLikeExist(Guid authorId, Guid entityId)
         {
-            return await _dataContext.Likes.AnyAsync(l =>
-                l.AuthorId == authorId
-                && l.CommentId == commentId
-                && l.PostId == postId);
+            return await _dataContext.Likes.AnyAsync(l => l.AuthorId == authorId && l.EntityId == entityId);
         }
 
         private async Task DeletePostContents(ICollection<PostContent> postContents)

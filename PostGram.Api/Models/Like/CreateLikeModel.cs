@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using PostGram.Common.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace PostGram.Api.Models.Like
 {
@@ -6,7 +7,11 @@ namespace PostGram.Api.Models.Like
     {
         [Required]
         public bool IsLike { get; set; }
-        public  Guid? CommentId { get; set; }
-        public  Guid? PostId { get; set; }
+
+        [Required]
+        public Guid EntityId { get; set; }
+
+        [Required]
+        public LikableEntities EntityType { get; set; }
     }
 }
