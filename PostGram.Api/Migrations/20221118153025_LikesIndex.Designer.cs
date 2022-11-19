@@ -180,7 +180,7 @@ namespace PostGram.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Login")
+                    b.Property<string>("Nickname")
                         .IsRequired()
                         .HasColumnType("text");
 

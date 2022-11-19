@@ -38,7 +38,7 @@ namespace PostGram.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Login")
+                    b.Property<string>("Nickname")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -60,7 +60,7 @@ namespace PostGram.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Login")
+                    b.HasIndex("Nickname")
                         .IsUnique();
 
                     b.ToTable("Users");

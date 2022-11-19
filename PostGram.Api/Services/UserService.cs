@@ -239,6 +239,42 @@ namespace PostGram.Api.Services
             }
         }
 
+        public async Task<UserModel> UpdateUser(UpdateUserModel model, Guid currentUserId)
+        {
+            User user = await GetUserById(model.UserId);
+
+            if (user.Id != currentUserId)
+                throw new AuthorizationPostGramException("Cannot modify another user");
+            if (model.NewBirthDate != null)
+                user.BirthDate = model.NewBirthDate.Value;
+            if (model.NewIsPrivate != null)
+                user.IsPrivate = model.NewIsPrivate.Value;
+            if (model.NewName != null)
+                user.Name = model.NewName;
+            if (model.NewNickname != null)
+                user.Nickname = model.NewNickname;
+            if (model.NewPatronymic != null)
+                user.Patronymic = model.NewPatronymic;
+            if (model.NewSurname != null)
+                user.Surname = model.NewSurname;
+
+            try
+            {
+                //await _dataContext.Users.AddAsync(user);
+                await _dataContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null)
+                {
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                }
+                throw new DbPostGramException(e.Message, e);
+            }
+
+            return _mapper.Map<UserModel>(user);
+        }
+
         private async Task<User> GetUserById(Guid id)
         {
             User? user = await _dataContext.Users

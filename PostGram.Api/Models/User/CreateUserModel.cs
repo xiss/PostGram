@@ -4,27 +4,28 @@ namespace PostGram.Api.Models.User
 {
     public class CreateUserModel
     {
-        public CreateUserModel(string name, string surname, string patronymic, string email, string login, string password, string passwordRetry, DateTimeOffset birthDate)
+        public CreateUserModel(string name, string surname, string patronymic, string email, string nickname, string password, string passwordRetry, DateTimeOffset birthDate)
         {
             Name = name;
             Surname = surname;
             Patronymic = patronymic;
             Email = email;
-            Login = login;
+            Nickname = nickname;
             Password = password;
             PasswordRetry = passwordRetry;
             BirthDate = birthDate;
         }
 
-        public string Name { get; set; }
-        public string Surname { get; set; }
-        public string Patronymic { get; set; }
+        // TODO 3 Сделать проверку что дата не в будущем времени
+        public DateTimeOffset BirthDate { get; set; }
 
         [Required]
         [EmailAddress]
         public string Email { get; set; }
 
-        public string Login { get; set; }
+        public bool IsPrivate { get; set; } = true;
+        public string Name { get; set; }
+        public string Nickname { get; set; }
 
         [Required]
         [Compare(nameof(PasswordRetry))]
@@ -33,7 +34,7 @@ namespace PostGram.Api.Models.User
         [Required]
         public string PasswordRetry { get; set; }
 
-        // TODO 3 Сделать проверку что дата не в будущем времени
-        public DateTimeOffset BirthDate { get; set; }
+        public string Patronymic { get; set; }
+        public string Surname { get; set; }
     }
 }

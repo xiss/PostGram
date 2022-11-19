@@ -27,5 +27,6 @@ namespace PostGram.Api.Services
         Task<List<UserModel>> GetUsers();
 
         Task<SubscriptionModel> UpdateSubscription(UpdateSubscriptionModel model, Guid currentUserId);
+        Task<UserModel> UpdateUser(UpdateUserModel model, Guid currentUserId);
     }
 }

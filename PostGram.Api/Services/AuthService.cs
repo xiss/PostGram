@@ -117,7 +117,7 @@ namespace PostGram.Api.Services
             Claim[] claims =
             {
                 new(ClaimsIdentity.DefaultNameClaimType,  session.User.Name),
-                new(ClaimNames.Login , session.User.Login),
+                new(ClaimNames.Login , session.User.Nickname),
                 new(ClaimNames.UserId, session.User.Id.ToString()),
                 new(ClaimNames.SessionId, session.Id.ToString())
             };

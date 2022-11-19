@@ -80,6 +80,12 @@ namespace PostGram.Api.Controllers
             return await _userService.UpdateSubscription(model, this.GetCurrentUserId());
         }
 
+        [HttpPut]
+        public async Task<UserModel> UpdateUser(UpdateUserModel model)
+        {
+            return await _userService.UpdateUser(model, this.GetCurrentUserId());
+        }
+
         //public async Task<ActionResult> RefreshPassword()
         //{
         //    //TODO 4 RefreshPassword

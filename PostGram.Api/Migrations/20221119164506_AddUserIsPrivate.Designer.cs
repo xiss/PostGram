@@ -217,7 +217,7 @@ namespace PostGram.Api.Migrations
                     b.Property<bool>("IsPrivate")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Login")
+                    b.Property<string>("Nickname")
                         .IsRequired()
                         .HasColumnType("text");
 

@@ -61,7 +61,7 @@ namespace PostGram.Api.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Login",
                 table: "Users",
-                column: "Login",
+                column: "Nickname",
                 unique: true);
         }
     }
