@@ -7,7 +7,16 @@ namespace PostGram.DAL.Entities.Configs
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.HasIndex(u => u.Email).IsUnique();
+            builder.HasIndex(u => u.Email)
+                .IsUnique();
+
+            builder.HasMany(u => u.Slaves)
+                .WithOne(s => s.Slave)
+                .HasForeignKey(s => s.SlaveId);
+
+            builder.HasMany(u => u.Masters)
+                .WithOne(s => s.Master)
+                .HasForeignKey(s => s.MasterId);
         }
     }
 }

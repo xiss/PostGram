@@ -6,7 +6,6 @@ using PostGram.Api.Models.Comment;
 using PostGram.Api.Models.Like;
 using PostGram.Api.Models.Post;
 using PostGram.Api.Services;
-using PostGram.Common.Exceptions;
 
 namespace PostGram.Api.Controllers
 {
@@ -25,12 +24,7 @@ namespace PostGram.Api.Controllers
         [HttpPost]
         public async Task<Guid> CreateComment(CreateCommentModel model)
         {
-            Guid userId = this.GetCurrentUserId();
-            if (!await _postService.CheckPostExist(model.PostId))
-                throw new NotFoundPostGramException("Post not found: " + model.PostId);
-
-            Guid commentId = await _postService.CreateComment(model, userId);
-            return commentId;
+            return await _postService.CreateComment(model, this.GetCurrentUserId());
         }
 
         [HttpPost]
@@ -42,8 +36,7 @@ namespace PostGram.Api.Controllers
         [HttpPost]
         public async Task<Guid> CreatePost(CreatePostModel model)
         {
-            Guid postId = await _postService.CreatePost(model, this.GetCurrentUserId());
-            return postId;
+            return await _postService.CreatePost(model, this.GetCurrentUserId());
         }
 
         [HttpDelete]
@@ -76,8 +69,9 @@ namespace PostGram.Api.Controllers
         [HttpGet]
         public async Task<PostModel> GetPost(Guid postId)
         {
-            PostModel model = await _postService.GetPost(postId);
-            model.Author.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Author.Id);
+            PostModel model = await _postService.GetPost(postId, this.GetCurrentUserId());
+            if (model.Author.Avatar != null)
+                model.Author.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Author.Id);
             foreach (AttachmentModel attachment in model.Content)
             {
                 attachment.Link = AttachmentController.GetLinkForPostContent(Url, attachment.Id);
@@ -86,9 +80,9 @@ namespace PostGram.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<List<PostModel>> GetPosts(int take, int skip)
+        public async Task<List<PostModel>> GetPosts(int take = 10, int skip = 0)
         {
-            List<PostModel> models = await _postService.GetPosts(take, skip);
+            List<PostModel> models = await _postService.GetPosts(take, skip, this.GetCurrentUserId());
             foreach (PostModel model in models)
             {
                 if (model.Author.Avatar != null)
@@ -108,20 +102,21 @@ namespace PostGram.Api.Controllers
         }
 
         [HttpPut]
-        public async Task<PostModel> UpdatePost(UpdatePostModel model)
-        {
-            return await _postService.UpdatePost(model, this.GetCurrentUserId());
-        }
-
-        [HttpPut]
         public async Task<LikeModel> UpdateLike(UpdateLikeModel model)
         {
             return await _postService.UpdateLike(model, this.GetCurrentUserId());
         }
 
+        [HttpPut]
+        public async Task<PostModel> UpdatePost(UpdatePostModel model)
+        {
+            return await _postService.UpdatePost(model, this.GetCurrentUserId());
+        }
+
         //TODO 2 разделить на несколько апишек
         //TODO 1 Сделать подписки пользователей пользователь имеет право смотреть посты только тех юзеров на которых он подписанн и которые одобрили подписку.
         //TODO DDOS
+        //TODO Модели в Рекордс
         //Также с коментами и постами, насчет лайков не знаю.
         //TODO Нужно ли удалять лайки если удаляем пост или комент?
     }

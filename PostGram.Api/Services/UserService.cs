@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using PostGram.Api.Models.Attachment;
+using PostGram.Api.Models.Subscription;
 using PostGram.Api.Models.User;
 using PostGram.Common.Exceptions;
 using PostGram.DAL;
@@ -54,6 +55,41 @@ namespace PostGram.Api.Services
         public async Task<bool> CheckUserExist(string email)
         {
             return await _dataContext.Users.AnyAsync(u => u.Email.ToLower() == email.ToLower());
+        }
+
+        public async Task<Guid> CreateSubscription(CreateSubscriptionModel model, Guid currentUserId)
+        {
+            if (!await _dataContext.Users.AnyAsync(u => u.Id == model.MasterId))
+                throw new NotFoundPostGramException($"User {model.MasterId} not found");
+
+            if (await _dataContext.Subscriptions.AnyAsync(s => s.MasterId == model.MasterId && s.SlaveId == currentUserId))
+                throw new UnprocessableRequestPostGramException(
+                    $"Subscription with masterId {model.MasterId} and slaveId {currentUserId} is already exist");
+
+            User user = await GetUserById(currentUserId);
+            Subscription subscription = new()
+            {
+                Id = Guid.NewGuid(),
+                Created = DateTimeOffset.UtcNow,
+                SlaveId = currentUserId,
+                MasterId = model.MasterId,
+                Status = user.IsPrivate ? false : true
+            };
+
+            try
+            {
+                await _dataContext.Subscriptions.AddAsync(subscription);
+                await _dataContext.SaveChangesAsync();
+                return subscription.Id;
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null)
+                {
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                }
+                throw new DbPostGramException(e.Message, e);
+            }
         }
 
         public async Task<Guid> CreateUser(CreateUserModel model)
@@ -130,6 +166,28 @@ namespace PostGram.Api.Services
             _dataContext.Dispose();
         }
 
+        public async Task<List<SubscriptionModel>> GetMasterSubscriptions(Guid currentUserId)
+        {
+            List<SubscriptionModel> subscriptions = await _dataContext.Subscriptions
+                .Where(s => s.MasterId == currentUserId)
+                .ProjectTo<SubscriptionModel>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+            if (subscriptions.Count == 0)
+                throw new NotFoundPostGramException($"Not found master subscription for user {currentUserId}");
+            return subscriptions;
+        }
+
+        public async Task<List<SubscriptionModel>> GetSlaveSubscriptions(Guid currentUserId)
+        {
+            List<SubscriptionModel> subscriptions = await _dataContext.Subscriptions
+                .Where(s => s.SlaveId == currentUserId)
+                .ProjectTo<SubscriptionModel>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+            if (subscriptions.Count == 0)
+                throw new NotFoundPostGramException($"Not found slave subscription for user {currentUserId}");
+            return subscriptions;
+        }
+
         public async Task<UserModel> GetUser(Guid UserId)
         {
             User user = await GetUserById(UserId);
@@ -148,6 +206,37 @@ namespace PostGram.Api.Services
             if (models.Count == 0)
                 throw new NotFoundPostGramException("Users not found in DB");
             return models;
+        }
+
+        public async Task<SubscriptionModel> UpdateSubscription(UpdateSubscriptionModel model, Guid currentUserId)
+        {
+            Subscription? subscription = await _dataContext.Subscriptions.FirstOrDefaultAsync(s => s.Id == model.Id);
+            if (subscription == null)
+                throw new NotFoundPostGramException($"Not found subscription with id: {model.Id}");
+
+            if (subscription.MasterId != currentUserId && subscription.SlaveId != currentUserId)
+                throw new AuthorizationPostGramException("Con not modify subscription of another user");
+
+            if (subscription.SlaveId == currentUserId && model.Status)
+                throw new AuthorizationPostGramException(
+                    "Can not confirm subscription being slave to this subscription");
+
+            subscription.Status = model.Status;
+            subscription.Edited = DateTimeOffset.UtcNow;
+
+            try
+            {
+                await _dataContext.SaveChangesAsync();
+                return _mapper.Map<SubscriptionModel>(subscription);
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null)
+                {
+                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                }
+                throw new DbPostGramException(e.Message, e);
+            }
         }
 
         private async Task<User> GetUserById(Guid id)

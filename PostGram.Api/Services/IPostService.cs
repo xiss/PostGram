@@ -6,10 +6,6 @@ namespace PostGram.Api.Services
 {
     public interface IPostService
     {
-        Task<bool> CheckCommentExist(Guid commentId);
-
-        Task<bool> CheckPostExist(Guid postId);
-
         Task<Guid> CreateComment(CreateCommentModel model, Guid currentUserId);
 
         Task<Guid> CreateLike(CreateLikeModel model, Guid currentUserId);
@@ -24,9 +20,9 @@ namespace PostGram.Api.Services
 
         Task<CommentModel[]> GetCommentsForPost(Guid postId);
 
-        Task<PostModel> GetPost(Guid postId);
+        Task<PostModel> GetPost(Guid postId, Guid currentUserId);
 
-        Task<List<PostModel>> GetPosts(int take, int skip);
+        Task<List<PostModel>> GetPosts(int take, int skip, Guid currentUserId);
 
         Task<CommentModel> UpdateComment(UpdateCommentModel model, Guid currentUserId);
 

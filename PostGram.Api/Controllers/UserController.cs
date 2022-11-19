@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PostGram.Api.Helpers;
 using PostGram.Api.Models.Attachment;
+using PostGram.Api.Models.Subscription;
 using PostGram.Api.Models.User;
 using PostGram.Api.Services;
 
@@ -26,6 +27,12 @@ namespace PostGram.Api.Controllers
             await _userService.AddAvatarToUser(this.GetCurrentUserId(), model, destFile);
         }
 
+        [HttpPost]
+        public async Task<Guid> CreateSubscription(CreateSubscriptionModel model)
+        {
+            return await _userService.CreateSubscription(model, this.GetCurrentUserId());
+        }
+
         [HttpDelete]
         public async Task<Guid> DeleteUserAvatar()
         {
@@ -38,8 +45,21 @@ namespace PostGram.Api.Controllers
         public async Task<UserModel> GetCurrentUser()
         {
             UserModel model = await _userService.GetUser(this.GetCurrentUserId());
-            model.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Id);
+            if (model.Avatar != null)
+                model.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Id);
             return model;
+        }
+
+        [HttpGet]
+        public async Task<List<SubscriptionModel>> GetMasterSubscriptions()
+        {
+            return await _userService.GetMasterSubscriptions(this.GetCurrentUserId());
+        }
+
+        [HttpGet]
+        public async Task<List<SubscriptionModel>> GetSlaveSubscriptions()
+        {
+            return await _userService.GetSlaveSubscriptions(this.GetCurrentUserId());
         }
 
         [HttpGet]
@@ -52,6 +72,12 @@ namespace PostGram.Api.Controllers
                     user.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, user.Id);
             }
             return models;
+        }
+
+        [HttpPut]
+        public async Task<SubscriptionModel> UpdateSubscription(UpdateSubscriptionModel model)
+        {
+            return await _userService.UpdateSubscription(model, this.GetCurrentUserId());
         }
 
         //public async Task<ActionResult> RefreshPassword()

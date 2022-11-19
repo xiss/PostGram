@@ -23,9 +23,10 @@ namespace PostGram.DAL
             modelBuilder.ApplyConfiguration(new AvatarConfig());
             modelBuilder.ApplyConfiguration(new PostContentConfig());
             modelBuilder.ApplyConfiguration(new LikeConfig());
+            modelBuilder.ApplyConfiguration(new SubscriptionConfig());
         }
 
-        public DbSet<User> Users { get; set; } = null!;
+        public DbSet<User> Users => Set<User>();
         public DbSet<UserSession> UserSessions => Set<UserSession>();
         public DbSet<Attachment> Attachments => Set<Attachment>();
         public DbSet<Avatar> Avatars => Set<Avatar>();
@@ -33,5 +34,6 @@ namespace PostGram.DAL
         public DbSet<Post> Posts => Set<Post>();
         public DbSet<PostContent> PostContents => Set<PostContent>();
         public DbSet<Like> Likes => Set<Like>();
+        public DbSet<Subscription> Subscriptions => Set<Subscription>();
     }
 }

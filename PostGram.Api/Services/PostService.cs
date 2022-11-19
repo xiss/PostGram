@@ -24,18 +24,11 @@ namespace PostGram.Api.Services
             _attachmentService = attachmentService;
         }
 
-        public async Task<bool> CheckCommentExist(Guid commentId)
-        {
-            return await _dataContext.Comments.AnyAsync(u => u.Id == commentId);
-        }
-
-        public async Task<bool> CheckPostExist(Guid postId)
-        {
-            return await _dataContext.Posts.AnyAsync(u => u.Id == postId);
-        }
-
         public async Task<Guid> CreateComment(CreateCommentModel model, Guid currentUserId)
         {
+            if (!await CheckPostExist(model.PostId))
+                throw new NotFoundPostGramException("Post not found: " + model.PostId);
+
             Comment comment = _mapper.Map<Comment>(model);
             comment.AuthorId = currentUserId;
 
@@ -198,8 +191,10 @@ namespace PostGram.Api.Services
             return _mapper.Map<CommentModel[]>(comments);
         }
 
-        public async Task<PostModel> GetPost(Guid postId)
+        public async Task<PostModel> GetPost(Guid postId, Guid currentUserId)
         {
+            List<Guid> subscriptions = await GetSlaveSubscriptionsIdForUser(currentUserId);
+
             Post? post = await _dataContext.Posts
                 .AsNoTracking()
                 .Include(p => p.PostContents)
@@ -214,13 +209,20 @@ namespace PostGram.Api.Services
             if (post == null)
                 throw new NotFoundPostGramException("Post not found: " + postId);
 
+            if (post.AuthorId != currentUserId && !subscriptions.Contains(post.AuthorId))
+                throw new AuthorizationPostGramException($"User {currentUserId} cannot access post {post.Id}");
+
             return _mapper.Map<PostModel>(post);
         }
 
-        public async Task<List<PostModel>> GetPosts(int take, int skip)
+        public async Task<List<PostModel>> GetPosts(int take, int skip, Guid currentUserId)
         {
+            List<Guid> subscriptions = await GetSlaveSubscriptionsIdForUser(currentUserId);
+
             List<PostModel> model = await _dataContext.Posts
                 .Include(p => p.PostContents)
+                .Include(p => p.Author)
+                .ThenInclude(u => u.Slaves)
                 .Include(p => p.Comments
                     .Where(c => !c.IsDeleted)
                     .OrderBy(c => c.Created))
@@ -228,12 +230,15 @@ namespace PostGram.Api.Services
                 .Include(p => p.Likes)
                 .Include(p => p.Author)
                 .ThenInclude(a => a.Avatar)
-                .AsNoTracking()
+                .Where(p => subscriptions
+                    .Contains(p.AuthorId) || p.AuthorId == currentUserId)
+                .Where(p => !p.IsDeleted)
                 .OrderByDescending(p => p.Created)
-                .Where(p => p.IsDeleted != true)
                 .Skip(skip)
                 .Take(take)
-                .Select(p => _mapper.Map<PostModel>(p))
+                .Select(p => _mapper
+                    .Map<PostModel>(p))
+                .AsNoTracking()
                 .ToListAsync();
             if (model.Count == 0)
                 throw new NotFoundPostGramException("Posts not found");
@@ -348,9 +353,19 @@ namespace PostGram.Api.Services
             return _mapper.Map<PostModel>(post);
         }
 
+        private async Task<bool> CheckCommentExist(Guid commentId)
+        {
+            return await _dataContext.Comments.AnyAsync(u => u.Id == commentId);
+        }
+
         private async Task<bool> CheckLikeExist(Guid authorId, Guid entityId)
         {
             return await _dataContext.Likes.AnyAsync(l => l.AuthorId == authorId && l.EntityId == entityId);
+        }
+
+        private async Task<bool> CheckPostExist(Guid postId)
+        {
+            return await _dataContext.Posts.AnyAsync(u => u.Id == postId);
         }
 
         private async Task DeletePostContents(ICollection<PostContent> postContents)
@@ -396,6 +411,15 @@ namespace PostGram.Api.Services
             if (postContent == null)
                 throw new NotFoundPostGramException($"Post contents {string.Join(' ', postContentIds)} not found in DB");
             return postContent;
+        }
+
+        //TODO Rename
+        private async Task<List<Guid>> GetSlaveSubscriptionsIdForUser(Guid slaveUserId)
+        {
+            return await _dataContext.Subscriptions
+                .Where(s => s.SlaveId == slaveUserId && s.Status)
+                .Select(s => s.MasterId)
+                .ToListAsync();
         }
 
         private async Task UpdateComment(Comment comment)

@@ -3,6 +3,7 @@ using PostGram.Api.Models.Attachment;
 using PostGram.Api.Models.Comment;
 using PostGram.Api.Models.Like;
 using PostGram.Api.Models.Post;
+using PostGram.Api.Models.Subscription;
 using PostGram.Api.Models.User;
 using PostGram.DAL.Entities;
 
@@ -48,6 +49,9 @@ namespace PostGram.Api
                 .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow))
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()));
             CreateMap<Like, LikeModel>();
+
+            //Subscriptions
+            CreateMap<Subscription, SubscriptionModel>();
         }
     }
 }
