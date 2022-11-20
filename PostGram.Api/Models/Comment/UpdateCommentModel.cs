@@ -2,11 +2,11 @@
 
 namespace PostGram.Api.Models.Comment
 {
-    public class UpdateCommentModel
+    public record UpdateCommentModel
     {
         [Required]
-        public Guid Id { get; set; }
+        public Guid Id { get; init; }
         [Required]
-        public string NewBody { get; set; } = null!;
+        public string NewBody { get; init; } = string.Empty;
     }
 }

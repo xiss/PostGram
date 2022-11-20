@@ -1,6 +1,6 @@
 ﻿namespace PostGram.Api.Models.Token
 {
-    public class TokenRequestModel
+    public record TokenRequestModel
     {
         public TokenRequestModel(string login, string password)
         {
@@ -8,7 +8,7 @@
             Password = password;
         }
 
-        public string Login { get; set; }
-        public string Password { get; set; }
+        public string Login { get; init; }
+        public string Password { get; init; }
     }
 }

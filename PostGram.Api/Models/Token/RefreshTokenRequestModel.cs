@@ -1,12 +1,12 @@
 ﻿namespace PostGram.Api.Models.Token
 {
-    public class RefreshTokenRequestModel
+    public record RefreshTokenRequestModel
     {
         public RefreshTokenRequestModel(string refreshToken)
         {
             RefreshToken = refreshToken;
         }
 
-        public string RefreshToken { get; set; }
+        public string RefreshToken { get; init; }
     }
 }

@@ -1,12 +1,12 @@
 ﻿namespace PostGram.Api.Models.Subscription
 {
-    public class SubscriptionModel
+    public record SubscriptionModel
     {
-        public Guid Id { get; set; }
-        public Guid SlaveId { get; set; }
-        public Guid MasterId { get; set; }
-        public bool Status { get; set; } 
-        public DateTimeOffset Created { get; set; }
-        public DateTimeOffset? Edited { get; set; }
+        public Guid Id { get; init; }
+        public Guid SlaveId { get; init; }
+        public Guid MasterId { get; init; }
+        public bool Status { get; init; } 
+        public DateTimeOffset Created { get; init; }
+        public DateTimeOffset? Edited { get; init; }
     }
 }

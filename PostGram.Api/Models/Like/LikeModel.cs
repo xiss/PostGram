@@ -2,13 +2,13 @@
 
 namespace PostGram.Api.Models.Like
 {
-    public class LikeModel
+    public record LikeModel
     {
-        public Guid Id { get; set; }
-        public bool? IsLike { get; set; }
-        public Guid EntityId { get; set; }
-        public Guid AuthorId { get; set; }
-        public DateTimeOffset Created { get; set; }
-        public LikableEntities EntityType { get; set; }
+        public Guid Id { get; init; }
+        public bool? IsLike { get; init; }
+        public Guid EntityId { get; init; }
+        public Guid AuthorId { get; init; }
+        public DateTimeOffset Created { get; init; }
+        public LikableEntities EntityType { get; init; }
     }
 }

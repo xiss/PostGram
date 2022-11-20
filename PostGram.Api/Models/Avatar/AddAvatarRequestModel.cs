@@ -1,11 +1,13 @@
 ﻿using PostGram.Api.Models.Attachment;
+using System.ComponentModel.DataAnnotations;
 
 namespace PostGram.Api.Models.Avatar
 {
-    public class AddAvatarRequestModel
+    public record AddAvatarRequestModel
     {
-        public MetadataModel Avatar { get; set; } = null!;
-
-        public Guid UserId { get; set; }
+        [Required]
+        public MetadataModel Avatar { get; init; } = new ();
+        [Required]
+        public Guid UserId { get; init; }
     }
 }

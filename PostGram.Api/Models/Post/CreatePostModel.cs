@@ -3,15 +3,15 @@ using PostGram.Api.Models.Attachment;
 
 namespace PostGram.Api.Models.Post
 {
-    public class CreatePostModel
+    public record CreatePostModel
     {
         [Required]
-        public string Header { get; set; } = null!;
+        public string Header { get; init; } = string.Empty;
 
         [Required]
-        public string Body { get; set; } = null!;
+        public string Body { get; init; } = string.Empty;
 
         [Required]
-        public virtual ICollection<MetadataModel> Attachments { get; set; } = new List<MetadataModel>();
+        public virtual ICollection<MetadataModel> Attachments { get; init; } = new List<MetadataModel>();
     }
 }

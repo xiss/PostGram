@@ -2,11 +2,11 @@
 
 namespace PostGram.Api.Models.Like
 {
-    public class UpdateLikeModel
+    public record UpdateLikeModel
     {
         [Required]
-        public Guid Id { get; set; }
+        public Guid Id { get; init; }
 
-        public bool? IsLike { get; set; }
+        public bool? IsLike { get; init; }
     }
 }

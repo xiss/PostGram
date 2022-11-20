@@ -2,15 +2,15 @@
 
 namespace PostGram.Api.Models.Attachment
 {
-    public class MetadataModel
+    public record MetadataModel
     {
         [Required]
-        public Guid TempId { get; set; }
+        public Guid TempId { get; init; }
         [Required]
-        public string Name { get; set; } = null!;
+        public string Name { get; init; } = string.Empty;
         [Required]
-        public string MimeType { get; set; } = null!;
+        public string MimeType { get; init; } = string.Empty;
         [Required]
-        public long Size { get; set; }
+        public long Size { get; init; }
     }
 }

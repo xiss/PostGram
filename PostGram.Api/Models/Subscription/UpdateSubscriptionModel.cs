@@ -1,8 +1,8 @@
 ﻿namespace PostGram.Api.Models.Subscription
 {
-    public class UpdateSubscriptionModel
+    public record UpdateSubscriptionModel
     {
-        public Guid Id { get; set; }
-        public bool Status { get; set; } 
+        public Guid Id { get; init; }
+        public bool Status { get; init; } 
     }
 }

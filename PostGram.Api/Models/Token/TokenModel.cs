@@ -1,6 +1,6 @@
 ﻿namespace PostGram.Api.Models.Token
 {
-    public class TokenModel
+    public record TokenModel
     {
         public TokenModel(string securityToken, string refreshToken)
         {
@@ -8,7 +8,7 @@
             RefreshToken = refreshToken;
         }
 
-        public string SecurityToken { get; set; }
-        public string RefreshToken { get; set; }
+        public string SecurityToken { get; init; }
+        public string RefreshToken { get; init; }
     }
 }

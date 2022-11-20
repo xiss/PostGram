@@ -4,17 +4,17 @@ using PostGram.Api.Models.User;
 
 namespace PostGram.Api.Models.Post
 {
-    public class PostModel
+    public record PostModel
     {
-        public UserModel Author { get; set; } = new UserModel();
-        public Guid Id { get; set; }
-        public DateTimeOffset Created { get; set; }
-        public DateTimeOffset? Edited { get; set; }
-        public string Header { get; set; } = String.Empty;
-        public string Body { get; set; } = String.Empty;
-        public int LikeCount { get; set; }
-        public int DislikeCount { get; set; }
-        public int CommentCount { get; set; }
-        public ICollection<AttachmentModel> Content { get; set; } = new List<AttachmentModel>();
+        public UserModel Author { get; init; } = new UserModel();
+        public Guid Id { get; init; }
+        public DateTimeOffset Created { get; init; }
+        public DateTimeOffset? Edited { get; init; }
+        public string Header { get; init; } = string.Empty;
+        public string Body { get; init; } = string.Empty;
+        public int LikeCount { get; init; }
+        public int DislikeCount { get; init; }
+        public int CommentCount { get; init; }
+        public ICollection<AttachmentModel> Content { get; init; } = new List<AttachmentModel>();
     }
 }

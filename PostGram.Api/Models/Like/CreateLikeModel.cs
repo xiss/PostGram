@@ -3,15 +3,15 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PostGram.Api.Models.Like
 {
-    public class CreateLikeModel
+    public record CreateLikeModel
     {
         [Required]
-        public bool IsLike { get; set; }
+        public bool IsLike { get; init; }
 
         [Required]
-        public Guid EntityId { get; set; }
+        public Guid EntityId { get; init; }
 
         [Required]
-        public LikableEntities EntityType { get; set; }
+        public LikableEntities EntityType { get; init; }
     }
 }

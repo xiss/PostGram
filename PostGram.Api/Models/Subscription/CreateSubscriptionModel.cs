@@ -2,9 +2,9 @@
 
 namespace PostGram.Api.Models.Subscription
 {
-    public class CreateSubscriptionModel
+    public record CreateSubscriptionModel
     {
         [Required]
-        public Guid MasterId { get; set; }
+        public Guid MasterId { get; init; }
     }
 }
