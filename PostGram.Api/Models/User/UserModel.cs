@@ -6,11 +6,11 @@ namespace PostGram.Api.Models.User
     {
         public AttachmentModel? Avatar { get; init; }
         public Guid Id { get; init; }
-        public string Name { get; init; }
-        public string Surname { get; init; }
-        public string Patronymic { get; init; }
-        public string Email { get; init; }
-        public string Nickname { get; init; }
+        public string Name { get; init; } = string.Empty;
+        public string Surname { get; init; } = string.Empty;
+        public string Patronymic { get; init; } = string.Empty;
+        public string Email { get; init; } = string.Empty;
+        public string Nickname { get; init; } = string.Empty;
         public DateTimeOffset? BirthDate { get; init; }
     }
 }

@@ -115,15 +115,6 @@ namespace PostGram.Api.Services
             return model;
         }
 
-        //private async Task<Attachment> GetAttachment(Guid attachmentId)
-        //{
-        //    Attachment? attachment = await _dataContext.Attachments.FirstOrDefaultAsync(a => a.Id == attachmentId);
-        //    if (attachment == null)
-        //        throw new NotFoundPostGramException($"File {attachmentId} not found");
-
-        //    _dataContext.Attachments.Remove(attachment);
-        //}
-
         private bool FileExists(string filePath)
         {
             return new FileInfo(filePath).Exists;

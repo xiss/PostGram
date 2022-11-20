@@ -12,5 +12,7 @@ namespace PostGram.Api.Models.Comment
         public string Body { get; init; } = string.Empty;
         public int LikeCount { get; init; }
         public int DislikeCount { get; init; }
+        public Guid? QuotedCommentId { get; init; }
+        public string? QuotedText { get; init; }
     }
 }
