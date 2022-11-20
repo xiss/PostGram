@@ -13,7 +13,7 @@ using System.Security.Claims;
 
 namespace PostGram.Api.Services
 {
-    public class AuthService : IAuthService
+    public class AuthService : IDisposable, IAuthService
     {
         private readonly AuthConfig _authConfig;
         private readonly DataContext _dataContext;
@@ -22,6 +22,11 @@ namespace PostGram.Api.Services
         {
             _dataContext = dataContext;
             _authConfig = authConfig.Value;
+        }
+
+        public void Dispose()
+        {
+            _dataContext.Dispose();
         }
 
         public async Task<TokenModel> GetToken(string login, string password)

@@ -66,14 +66,13 @@ namespace PostGram.Api.Services
                 throw new UnprocessableRequestPostGramException(
                     $"Subscription with masterId {model.MasterId} and slaveId {currentUserId} is already exist");
 
-            User user = await GetUserById(currentUserId);
             Subscription subscription = new()
             {
                 Id = Guid.NewGuid(),
                 Created = DateTimeOffset.UtcNow,
                 SlaveId = currentUserId,
                 MasterId = model.MasterId,
-                Status = user.IsPrivate ? false : true
+                Status = false
             };
 
             try
@@ -188,9 +187,9 @@ namespace PostGram.Api.Services
             return subscriptions;
         }
 
-        public async Task<UserModel> GetUser(Guid UserId)
+        public async Task<UserModel> GetUser(Guid userId)
         {
-            User user = await GetUserById(UserId);
+            User user = await GetUserById(userId);
             return _mapper.Map<UserModel>(user);
         }
 

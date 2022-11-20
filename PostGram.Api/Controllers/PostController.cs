@@ -9,6 +9,7 @@ using PostGram.Api.Services;
 
 namespace PostGram.Api.Controllers
 {
+    [ApiExplorerSettings(GroupName = Common.Constants.Api.EndpointApiName)]
     [Route("api/[controller]/[action]")]
     [ApiController]
     [Authorize]
@@ -56,6 +57,8 @@ namespace PostGram.Api.Controllers
         public async Task<CommentModel> GetComment(Guid commentId)
         {
             CommentModel model = await _postService.GetComment(commentId);
+            if (model.Author.Avatar != null)
+                model.Author.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Author.Id);
             return model;
         }
 
@@ -63,6 +66,12 @@ namespace PostGram.Api.Controllers
         public async Task<CommentModel[]> GetCommentsForPost(Guid postId)
         {
             CommentModel[] model = await _postService.GetCommentsForPost(postId);
+            foreach (CommentModel comment in model)
+            {
+                if (comment.Author.Avatar != null)
+                    comment.Author.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, comment.Author.Id);
+            }
+
             return model;
         }
 
@@ -113,8 +122,6 @@ namespace PostGram.Api.Controllers
             return await _postService.UpdatePost(model, this.GetCurrentUserId());
         }
 
-        //TODO 2 разделить на несколько апишек
-        //TODO 1 Сделать подписки пользователей пользователь имеет право смотреть посты только тех юзеров на которых он подписанн и которые одобрили подписку.
         //TODO DDOS
         //TODO Модели в Рекордс
         //Также с коментами и постами, насчет лайков не знаю.

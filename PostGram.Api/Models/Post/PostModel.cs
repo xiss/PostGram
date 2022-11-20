@@ -14,7 +14,7 @@ namespace PostGram.Api.Models.Post
         public string Body { get; set; } = String.Empty;
         public int LikeCount { get; set; }
         public int DislikeCount { get; set; }
-        public CommentModel[]? Comments { get; set; }
+        public int CommentCount { get; set; }
         public ICollection<AttachmentModel> Content { get; set; } = new List<AttachmentModel>();
     }
 }

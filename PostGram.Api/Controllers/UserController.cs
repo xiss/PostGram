@@ -7,6 +7,7 @@ using PostGram.Api.Services;
 
 namespace PostGram.Api.Controllers
 {
+    [ApiExplorerSettings(GroupName = Common.Constants.Api.EndpointApiName)]
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class UserController : ControllerBase

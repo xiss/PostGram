@@ -1,14 +1,16 @@
-﻿namespace PostGram.Api.Models.Comment
+﻿using PostGram.Api.Models.User;
+
+namespace PostGram.Api.Models.Comment
 {
-    public class CommentModel
+    public record CommentModel
     {
-        public Guid Id { get; set; }
-        public Guid AuthorId { get; set; }
-        public Guid PostId { get; set; }
-        public DateTimeOffset Created { get; set; }
-        public DateTimeOffset? Edited { get; set; }
-        public string Body { get; set; } = String.Empty;
-        public int LikeCount { get; set; }
-        public int DislikeCount { get; set; }
+        public Guid Id { get; init; }
+        public UserModel Author { get; init; }
+        public Guid PostId { get; init; }
+        public DateTimeOffset Created { get; init; }
+        public DateTimeOffset? Edited { get; init; }
+        public string Body { get; init; } = String.Empty;
+        public int LikeCount { get; init; }
+        public int DislikeCount { get; init; }
     }
 }

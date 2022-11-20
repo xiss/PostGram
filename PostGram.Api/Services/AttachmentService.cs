@@ -75,14 +75,22 @@ namespace PostGram.Api.Services
             return new FileInfoModel(avatar.Name, avatar.MimeType, avatar.FilePath);
         }
 
-        public async Task<FileInfoModel> GetPostContent(Guid postContentId)
+        public async Task<FileInfoModel> GetPostContent(Guid postContentId, Guid currentUserId)
         {
-            PostContent? postContent = await _dataContext.PostContents.AsNoTracking().FirstOrDefaultAsync(a => a.Id == postContentId);
+            PostContent? postContent = await _dataContext.PostContents
+                .Include(pc => pc.Author)
+                .ThenInclude(u => u.Masters)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(a => a.Id == postContentId);
             if (postContent == null)
                 throw new NotFoundPostGramException("PostContent not found in DB: " + postContentId);
 
             if (!FileExists(postContent.FilePath))
                 throw new NotFoundPostGramException("File not found: " + postContentId);
+
+            if (postContent.AuthorId != currentUserId &&
+                !postContent.Author.Masters.Any(s => (s.SlaveId == currentUserId && s.Status)))
+                throw new AuthorizationPostGramException("Access denied");
 
             return new FileInfoModel(postContent.Name, postContent.MimeType, postContent.FilePath);
         }

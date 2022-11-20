@@ -7,6 +7,7 @@ using PostGram.Api.Helpers;
 
 namespace PostGram.Api.Controllers
 {
+    [ApiExplorerSettings(GroupName = Common.Constants.Api.EndpointAuthorizationName)]
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class AuthController : ControllerBase

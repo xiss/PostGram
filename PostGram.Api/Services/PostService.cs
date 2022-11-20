@@ -11,7 +11,7 @@ using PostGram.DAL.Entities;
 
 namespace PostGram.Api.Services
 {
-    public class PostService : IPostService
+    public class PostService : IDisposable, IPostService
     {
         private readonly IAttachmentService _attachmentService;
         private readonly DataContext _dataContext;
@@ -171,6 +171,12 @@ namespace PostGram.Api.Services
             }
         }
 
+        public void Dispose()
+        {
+            _dataContext.Dispose();
+            _attachmentService.Dispose();
+        }
+
         public async Task<CommentModel> GetComment(Guid commentId)
         {
             Comment comment = await GetCommentById(commentId);
@@ -181,6 +187,8 @@ namespace PostGram.Api.Services
         {
             Comment[] comments = await _dataContext.Comments
                 .Include(c => c.Likes)
+                .Include(c=>c.Author)
+                .ThenInclude(a=>a.Avatar)
                 .AsNoTracking()
                 .Where(c => c.PostId == postId && !c.IsDeleted && !c.Post.IsDeleted)
                 .OrderBy(c => c.Created)
@@ -393,6 +401,8 @@ namespace PostGram.Api.Services
         {
             Comment? comment = await _dataContext.Comments
                 .Include(p => p.Likes)
+                .Include(c=>c.Author)
+                .ThenInclude(a=>a.Avatar)
                 .FirstOrDefaultAsync(c => c.Id == commentId && !c.IsDeleted);
             if (comment == null)
                 throw new NotFoundPostGramException("Comment not found: " + commentId);
@@ -417,7 +427,7 @@ namespace PostGram.Api.Services
         private async Task<List<Guid>> GetSlaveSubscriptionsIdForUser(Guid slaveUserId)
         {
             return await _dataContext.Subscriptions
-                .Where(s => s.SlaveId == slaveUserId && s.Status)
+                .Where(s => s.SlaveId == slaveUserId && (s.Status|| !s.Master.IsPrivate))
                 .Select(s => s.MasterId)
                 .ToListAsync();
         }

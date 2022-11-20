@@ -1,16 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using NLog;
 using NLog.Web;
 using PostGram.Api;
 using PostGram.Api.Configs;
 using PostGram.Api.Middlewares;
 using PostGram.Api.Services;
-
-var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
+using PostGram.Common.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +36,7 @@ builder.Services.AddSwaggerGen(o =>
         Scheme = JwtBearerDefaults.AuthenticationScheme
     });
     o.AddSecurityRequirement(new OpenApiSecurityRequirement()
-{
+    {
         {
             new OpenApiSecurityScheme()
             {
@@ -54,7 +51,9 @@ builder.Services.AddSwaggerGen(o =>
             },
             new List<string>()
         }
-});
+    });
+    o.SwaggerDoc(Api.EndpointAuthorizationName, new OpenApiInfo { Title = Api.EndpointAuthorizationName });
+    o.SwaggerDoc(Api.EndpointApiName, new OpenApiInfo { Title = Api.EndpointApiName });
 });
 
 builder.Services.AddAutoMapper(typeof(MapperProfile).Assembly);
@@ -111,7 +110,11 @@ using (var serviceScope = ((IApplicationBuilder)app).ApplicationServices.GetServ
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options=>
+    {
+        options.SwaggerEndpoint(Api.EndpointApiName + "/swagger.json", Api.EndpointApiName);
+        options.SwaggerEndpoint(Api.EndpointAuthorizationName +"/swagger.json", Api.EndpointAuthorizationName); 
+    });
     app.UseDeveloperExceptionPage();
 }
 

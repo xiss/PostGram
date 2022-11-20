@@ -5,6 +5,7 @@ using PostGram.Api.Services;
 
 namespace PostGram.Api.Controllers
 {
+    [ApiExplorerSettings(GroupName = Common.Constants.Api.EndpointApiName)]
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class AttachmentController : ControllerBase
@@ -36,7 +37,7 @@ namespace PostGram.Api.Controllers
         [HttpGet]
         public async Task<ActionResult> GetPostContent(Guid postContentId, bool download = false)
         {
-            FileInfoModel model = await _attachmentService.GetPostContent(postContentId);
+            FileInfoModel model = await _attachmentService.GetPostContent(postContentId, this.GetCurrentUserId());
             return RenderAttachment(model, download);
         }
 

@@ -22,7 +22,7 @@ namespace PostGram.Api.Services
 
         Task<List<SubscriptionModel>> GetSlaveSubscriptions(Guid currentUserId);
 
-        Task<UserModel> GetUser(Guid UserId);
+        Task<UserModel> GetUser(Guid userId);
 
         Task<List<UserModel>> GetUsers();
 

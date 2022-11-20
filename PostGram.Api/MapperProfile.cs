@@ -34,7 +34,8 @@ namespace PostGram.Api
             CreateMap<Post, PostModel>()
                 .ForMember(d => d.Content, m => m.MapFrom(s => s.PostContents))
                 .ForMember(d => d.DislikeCount, m => m.MapFrom(s => s.Likes.Count(l => l.IsLike == false)))
-                .ForMember(d => d.LikeCount, m => m.MapFrom(s => s.Likes.Count(l => l.IsLike == true)));
+                .ForMember(d => d.LikeCount, m => m.MapFrom(s => s.Likes.Count(l => l.IsLike == true)))
+                .ForMember(d => d.CommentCount, m => m.MapFrom(s => s.Comments.Count));
 
             //Comment
             CreateMap<CreateCommentModel, Comment>()
