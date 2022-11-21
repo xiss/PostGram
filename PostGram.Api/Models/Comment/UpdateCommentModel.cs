@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using PostGram.Common.Constants;
+using System.ComponentModel.DataAnnotations;
 
 namespace PostGram.Api.Models.Comment
 {
@@ -7,6 +8,7 @@ namespace PostGram.Api.Models.Comment
         [Required]
         public Guid Id { get; init; }
         [Required]
+        [StringLength(ModelValidation.CommentLength)]
         public string NewBody { get; init; } = string.Empty;
     }
 }
