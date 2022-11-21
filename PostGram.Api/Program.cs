@@ -17,8 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 var authSection = builder.Configuration.GetSection(AuthConfig.SectionName);
 var authConfig = authSection.Get<AuthConfig>();
 
+//Nlog setup
 LogManager.Setup().LoadConfigurationFromAppSettings();
-
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
@@ -68,12 +68,15 @@ builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>()
 builder.Services.Configure<AuthConfig>(authSection);
 builder.Services.Configure<AppConfig>(builder.Configuration.GetSection(AppConfig.SectionName));
 
+
+//IpRateLimit setup
 builder.Services.AddOptions();
 builder.Services.AddMemoryCache();
-builder.Services.AddInMemoryRateLimiting();
-builder.Services.Configure<ClientRateLimitOptions>(builder.Configuration.GetSection("ClientRateLimiting")); ;
+builder.Services.Configure<ClientRateLimitOptions>(builder.Configuration.GetSection("ClientRateLimiting"));
+;
 builder.Services.Configure<ClientRateLimitPolicies>(builder.Configuration.GetSection("ClientRateLimitPolicies"));
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+builder.Services.AddInMemoryRateLimiting();
 
 builder.Services.AddDbContext<PostGram.DAL.DataContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql")));
