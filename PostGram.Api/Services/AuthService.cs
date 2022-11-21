@@ -159,7 +159,7 @@ namespace PostGram.Api.Services
             if (user == null)
                 throw new NotFoundPostGramException("login: " + login);
 
-            if (!HashHelper.VerifySHA256(password, user.PasswordHash))
+            if (!HashHelper.VerifySha256(password, user.PasswordHash))
                 throw new AuthorizationPostGramException("Password incorrect for login: " + login);
 
             return user;
