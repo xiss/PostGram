@@ -34,10 +34,6 @@ namespace PostGram.Api.Migrations
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasColumnType("text");

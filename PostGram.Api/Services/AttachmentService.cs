@@ -24,14 +24,10 @@ namespace PostGram.Api.Services
             FileInfo tempFile = new(Path.Combine(Path.GetTempPath(), temporaryFileId));
             if (!tempFile.Exists)
                 throw new NotFoundPostGramException("File not found: " + temporaryFileId);
+            DirectoryInfo attachmentsDirectory = GetOrCreateAttachmentsFolder();
             try
             {
-                var destFile = Path.Combine(Directory.GetCurrentDirectory(), _appConfig.AttachesFolderName,
-                    temporaryFileId);
-                var destFi = new FileInfo(destFile);
-                if (destFi.Directory != null && !destFi.Directory.Exists)
-                    destFi.Directory.Create();
-
+                var destFile = Path.Combine(attachmentsDirectory.FullName, temporaryFileId);
                 File.Move(tempFile.FullName, destFile, true);
 
                 return await Task.Run(() => destFile);
@@ -44,8 +40,7 @@ namespace PostGram.Api.Services
 
         public void DeleteFile(Guid id)
         {
-            FileInfo fileFile = new(Path.Combine(Directory.GetCurrentDirectory(), _appConfig.AttachesFolderName,
-                    id.ToString()));
+            FileInfo fileFile = new(Path.Combine(_appConfig.AttachmentsFolderPath, id.ToString()));
             if (!fileFile.Exists)
                 throw new NotFoundPostGramException($"File {id} not found");
             try
@@ -69,10 +64,10 @@ namespace PostGram.Api.Services
             if (avatar == null)
                 throw new NotFoundPostGramException("Avatar not found in DB for user: " + userId);
 
-            if (!FileExists(avatar.FilePath))
-                throw new NotFoundPostGramException("File not found: " + avatar.FilePath);
+            if (!CheckAttachmentsExists(avatar.Id.ToString()))
+                throw new NotFoundPostGramException("File not found: " + avatar.Id);
 
-            return new FileInfoModel(avatar.Name, avatar.MimeType, avatar.FilePath);
+            return new FileInfoModel() { MimeType = avatar.MimeType, Name = avatar.Name, Path = Path.Combine(_appConfig.AttachmentsFolderPath, avatar.Id.ToString())};
         }
 
         public async Task<FileInfoModel> GetPostContent(Guid postContentId, Guid currentUserId)
@@ -85,14 +80,14 @@ namespace PostGram.Api.Services
             if (postContent == null)
                 throw new NotFoundPostGramException("PostContent not found in DB: " + postContentId);
 
-            if (!FileExists(postContent.FilePath))
+            if (!CheckAttachmentsExists(postContent.Id.ToString()))
                 throw new NotFoundPostGramException("File not found: " + postContentId);
 
             if (postContent.AuthorId != currentUserId &&
                 !postContent.Author.Masters.Any(s => (s.SlaveId == currentUserId && s.Status)))
                 throw new AuthorizationPostGramException("Access denied");
 
-            return new FileInfoModel(postContent.Name, postContent.MimeType, postContent.FilePath);
+            return new FileInfoModel() { MimeType = postContent.MimeType, Name = postContent.Name, Path = Path.Combine(_appConfig.AttachmentsFolderPath, postContent.Id.ToString()) };
         }
 
         public async Task<MetadataModel> UploadFile(IFormFile file)
@@ -101,11 +96,10 @@ namespace PostGram.Api.Services
             {
                 TempId = Guid.NewGuid(),
                 Name = file.FileName,
-                MimeType = file.ContentType, //TODO 3 Сделать распознование по первой  строке файла
+                MimeType = file.ContentType,
                 Size = file.Length
             };
             string newPath = Path.Combine(Path.GetTempPath(), model.TempId.ToString());
-            FileInfo fileInfo = new FileInfo(newPath);
 
             using (var stream = System.IO.File.Create(newPath))
             {
@@ -115,9 +109,24 @@ namespace PostGram.Api.Services
             return model;
         }
 
-        private bool FileExists(string filePath)
+        private bool CheckAttachmentsExists(string attachmentName)
         {
-            return new FileInfo(filePath).Exists;
+            return new FileInfo( Path.Combine(_appConfig.AttachmentsFolderPath, attachmentName)).Exists;
+        }
+
+        private DirectoryInfo GetOrCreateAttachmentsFolder()
+        {
+            try
+            {
+                DirectoryInfo directory = new DirectoryInfo(_appConfig.AttachmentsFolderPath);
+                if (!directory.Exists)
+                    directory.Create();
+                return directory;
+            }
+            catch (Exception e)
+            {
+                throw new FilePostGramException(e.Message, e);
+            }
         }
     }
 }

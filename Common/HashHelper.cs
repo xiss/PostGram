@@ -3,9 +3,9 @@ using System.Text;
 
 namespace PostGram.Common
 {
-    public class HashHelper
+    public static class HashHelper
     {
-        public static string GetHash(string input)
+        public static string GetHashSHA256(string input)
         {
             using (SHA256 sha = SHA256.Create())
             {
@@ -20,9 +20,9 @@ namespace PostGram.Common
             }
         }
 
-        public static bool Verify(string input, string hash)
+        public static bool VerifySHA256(string input, string hash)
         {
-            return hash.Equals(GetHash(input), StringComparison.OrdinalIgnoreCase);
+            return hash.Equals(GetHashSHA256(input), StringComparison.OrdinalIgnoreCase);
         }
     }
 }

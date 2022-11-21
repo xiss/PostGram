@@ -1,4 +1,5 @@
-﻿using PostGram.Common.Exceptions;
+﻿using System.Net;
+using PostGram.Common.Exceptions;
 using LogLevel = NLog.LogLevel;
 
 namespace PostGram.Api.Middlewares
@@ -21,60 +22,50 @@ namespace PostGram.Api.Middlewares
             }
             catch (BadRequestPostGramException e)
             {
-                _logger.Log(LogLevel.Warn, e);
-                context.Response.StatusCode = 400;
-                await context.Response.WriteAsJsonAsync(e.Message);
+                await ErorreHandlerFor500Code(context, e, LogLevel.Warn, 400);
             }
             catch (UnprocessableRequestPostGramException e)
             {
-                _logger.Log(LogLevel.Warn, e);
-                context.Response.StatusCode = 422;
-                await context.Response.WriteAsJsonAsync(e.Message);
+                await ErorreHandlerFor500Code(context, e, LogLevel.Warn, 422);
             }
             catch (NotFoundPostGramException e)
             {
-                _logger.Log(LogLevel.Warn, e);
-                context.Response.StatusCode = 404;
-                await context.Response.WriteAsJsonAsync(e.Message);
+                await ErorreHandlerFor500Code(context, e, LogLevel.Warn, 404);
             }
             catch (DbPostGramException e)
             {
-                _logger.Log(LogLevel.Error, e);
-                context.Response.StatusCode = 500;
-                await context.Response.WriteAsJsonAsync(e.Message);
+                await ErorreHandlerFor500Code(context, e, LogLevel.Error, 500);
             }
             catch (AuthorizationPostGramException e)
             {
-                _logger.Log(LogLevel.Warn, e);
-                context.Response.StatusCode = 401;
-                await context.Response.WriteAsJsonAsync(e.Message);
+                await ErorreHandlerFor500Code(context, e, LogLevel.Warn, 401);
             }
             catch (FilePostGramException e)
             {
-                _logger.Log(LogLevel.Error, e);
-                context.Response.StatusCode = 500;
-                if (e.InnerException != null)
-                    await context.Response.WriteAsJsonAsync(e.InnerException.Message);
-                await context.Response.WriteAsJsonAsync(e.Message);
+                await ErorreHandlerFor500Code(context, e, LogLevel.Error, 500);
             }
             catch (CriticalPostGramException e)
             {
-                _logger.Log(LogLevel.Error, e);
-                context.Response.StatusCode = 500;
-                await context.Response.WriteAsJsonAsync(e.Message);
+                await ErorreHandlerFor500Code(context, e, LogLevel.Error, 500);
             }
             catch (CommonPostGramException e)
             {
-                _logger.Log(LogLevel.Error, e);
-                context.Response.StatusCode = 500;
-                await context.Response.WriteAsJsonAsync(e.Message);
+                await ErorreHandlerFor500Code(context, e, LogLevel.Error, 500);
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Fatal, e);
-                context.Response.StatusCode = 500;
-                await context.Response.WriteAsJsonAsync(e.Message);
+                await ErorreHandlerFor500Code(context, e, LogLevel.Fatal, 500);
             }
+        }
+
+        private async Task ErorreHandlerFor500Code(HttpContext context, Exception e, LogLevel logLevel, int httpStatusCode)
+        {
+            _logger.Log(logLevel, e);
+            context.Response.StatusCode = httpStatusCode;
+            if (e.InnerException != null)
+                await context.Response.WriteAsJsonAsync(e.InnerException.Message);
+            else
+                await context.Response.WriteAsJsonAsync(e.Message);
         }
     }
 

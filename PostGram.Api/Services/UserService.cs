@@ -34,7 +34,6 @@ namespace PostGram.Api.Services
                 MimeType = model.MimeType,
                 Name = model.Name,
                 Size = model.Size,
-                FilePath = filePath
             };
             user.Avatar = avatar;
             try
@@ -95,6 +94,8 @@ namespace PostGram.Api.Services
         {
             if (await CheckUserExist(model.Email))
                 throw new DbPostGramException("User with email already exist, email: " + model.Email);
+            if (model.BirthDate > DateTimeOffset.UtcNow)
+                throw new BadRequestPostGramException("BirthDate cannot be in future");
 
             User user = _mapper.Map<User>(model);
             try

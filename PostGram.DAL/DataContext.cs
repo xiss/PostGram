@@ -7,13 +7,14 @@ namespace PostGram.DAL
 {
     public class DataContext : DbContext
     {
+        public const string MigrationsAssembly = "PostGram.Api";
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql(ob => ob.MigrationsAssembly(Ef.MigrationsAssembly));
+            optionsBuilder.UseNpgsql(ob => ob.MigrationsAssembly(MigrationsAssembly));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -1,7 +1,11 @@
 ﻿namespace PostGram.DAL.Entities
 {
-    public class Post : CreationBase
+    public class Post 
     {
+        public Guid Id { get; set; }
+        public Guid AuthorId { get; set; }
+        public virtual User Author { get; set; } = null!;
+        public DateTimeOffset Created { get; set; }
         public string Header { get; set; } = null!;
         public string Body { get; set; } = null!;
         public DateTimeOffset? Edited { get; set; }

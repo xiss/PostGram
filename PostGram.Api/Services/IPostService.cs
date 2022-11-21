@@ -22,7 +22,7 @@ namespace PostGram.Api.Services
 
         Task<PostModel> GetPost(Guid postId, Guid currentUserId);
 
-        Task<List<PostModel>> GetPosts(int take, int skip, Guid currentUserId);
+        Task<List<PostModel>> GetPosts(int takeAmount, int skipAmount, Guid currentUserId);
 
         Task<CommentModel> UpdateComment(UpdateCommentModel model, Guid currentUserId);
 

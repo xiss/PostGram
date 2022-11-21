@@ -149,7 +149,7 @@ namespace PostGram.Api.Services
                     SecurityAlgorithms.HmacSha256));
             string encodedRefreshToken = new JwtSecurityTokenHandler().WriteToken(refreshToken);
 
-            return new TokenModel(encodedToken, encodedRefreshToken);
+            return new TokenModel() { RefreshToken = encodedRefreshToken, SecurityToken = encodedToken };
         }
 
         private async Task<User> GetUserByCredential(string login, string password)
@@ -159,7 +159,7 @@ namespace PostGram.Api.Services
             if (user == null)
                 throw new NotFoundPostGramException("login: " + login);
 
-            if (!HashHelper.Verify(password, user.PasswordHash))
+            if (!HashHelper.VerifySHA256(password, user.PasswordHash))
                 throw new AuthorizationPostGramException("Password incorrect for login: " + login);
 
             return user;

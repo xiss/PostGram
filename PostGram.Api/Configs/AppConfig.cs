@@ -3,6 +3,6 @@
     public class AppConfig
     {
         public static readonly string SectionName = "App";
-        public string AttachesFolderName { get; set; } = String.Empty;
+        public string AttachmentsFolderPath { get; set; } = String.Empty;
     }
 }

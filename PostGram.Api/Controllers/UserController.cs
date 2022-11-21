@@ -86,17 +86,5 @@ namespace PostGram.Api.Controllers
         {
             return await _userService.UpdateUser(model, this.GetCurrentUserId());
         }
-
-        //public async Task<ActionResult> RefreshPassword()
-        //{
-        //    //TODO 4 RefreshPassword
-        //    return StatusCode(501, "Not Implemented");
-        //}
-
-        //public async Task RefreshLogin()
-        //{
-        //    //TODO 4 RefreshLogin
-        //    throw new NotImplementedException();
-        //}
     }
 }

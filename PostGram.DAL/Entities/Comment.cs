@@ -1,7 +1,11 @@
 ﻿namespace PostGram.DAL.Entities
 {
-    public class Comment : CreationBase
+    public class Comment 
     {
+        public Guid Id { get; set; } 
+        public Guid AuthorId { get; set; }
+        public virtual User Author { get; set; } = null!;
+        public DateTimeOffset Created { get; set; }
         public string Body { get; set; } = null!;
         public DateTimeOffset? Edited { get; set; }
         public bool IsDeleted { get; set; } = false;

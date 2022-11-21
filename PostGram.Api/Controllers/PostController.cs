@@ -5,6 +5,7 @@ using PostGram.Api.Models.Attachment;
 using PostGram.Api.Models.Comment;
 using PostGram.Api.Models.Like;
 using PostGram.Api.Models.Post;
+using PostGram.Api.Models.User;
 using PostGram.Api.Services;
 
 namespace PostGram.Api.Controllers
@@ -57,8 +58,7 @@ namespace PostGram.Api.Controllers
         public async Task<CommentModel> GetComment(Guid commentId)
         {
             CommentModel model = await _postService.GetComment(commentId);
-            if (model.Author.Avatar != null)
-                model.Author.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Author.Id);
+            AddAvatarLink(model.Author);
             return model;
         }
 
@@ -68,8 +68,7 @@ namespace PostGram.Api.Controllers
             CommentModel[] model = await _postService.GetCommentsForPost(postId);
             foreach (CommentModel comment in model)
             {
-                if (comment.Author.Avatar != null)
-                    comment.Author.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, comment.Author.Id);
+                AddAvatarLink(comment.Author);
             }
 
             return model;
@@ -79,11 +78,10 @@ namespace PostGram.Api.Controllers
         public async Task<PostModel> GetPost(Guid postId)
         {
             PostModel model = await _postService.GetPost(postId, this.GetCurrentUserId());
-            if (model.Author.Avatar != null)
-                model.Author.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Author.Id);
+            AddAvatarLink(model.Author);
             foreach (AttachmentModel attachment in model.Content)
             {
-                attachment.Link = AttachmentController.GetLinkForPostContent(Url, attachment.Id);
+                AddPostContentLink(attachment);
             }
             return model;
         }
@@ -94,11 +92,10 @@ namespace PostGram.Api.Controllers
             List<PostModel> models = await _postService.GetPosts(take, skip, this.GetCurrentUserId());
             foreach (PostModel model in models)
             {
-                if (model.Author.Avatar != null)
-                    model.Author.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Author.Id);
+                AddAvatarLink(model.Author);
                 foreach (AttachmentModel attachment in model.Content)
                 {
-                    attachment.Link = AttachmentController.GetLinkForPostContent(Url, attachment.Id);
+                    AddPostContentLink(attachment);
                 }
             }
             return models;
@@ -122,8 +119,18 @@ namespace PostGram.Api.Controllers
             return await _postService.UpdatePost(model, this.GetCurrentUserId());
         }
 
+        private void AddAvatarLink(UserModel model)
+        {
+            if (model.Avatar != null)
+                model.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Id);
+        }
+
+        private void AddPostContentLink(AttachmentModel model)
+        {
+            model.Link = AttachmentController.GetLinkForPostContent(Url, model.Id);
+        }
+
         //TODO DDOS
         //TODO ужимать картинки и делать 2 версии разного размера
-        //TODO Нужно ли удалять лайки если удаляем пост или комент?
     }
 }

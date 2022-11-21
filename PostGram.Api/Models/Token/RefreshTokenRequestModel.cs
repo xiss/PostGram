@@ -2,11 +2,6 @@
 {
     public record RefreshTokenRequestModel
     {
-        public RefreshTokenRequestModel(string refreshToken)
-        {
-            RefreshToken = refreshToken;
-        }
-
-        public string RefreshToken { get; init; }
+        public string RefreshToken { get; init; } = string.Empty;
     }
 }

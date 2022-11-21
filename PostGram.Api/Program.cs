@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using AspNetCoreRateLimit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
@@ -13,7 +15,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 //Configuration
 var authSection = builder.Configuration.GetSection(AuthConfig.SectionName);
-var appSection = builder.Configuration.GetSection(AppConfig.SectionName);
 var authConfig = authSection.Get<AuthConfig>();
 
 //TODO 3 Перенести настройки Nlog в appsettings
@@ -60,11 +61,18 @@ builder.Services.AddAutoMapper(typeof(MapperProfile).Assembly);
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
-//builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
 builder.Services.Configure<AuthConfig>(authSection);
-builder.Services.Configure<AppConfig>(appSection);
+builder.Services.Configure<AppConfig>(builder.Configuration.GetSection(AppConfig.SectionName));
+
+builder.Services.AddOptions();
+builder.Services.AddMemoryCache();
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.Configure<ClientRateLimitOptions>(builder.Configuration.GetSection("ClientRateLimiting")); ;
+builder.Services.Configure<ClientRateLimitPolicies>(builder.Configuration.GetSection("ClientRateLimitPolicies"));
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
 builder.Services.AddDbContext<PostGram.DAL.DataContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql")));
@@ -110,10 +118,10 @@ using (var serviceScope = ((IApplicationBuilder)app).ApplicationServices.GetServ
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(options=>
+    app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint(Api.EndpointApiName + "/swagger.json", Api.EndpointApiName);
-        options.SwaggerEndpoint(Api.EndpointAuthorizationName +"/swagger.json", Api.EndpointAuthorizationName); 
+        options.SwaggerEndpoint(Api.EndpointAuthorizationName + "/swagger.json", Api.EndpointAuthorizationName);
     });
     app.UseDeveloperExceptionPage();
 }
@@ -121,6 +129,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+app.UseClientRateLimiting();
 app.UseAuthorization();
 app.UseTokenValidator();
 

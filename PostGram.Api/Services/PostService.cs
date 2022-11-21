@@ -8,6 +8,7 @@ using PostGram.Common.Enums;
 using PostGram.Common.Exceptions;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
+using System.Linq.Expressions;
 
 namespace PostGram.Api.Services
 {
@@ -117,7 +118,7 @@ namespace PostGram.Api.Services
                 {
                     PostContent postContent = _mapper.Map<PostContent>(metadataModel);
                     postContent.AuthorId = currentUserId;
-                    postContent.FilePath = await _attachmentService.ApplyFile(metadataModel.TempId.ToString());
+                    await _attachmentService.ApplyFile(metadataModel.TempId.ToString());
                     post.PostContents.Add(postContent);
                 }
 
@@ -202,7 +203,7 @@ namespace PostGram.Api.Services
                 .Include(c => c.Author)
                 .ThenInclude(a => a.Avatar)
                 .AsNoTracking()
-                .Where(c => c.PostId == postId && !c.IsDeleted && !c.Post.IsDeleted)
+                .Where(c => c.PostId == postId && !c.IsDeleted && !c.Post.IsDeleted)//TODO Global query filter
                 .OrderBy(c => c.Created)
                 .ToArrayAsync();
             if (comments.Length == 0)
@@ -235,7 +236,7 @@ namespace PostGram.Api.Services
             return _mapper.Map<PostModel>(post);
         }
 
-        public async Task<List<PostModel>> GetPosts(int take, int skip, Guid currentUserId)
+        public async Task<List<PostModel>> GetPosts(int takeAmount, int skipAmount, Guid currentUserId)
         {
             List<Guid> subscriptions = await GetAvailableSubscriptionsForSlaveUser(currentUserId);
 
@@ -244,18 +245,18 @@ namespace PostGram.Api.Services
                 .Include(p => p.Author)
                 .ThenInclude(u => u.Slaves)
                 .Include(p => p.Comments
-                    .Where(c => !c.IsDeleted)
-                    .OrderBy(c => c.Created))
+                    .Where(c => !c.IsDeleted))//TODO Global query filter
+                                              //.OrderBy(c => c.Created))//TODO тут точно это нужнно?
                 .ThenInclude(c => c.Likes)
                 .Include(p => p.Likes)
                 .Include(p => p.Author)
                 .ThenInclude(a => a.Avatar)
                 .Where(p => subscriptions
                     .Contains(p.AuthorId) || p.AuthorId == currentUserId)
-                .Where(p => !p.IsDeleted)
+                .Where(p => !p.IsDeleted) //TODO Global query filter
                 .OrderByDescending(p => p.Created)
-                .Skip(skip)
-                .Take(take)
+                .Skip(skipAmount)
+                .Take(takeAmount)
                 .Select(p => _mapper
                     .Map<PostModel>(p))
                 .AsNoTracking()
@@ -340,11 +341,11 @@ namespace PostGram.Api.Services
                         PostId = post.Id,
                         AuthorId = currentUserId,
                         Created = DateTimeOffset.UtcNow,
-                        FilePath = await _attachmentService.ApplyFile(postContent.TempId.ToString()),
                         MimeType = postContent.MimeType,
                         Name = postContent.Name,
                         Size = postContent.Size,
                     });
+                    await _attachmentService.ApplyFile(postContent.TempId.ToString());
                 }
             }
             //Edit timestamp

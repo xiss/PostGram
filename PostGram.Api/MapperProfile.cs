@@ -16,7 +16,7 @@ namespace PostGram.Api
             //User
             CreateMap<CreateUserModel, User>()
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()))
-                .ForMember(d => d.PasswordHash, m => m.MapFrom(s => Common.HashHelper.GetHash(s.Password)))
+                .ForMember(d => d.PasswordHash, m => m.MapFrom(s => Common.HashHelper.GetHashSHA256(s.Password)))
                 .ForMember(d => d.BirthDate, m => m.MapFrom(s => s.BirthDate.UtcDateTime));
             CreateMap<User, UserModel>();
 
@@ -24,7 +24,8 @@ namespace PostGram.Api
             CreateMap<Avatar, AttachmentModel>();
             CreateMap<PostContent, AttachmentModel>();
             CreateMap<MetadataModel, PostContent>()
-                .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow));
+                .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow))
+                .ForMember(d => d.Id, m => m.MapFrom(s => s.TempId));
 
             //Post
             CreateMap<CreatePostModel, Post>()
