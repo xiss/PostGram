@@ -1,9 +1,9 @@
 ﻿using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NLog;
 using NLog.Web;
 using PostGram.Api;
 using PostGram.Api.Configs;
@@ -17,7 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 var authSection = builder.Configuration.GetSection(AuthConfig.SectionName);
 var authConfig = authSection.Get<AuthConfig>();
 
-//TODO 3 Перенести настройки Nlog в appsettings
+LogManager.Setup().LoadConfigurationFromAppSettings();
+
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
