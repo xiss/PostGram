@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PostGram.DAL;
@@ -11,9 +12,11 @@ using PostGram.DAL;
 namespace PostGram.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221121153022_QueryFiltersForCommentsAndPosts")]
+    partial class QueryFiltersForCommentsAndPosts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,7 +52,7 @@ namespace PostGram.Api.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("Attachments", (string)null);
+                    b.ToTable("Attachments");
 
                     b.UseTptMappingStrategy();
                 });
@@ -93,7 +96,7 @@ namespace PostGram.Api.Migrations
 
                     b.HasIndex("QuotedCommentId");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("PostGram.DAL.Entities.Like", b =>
@@ -132,7 +135,7 @@ namespace PostGram.Api.Migrations
                     b.HasIndex("AuthorId", "EntityId")
                         .IsUnique();
 
-                    b.ToTable("Likes", (string)null);
+                    b.ToTable("Likes");
                 });
 
             modelBuilder.Entity("PostGram.DAL.Entities.Post", b =>
@@ -165,7 +168,7 @@ namespace PostGram.Api.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("Posts", (string)null);
+                    b.ToTable("Posts");
                 });
 
             modelBuilder.Entity("PostGram.DAL.Entities.Subscription", b =>
@@ -196,7 +199,7 @@ namespace PostGram.Api.Migrations
                     b.HasIndex("MasterId", "SlaveId")
                         .IsUnique();
 
-                    b.ToTable("Subscriptions", (string)null);
+                    b.ToTable("Subscriptions");
                 });
 
             modelBuilder.Entity("PostGram.DAL.Entities.User", b =>
@@ -246,7 +249,7 @@ namespace PostGram.Api.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("PostGram.DAL.Entities.UserSession", b =>
@@ -271,7 +274,7 @@ namespace PostGram.Api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserSessions", (string)null);
+                    b.ToTable("UserSessions");
                 });
 
             modelBuilder.Entity("PostGram.DAL.Entities.Avatar", b =>

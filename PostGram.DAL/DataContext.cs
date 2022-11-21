@@ -24,6 +24,8 @@ namespace PostGram.DAL
             modelBuilder.ApplyConfiguration(new PostContentConfig());
             modelBuilder.ApplyConfiguration(new LikeConfig());
             modelBuilder.ApplyConfiguration(new SubscriptionConfig());
+            modelBuilder.ApplyConfiguration(new PostConfig());
+            modelBuilder.ApplyConfiguration(new CommentConfig());
         }
 
         public DbSet<User> Users => Set<User>();

@@ -37,7 +37,7 @@ namespace PostGram.Api.Services
             {
                 Comment quotedComment = await GetCommentById(model.QuotedCommentId.Value);
                 comment.QuotedCommentId = quotedComment.Id;
-                if (model.QuotedText !=null)
+                if (model.QuotedText != null)
                 {
                     if (!quotedComment.Body.Contains(model.QuotedText))
                         throw new UnprocessableRequestPostGramException(
@@ -203,7 +203,7 @@ namespace PostGram.Api.Services
                 .Include(c => c.Author)
                 .ThenInclude(a => a.Avatar)
                 .AsNoTracking()
-                .Where(c => c.PostId == postId && !c.IsDeleted && !c.Post.IsDeleted)//TODO Global query filter
+                .Where(c => c.PostId == postId)
                 .OrderBy(c => c.Created)
                 .ToArrayAsync();
             if (comments.Length == 0)
@@ -223,10 +223,9 @@ namespace PostGram.Api.Services
                 .Include(p => p.Author)
                 .ThenInclude(a => a.Avatar)
                 .Include(p => p.Comments
-                    .Where(c => !c.IsDeleted)
                     .OrderBy(c => c.Created))
                 .ThenInclude(c => c.Likes)
-                .FirstOrDefaultAsync(p => p.Id == postId && !p.IsDeleted);
+                .FirstOrDefaultAsync(p => p.Id == postId);
             if (post == null)
                 throw new NotFoundPostGramException("Post not found: " + postId);
 
@@ -244,16 +243,13 @@ namespace PostGram.Api.Services
                 .Include(p => p.PostContents)
                 .Include(p => p.Author)
                 .ThenInclude(u => u.Slaves)
-                .Include(p => p.Comments
-                    .Where(c => !c.IsDeleted))//TODO Global query filter
-                                              //.OrderBy(c => c.Created))//TODO тут точно это нужнно?
+                .Include(p => p.Comments)
                 .ThenInclude(c => c.Likes)
                 .Include(p => p.Likes)
                 .Include(p => p.Author)
                 .ThenInclude(a => a.Avatar)
                 .Where(p => subscriptions
                     .Contains(p.AuthorId) || p.AuthorId == currentUserId)
-                .Where(p => !p.IsDeleted) //TODO Global query filter
                 .OrderByDescending(p => p.Created)
                 .Skip(skipAmount)
                 .Take(takeAmount)
@@ -312,9 +308,8 @@ namespace PostGram.Api.Services
                 .Include(p => p.Author)
                 .ThenInclude(a => a.Avatar)
                 .Include(p => p.Comments
-                    .Where(c => !c.IsDeleted)
                     .OrderBy(c => c.Created))
-                .FirstOrDefaultAsync(u => u.Id == model.Id && !u.IsDeleted);
+                .FirstOrDefaultAsync(u => u.Id == model.Id);
             if (post == null)
                 throw new NotFoundPostGramException("Post not found: " + model.Id);
 
@@ -424,7 +419,7 @@ namespace PostGram.Api.Services
                 .Include(p => p.Likes)
                 .Include(c => c.Author)
                 .ThenInclude(a => a.Avatar)
-                .FirstOrDefaultAsync(c => c.Id == commentId && !c.IsDeleted);
+                .FirstOrDefaultAsync(c => c.Id == commentId);
             if (comment == null)
                 throw new NotFoundPostGramException("Comment not found: " + commentId);
             return comment;

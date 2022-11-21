@@ -10,7 +10,8 @@ namespace PostGram.DAL.Entities.Configs
             builder.ToTable(nameof(DataContext.PostContents));
             builder.HasOne(x => x.Post)
                 .WithMany(x => x.PostContents)
-                .HasForeignKey(x => x.PostId);
+                .HasForeignKey(x => x.PostId)
+                .IsRequired(false);
         }
     }
 }
