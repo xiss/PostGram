@@ -130,7 +130,6 @@ namespace PostGram.Api.Controllers
             model.Link = AttachmentController.GetLinkForPostContent(Url, model.Id);
         }
 
-        //TODO DDOS
         //TODO ужимать картинки и делать 2 версии разного размера
     }
 }

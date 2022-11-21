@@ -25,7 +25,7 @@ builder.Host.UseNLog();
 //Services
 builder.Services.AddControllers();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+//Swagger setup
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
 {
@@ -69,19 +69,17 @@ builder.Services.Configure<AuthConfig>(authSection);
 builder.Services.Configure<AppConfig>(builder.Configuration.GetSection(AppConfig.SectionName));
 
 
-//IpRateLimit setup
+//ClientRateLimit setup
 builder.Services.AddOptions();
 builder.Services.AddMemoryCache();
-builder.Services.Configure<ClientRateLimitOptions>(builder.Configuration.GetSection("ClientRateLimiting"));
-;
-builder.Services.Configure<ClientRateLimitPolicies>(builder.Configuration.GetSection("ClientRateLimitPolicies"));
+builder.Services.Configure<ClientRateLimitOptions>(builder.Configuration.GetSection("ClientRateLimiting")); ;
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 builder.Services.AddInMemoryRateLimiting();
 
 builder.Services.AddDbContext<PostGram.DAL.DataContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql")));
 
-//Authentication
+//Authentication setup
 builder.Services.AddAuthentication(o => o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
     {
@@ -99,7 +97,7 @@ builder.Services.AddAuthentication(o => o.DefaultScheme = JwtBearerDefaults.Auth
         };
     });
 
-//Authorization
+//Authorization setup
 builder.Services.AddAuthorization(o => o.AddPolicy("ValidAccessToken", p =>
 {
     p.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);

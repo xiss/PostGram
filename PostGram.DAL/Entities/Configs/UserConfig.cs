@@ -12,11 +12,27 @@ namespace PostGram.DAL.Entities.Configs
 
             builder.HasMany(u => u.Slaves)
                 .WithOne(s => s.Slave)
-                .HasForeignKey(s => s.SlaveId);
+                .HasForeignKey(s => s.SlaveId)
+                .IsRequired(false);
 
             builder.HasMany(u => u.Masters)
                 .WithOne(s => s.Master)
-                .HasForeignKey(s => s.MasterId);
+                .HasForeignKey(s => s.MasterId)
+                .IsRequired(false);
+
+            builder.HasMany(u => u.Sessions)
+                .WithOne(s => s.User)
+                .IsRequired(false);
+
+            builder.HasOne(u => u.Avatar)
+                .WithOne(a => a.User)
+                .IsRequired(false);
+
+            //builder.Has
+
+            builder.HasQueryFilter(u => !u.IsDelete);
         }
+
+        
     }
 }

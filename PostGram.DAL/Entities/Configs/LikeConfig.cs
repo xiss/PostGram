@@ -7,7 +7,12 @@ namespace PostGram.DAL.Entities.Configs
     {
         public void Configure(EntityTypeBuilder<Like> builder)
         {
-            builder.HasIndex(u => new { u.AuthorId, Entity = u.EntityId }).IsUnique();
+            builder.HasIndex(u => new { u.AuthorId, Entity = u.EntityId })
+                .IsUnique();
+
+            builder.HasOne(l => l.Author)
+                .WithOne()
+                .IsRequired(false);
         }
     }
 }

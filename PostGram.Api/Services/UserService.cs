@@ -138,14 +138,14 @@ namespace PostGram.Api.Services
             return avatarId;
         }
 
-        //TODO 2 Нужно добавить статус у юзера активен, и делать на нем пометку, а при запросах отдавать только по тем юзерам у кого статус активен
         public async Task<Guid> DeleteUser(Guid userId)
         {
             User user = await GetUserById(userId);
-
+            if (user == null)
+                throw new NotFoundPostGramException($"User {userId} not found");
+            user.IsDelete = true;
             try
             {
-                _dataContext.Users.Remove(user);
                 await _dataContext.UserSessions.Where(us => us.UserId == userId).ForEachAsync(us => us.IsActive = false);
                 await _dataContext.SaveChangesAsync();
             }

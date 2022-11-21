@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PostGram.Api.Helpers;
 using PostGram.Api.Models.Attachment;
 using PostGram.Api.Models.Subscription;
@@ -10,6 +11,7 @@ namespace PostGram.Api.Controllers
     [ApiExplorerSettings(GroupName = Common.Constants.Api.EndpointApiName)]
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IAttachmentService _attachmentService;
@@ -35,7 +37,13 @@ namespace PostGram.Api.Controllers
         }
 
         [HttpDelete]
-        public async Task<Guid> DeleteUserAvatar()
+        public async Task<Guid> DeleteCurrentUser()
+        {
+            return await _userService.DeleteUser(this.GetCurrentUserId());
+        }
+
+        [HttpDelete]
+        public async Task<Guid> DeleteCurrentUserAvatar()
         {
             Guid avatarId = await _userService.DeleteAvatarForUser(this.GetCurrentUserId());
             _attachmentService.DeleteFile(avatarId);

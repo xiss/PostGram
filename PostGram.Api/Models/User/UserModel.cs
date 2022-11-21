@@ -12,5 +12,6 @@ namespace PostGram.Api.Models.User
         public string Email { get; init; } = string.Empty;
         public string Nickname { get; init; } = string.Empty;
         public DateTimeOffset? BirthDate { get; init; }
+        public bool IsDelete { get; init; }
     }
 }

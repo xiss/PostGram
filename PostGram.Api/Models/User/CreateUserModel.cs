@@ -4,7 +4,6 @@ namespace PostGram.Api.Models.User
 {
     public record CreateUserModel
     {
-        //todo ddos auth
         public DateTimeOffset BirthDate { get; init; }
 
         [Required]

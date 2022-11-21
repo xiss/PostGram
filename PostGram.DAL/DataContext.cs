@@ -26,6 +26,7 @@ namespace PostGram.DAL
             modelBuilder.ApplyConfiguration(new SubscriptionConfig());
             modelBuilder.ApplyConfiguration(new PostConfig());
             modelBuilder.ApplyConfiguration(new CommentConfig());
+            modelBuilder.ApplyConfiguration(new AttachmentCinfig());
         }
 
         public DbSet<User> Users => Set<User>();
