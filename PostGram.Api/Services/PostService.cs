@@ -232,14 +232,20 @@ namespace PostGram.Api.Services
             if (post.AuthorId != currentUserId && !subscriptions.Contains(post.AuthorId))
                 throw new AuthorizationPostGramException($"User {currentUserId} cannot access post {post.Id}");
 
-            return _mapper.Map<PostModel>(post);
+            PostModel model = _mapper.Map<PostModel>(post);
+            model.IsLikedByUser = post.Likes
+                .Where(l => l.AuthorId == currentUserId)
+                .Select(l => l.IsLike)
+                .FirstOrDefault();
+
+            return model;
         }
 
         public async Task<List<PostModel>> GetPosts(int takeAmount, int skipAmount, Guid currentUserId)
         {
             List<Guid> subscriptions = await GetAvailableSubscriptionsForSlaveUser(currentUserId);
 
-            List<PostModel> model = await _dataContext.Posts
+            List<Post> posts = await _dataContext.Posts
                 .Include(p => p.PostContents)
                 .Include(p => p.Author)
                 .ThenInclude(u => u.Slaves)
@@ -253,14 +259,24 @@ namespace PostGram.Api.Services
                 .OrderByDescending(p => p.Created)
                 .Skip(skipAmount)
                 .Take(takeAmount)
-                .Select(p => _mapper
-                    .Map<PostModel>(p))
                 .AsNoTracking()
                 .ToListAsync();
-            if (model.Count == 0)
+
+            if (posts.Count == 0)
                 throw new NotFoundPostGramException("Posts not found");
 
-            return model;
+            // IsLikedByUser
+            List<PostModel> models = posts.Select(p =>
+            {
+                PostModel result = _mapper.Map<PostModel>(p);
+                result.IsLikedByUser = p.Likes
+                    .Where(l => l.AuthorId == currentUserId)
+                    .Select(l => l.IsLike)
+                    .FirstOrDefault();
+                return result;
+            }).ToList();
+
+            return models;
         }
 
         public async Task<CommentModel> UpdateComment(UpdateCommentModel model, Guid currentUserId)

@@ -49,7 +49,7 @@ namespace PostGram.Api.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("Attachments");
+                    b.ToTable("Attachments", (string)null);
 
                     b.UseTptMappingStrategy();
                 });
@@ -93,7 +93,7 @@ namespace PostGram.Api.Migrations
 
                     b.HasIndex("QuotedCommentId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("PostGram.DAL.Entities.Like", b =>
@@ -135,7 +135,7 @@ namespace PostGram.Api.Migrations
                     b.HasIndex("AuthorId", "EntityId")
                         .IsUnique();
 
-                    b.ToTable("Likes");
+                    b.ToTable("Likes", (string)null);
                 });
 
             modelBuilder.Entity("PostGram.DAL.Entities.Post", b =>
@@ -168,7 +168,7 @@ namespace PostGram.Api.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("Posts");
+                    b.ToTable("Posts", (string)null);
                 });
 
             modelBuilder.Entity("PostGram.DAL.Entities.Subscription", b =>
@@ -199,7 +199,7 @@ namespace PostGram.Api.Migrations
                     b.HasIndex("MasterId", "SlaveId")
                         .IsUnique();
 
-                    b.ToTable("Subscriptions");
+                    b.ToTable("Subscriptions", (string)null);
                 });
 
             modelBuilder.Entity("PostGram.DAL.Entities.User", b =>
@@ -252,7 +252,7 @@ namespace PostGram.Api.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("PostGram.DAL.Entities.UserSession", b =>
@@ -277,7 +277,7 @@ namespace PostGram.Api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserSessions");
+                    b.ToTable("UserSessions", (string)null);
                 });
 
             modelBuilder.Entity("PostGram.DAL.Entities.Avatar", b =>

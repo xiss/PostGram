@@ -15,6 +15,7 @@ namespace PostGram.Api.Models.Post
         public int LikeCount { get; init; }
         public int DislikeCount { get; init; }
         public int CommentCount { get; init; }
+        public bool? IsLikedByUser { get; set; }
         public ICollection<AttachmentModel> Content { get; init; } = new List<AttachmentModel>();
     }
 }

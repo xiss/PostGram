@@ -28,11 +28,7 @@ namespace PostGram.DAL.Entities.Configs
                 .WithOne(a => a.User)
                 .IsRequired(false);
 
-            //builder.Has
-
             builder.HasQueryFilter(u => !u.IsDelete);
         }
-
-        
     }
 }

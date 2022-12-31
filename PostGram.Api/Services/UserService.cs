@@ -34,6 +34,7 @@ namespace PostGram.Api.Services
                 MimeType = model.MimeType,
                 Name = model.Name,
                 Size = model.Size,
+                Created = DateTimeOffset.UtcNow
             };
             user.Avatar = avatar;
             try
