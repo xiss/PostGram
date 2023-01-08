@@ -57,7 +57,7 @@ namespace PostGram.Api.Controllers
         [HttpGet]
         public async Task<CommentModel> GetComment(Guid commentId)
         {
-            CommentModel model = await _postService.GetComment(commentId);
+            CommentModel model = await _postService.GetComment(commentId, this.GetCurrentUserId());
             AddAvatarLink(model.Author);
             return model;
         }
@@ -65,7 +65,7 @@ namespace PostGram.Api.Controllers
         [HttpGet]
         public async Task<CommentModel[]> GetCommentsForPost(Guid postId)
         {
-            CommentModel[] model = await _postService.GetCommentsForPost(postId);
+            CommentModel[] model = await _postService.GetCommentsForPost(postId, this.GetCurrentUserId());
             foreach (CommentModel comment in model)
             {
                 AddAvatarLink(comment.Author);
@@ -104,7 +104,9 @@ namespace PostGram.Api.Controllers
         [HttpPut]
         public async Task<CommentModel> UpdateComment(UpdateCommentModel model)
         {
-            return await _postService.UpdateComment(model, this.GetCurrentUserId());
+            CommentModel commentModel = await _postService.UpdateComment(model, this.GetCurrentUserId());
+            AddAvatarLink(commentModel.Author);
+            return commentModel;
         }
 
         [HttpPut]
@@ -116,7 +118,13 @@ namespace PostGram.Api.Controllers
         [HttpPut]
         public async Task<PostModel> UpdatePost(UpdatePostModel model)
         {
-            return await _postService.UpdatePost(model, this.GetCurrentUserId());
+            PostModel postModel = await _postService.UpdatePost(model, this.GetCurrentUserId());
+            AddAvatarLink(postModel.Author);
+            foreach (AttachmentModel attachment in postModel.Content)
+            {
+                AddPostContentLink(attachment);
+            }
+            return postModel;
         }
 
         private void AddAvatarLink(UserModel model)

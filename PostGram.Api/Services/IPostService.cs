@@ -16,10 +16,9 @@ namespace PostGram.Api.Services
 
         Task<Guid> DeletePost(Guid postId, Guid currentUserId);
 
-        Task<CommentModel> GetComment(Guid commentId);
+        Task<CommentModel> GetComment(Guid commentId, Guid currentUserId);
 
-        Task<CommentModel[]> GetCommentsForPost(Guid postId);
-
+        Task<CommentModel[]> GetCommentsForPost(Guid postId, Guid currentUserId);
         Task<PostModel> GetPost(Guid postId, Guid currentUserId);
 
         Task<List<PostModel>> GetPosts(int takeAmount, int skipAmount, Guid currentUserId);

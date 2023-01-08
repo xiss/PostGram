@@ -1,4 +1,5 @@
-﻿using PostGram.Api.Models.User;
+﻿using PostGram.Api.Models.Like;
+using PostGram.Api.Models.User;
 
 namespace PostGram.Api.Models.Comment
 {
@@ -14,5 +15,6 @@ namespace PostGram.Api.Models.Comment
         public int DislikeCount { get; init; }
         public Guid? QuotedCommentId { get; init; }
         public string? QuotedText { get; init; }
+        public  LikeModel? LikeByUser { get; set; }
     }
 }

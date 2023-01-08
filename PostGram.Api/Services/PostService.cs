@@ -9,6 +9,7 @@ using PostGram.Common.Exceptions;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
 using System.Linq.Expressions;
+using System.Xml.Linq;
 
 namespace PostGram.Api.Services
 {
@@ -29,6 +30,11 @@ namespace PostGram.Api.Services
         {
             if (!await CheckPostExist(model.PostId))
                 throw new NotFoundPostGramException("Post not found: " + model.PostId);
+            if (model.QuotedCommentId == null ^ model.QuotedText == null)
+            {
+                throw new UnprocessableRequestPostGramException(
+                    "QuotedCommentId and QuotedText must be null at the same time or must have value at the same time");
+            }
 
             Comment comment = _mapper.Map<Comment>(model);
             comment.AuthorId = currentUserId;
@@ -190,13 +196,18 @@ namespace PostGram.Api.Services
             _attachmentService.Dispose();
         }
 
-        public async Task<CommentModel> GetComment(Guid commentId)
+        public async Task<CommentModel> GetComment(Guid commentId, Guid currentUserId)
         {
             Comment comment = await GetCommentById(commentId);
-            return _mapper.Map<CommentModel>(comment);
+            CommentModel result = _mapper.Map<CommentModel>(comment);
+
+            result.LikeByUser = _mapper
+                .Map<LikeModel>(comment.Likes
+                    .FirstOrDefault(l => l.AuthorId == currentUserId));
+            return result;
         }
 
-        public async Task<CommentModel[]> GetCommentsForPost(Guid postId)
+        public async Task<CommentModel[]> GetCommentsForPost(Guid postId, Guid currentUserId)
         {
             Comment[] comments = await _dataContext.Comments
                 .Include(c => c.Likes)
@@ -209,7 +220,15 @@ namespace PostGram.Api.Services
             if (comments.Length == 0)
                 throw new NotFoundPostGramException("Comments not found for post: " + postId);
 
-            return _mapper.Map<CommentModel[]>(comments);
+            CommentModel[] result = _mapper.Map<CommentModel[]>(comments);
+            foreach (var comment in result)
+            {
+                comment.LikeByUser = _mapper
+                    .Map<LikeModel>(comments
+                        .FirstOrDefault(c => c.Id == comment.Id)?.Likes
+                        .FirstOrDefault(l => l.AuthorId == currentUserId));
+            }
+            return result;
         }
 
         public async Task<PostModel> GetPost(Guid postId, Guid currentUserId)
@@ -232,13 +251,12 @@ namespace PostGram.Api.Services
             if (post.AuthorId != currentUserId && !subscriptions.Contains(post.AuthorId))
                 throw new AuthorizationPostGramException($"User {currentUserId} cannot access post {post.Id}");
 
-            PostModel model = _mapper.Map<PostModel>(post);
-            model.IsLikedByUser = post.Likes
-                .Where(l => l.AuthorId == currentUserId)
-                .Select(l => l.IsLike)
-                .FirstOrDefault();
+            PostModel result = _mapper.Map<PostModel>(post);
 
-            return model;
+            result.LikeByUser = _mapper
+                .Map<LikeModel>(post.Likes
+                    .FirstOrDefault(l => l.AuthorId == currentUserId));
+            return result;
         }
 
         public async Task<List<PostModel>> GetPosts(int takeAmount, int skipAmount, Guid currentUserId)
@@ -265,18 +283,15 @@ namespace PostGram.Api.Services
             if (posts.Count == 0)
                 throw new NotFoundPostGramException("Posts not found");
 
-            // IsLikedByUser
-            List<PostModel> models = posts.Select(p =>
+            List<PostModel> result = posts.Select(p => _mapper.Map<PostModel>(p)).ToList();
+            foreach (var post in result)
             {
-                PostModel result = _mapper.Map<PostModel>(p);
-                result.IsLikedByUser = p.Likes
-                    .Where(l => l.AuthorId == currentUserId)
-                    .Select(l => l.IsLike)
-                    .FirstOrDefault();
-                return result;
-            }).ToList();
-
-            return models;
+                post.LikeByUser = _mapper
+                    .Map<LikeModel>(posts
+                        .FirstOrDefault(p => p.Id == post.Id)?.Likes
+                    .FirstOrDefault(l => l.AuthorId == currentUserId));
+            }
+            return result;
         }
 
         public async Task<CommentModel> UpdateComment(UpdateCommentModel model, Guid currentUserId)
@@ -287,7 +302,12 @@ namespace PostGram.Api.Services
             comment.Body = model.NewBody;
             comment.Edited = DateTimeOffset.UtcNow;
             await UpdateComment(comment);
-            return _mapper.Map<CommentModel>(comment);
+
+            CommentModel result = _mapper.Map<CommentModel>(comment);
+            result.LikeByUser = _mapper
+                .Map<LikeModel>(comment.Likes
+                    .FirstOrDefault(l => l.AuthorId == currentUserId));
+            return result;
         }
 
         public async Task<LikeModel> UpdateLike(UpdateLikeModel model, Guid currentUserId)
@@ -382,7 +402,11 @@ namespace PostGram.Api.Services
                 throw new DbPostGramException(e.Message, e);
             }
 
-            return _mapper.Map<PostModel>(post);
+            PostModel result = _mapper.Map<PostModel>(post);
+            result.LikeByUser = _mapper
+                .Map<LikeModel>(post.Likes
+                    .FirstOrDefault(l => l.AuthorId == currentUserId));
+            return result;
         }
 
         private async Task<bool> CheckCommentExist(Guid commentId)

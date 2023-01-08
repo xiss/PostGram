@@ -1,5 +1,6 @@
 ﻿using PostGram.Api.Models.Attachment;
 using PostGram.Api.Models.Comment;
+using PostGram.Api.Models.Like;
 using PostGram.Api.Models.User;
 
 namespace PostGram.Api.Models.Post
@@ -15,7 +16,7 @@ namespace PostGram.Api.Models.Post
         public int LikeCount { get; init; }
         public int DislikeCount { get; init; }
         public int CommentCount { get; init; }
-        public bool? IsLikedByUser { get; set; }
+        public LikeModel? LikeByUser { get; set; }
         public ICollection<AttachmentModel> Content { get; init; } = new List<AttachmentModel>();
     }
 }
