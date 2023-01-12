@@ -83,7 +83,7 @@ namespace PostGram.Api.Services
             if (!CheckAttachmentsExists(postContent.Id.ToString()))
                 throw new NotFoundPostGramException("File not found: " + postContentId);
 
-            if (postContent.AuthorId != currentUserId &&
+            if (postContent.Author.IsPrivate && postContent.AuthorId != currentUserId &&
                 !postContent.Author.Masters.Any(s => (s.SlaveId == currentUserId && s.Status)))
                 throw new AuthorizationPostGramException("Access denied");
 
