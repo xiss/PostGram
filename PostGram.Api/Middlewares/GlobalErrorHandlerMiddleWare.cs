@@ -22,43 +22,43 @@ namespace PostGram.Api.Middlewares
             }
             catch (BadRequestPostGramException e)
             {
-                await ErorreHandlerFor500Code(context, e, LogLevel.Warn, 400);
+                await ResponseHandler(context, e, LogLevel.Warn, 400);
             }
             catch (UnprocessableRequestPostGramException e)
             {
-                await ErorreHandlerFor500Code(context, e, LogLevel.Warn, 422);
+                await ResponseHandler(context, e, LogLevel.Warn, 422);
             }
             catch (NotFoundPostGramException e)
             {
-                await ErorreHandlerFor500Code(context, e, LogLevel.Warn, 404);
+                await ResponseHandler(context, e, LogLevel.Warn, 404);
             }
             catch (DbPostGramException e)
             {
-                await ErorreHandlerFor500Code(context, e, LogLevel.Error, 500);
+                await ResponseHandler(context, e, LogLevel.Error, 500);
             }
             catch (AuthorizationPostGramException e)
             {
-                await ErorreHandlerFor500Code(context, e, LogLevel.Warn, 401);
+                await ResponseHandler(context, e, LogLevel.Warn, 401);
             }
             catch (FilePostGramException e)
             {
-                await ErorreHandlerFor500Code(context, e, LogLevel.Error, 500);
+                await ResponseHandler(context, e, LogLevel.Error, 500);
             }
             catch (CriticalPostGramException e)
             {
-                await ErorreHandlerFor500Code(context, e, LogLevel.Error, 500);
+                await ResponseHandler(context, e, LogLevel.Error, 500);
             }
             catch (CommonPostGramException e)
             {
-                await ErorreHandlerFor500Code(context, e, LogLevel.Error, 500);
+                await ResponseHandler(context, e, LogLevel.Error, 500);
             }
             catch (Exception e)
             {
-                await ErorreHandlerFor500Code(context, e, LogLevel.Fatal, 500);
+                await ResponseHandler(context, e, LogLevel.Fatal, 500);
             }
         }
 
-        private async Task ErorreHandlerFor500Code(HttpContext context, Exception e, LogLevel logLevel, int httpStatusCode)
+        private async Task ResponseHandler(HttpContext context, Exception e, LogLevel logLevel, int httpStatusCode)
         {
             _logger.Log(logLevel, e);
             context.Response.StatusCode = httpStatusCode;
