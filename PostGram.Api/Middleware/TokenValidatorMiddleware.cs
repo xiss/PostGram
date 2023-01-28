@@ -1,7 +1,7 @@
 ﻿using PostGram.Api.Services;
 using PostGram.Common.Constants;
 
-namespace PostGram.Api.Middlewares
+namespace PostGram.Api.Middleware
 {
     public class TokenValidatorMiddleware
     {

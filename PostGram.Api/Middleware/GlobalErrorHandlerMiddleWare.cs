@@ -1,8 +1,7 @@
-﻿using System.Net;
-using PostGram.Common.Exceptions;
+﻿using PostGram.Common.Exceptions;
 using LogLevel = NLog.LogLevel;
 
-namespace PostGram.Api.Middlewares
+namespace PostGram.Api.Middleware
 {
     public class GlobalErrorHandlerMiddleWare
     {
@@ -65,7 +64,7 @@ namespace PostGram.Api.Middlewares
             if (e.InnerException != null)
                 await context.Response.WriteAsJsonAsync(e.InnerException.Message);
             else
-                await context.Response.WriteAsJsonAsync(e.Message);
+                await context.Response. WriteAsJsonAsync(e.Message);
         }
     }
 

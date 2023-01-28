@@ -7,7 +7,7 @@ using NLog;
 using NLog.Web;
 using PostGram.Api;
 using PostGram.Api.Configs;
-using PostGram.Api.Middlewares;
+using PostGram.Api.Middleware;
 using PostGram.Api.Services;
 using PostGram.Common.Constants;
 

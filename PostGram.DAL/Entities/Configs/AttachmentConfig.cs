@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace PostGram.DAL.Entities.Configs
 {
-    internal class AttachmentCinfig : IEntityTypeConfiguration<Attachment>
+    internal class AttachmentConfig : IEntityTypeConfiguration<Attachment>
     {
         public void Configure(EntityTypeBuilder<Attachment> builder)
         {
