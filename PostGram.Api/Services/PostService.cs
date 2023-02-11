@@ -8,8 +8,6 @@ using PostGram.Common.Enums;
 using PostGram.Common.Exceptions;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
-using System.Linq.Expressions;
-using System.Xml.Linq;
 
 namespace PostGram.Api.Services
 {
