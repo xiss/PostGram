@@ -31,23 +31,11 @@ namespace PostGram.Api.Middleware
             {
                 await ResponseHandler(context, e, LogLevel.Warn, 404);
             }
-            catch (DbPostGramException e)
-            {
-                await ResponseHandler(context, e, LogLevel.Error, 500);
-            }
             catch (AuthorizationPostGramException e)
             {
                 await ResponseHandler(context, e, LogLevel.Warn, 401);
             }
-            catch (FilePostGramException e)
-            {
-                await ResponseHandler(context, e, LogLevel.Error, 500);
-            }
-            catch (CriticalPostGramException e)
-            {
-                await ResponseHandler(context, e, LogLevel.Error, 500);
-            }
-            catch (CommonPostGramException e)
+            catch (PostGramException e)
             {
                 await ResponseHandler(context, e, LogLevel.Error, 500);
             }
@@ -64,7 +52,7 @@ namespace PostGram.Api.Middleware
             if (e.InnerException != null)
                 await context.Response.WriteAsJsonAsync(e.InnerException.Message);
             else
-                await context.Response. WriteAsJsonAsync(e.Message);
+                await context.Response.WriteAsJsonAsync(e.Message);
         }
     }
 

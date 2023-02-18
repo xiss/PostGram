@@ -46,9 +46,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
         }
 
@@ -85,16 +85,16 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
         }
 
         public async Task<Guid> CreateUser(CreateUserModel model)
         {
             if (await CheckUserExist(model.Email))
-                throw new DbPostGramException("User with email already exist, email: " + model.Email);
+                throw new UnprocessableRequestPostGramException("User with email already exist, email: " + model.Email);
             if (model.BirthDate > DateTimeOffset.UtcNow)
                 throw new BadRequestPostGramException("BirthDate cannot be in future");
 
@@ -108,9 +108,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
 
             return user.Id;
@@ -131,9 +131,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
 
             return avatarId;
@@ -154,9 +154,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
 
             return userId;
@@ -234,9 +234,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
         }
 
@@ -268,9 +268,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
 
             return _mapper.Map<UserModel>(user);

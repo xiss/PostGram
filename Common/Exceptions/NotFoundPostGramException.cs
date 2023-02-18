@@ -1,6 +1,6 @@
 ﻿namespace PostGram.Common.Exceptions
 {
-    public class NotFoundPostGramException : CommonPostGramException
+    public class NotFoundPostGramException : PostGramException
     {
         public NotFoundPostGramException()
         {

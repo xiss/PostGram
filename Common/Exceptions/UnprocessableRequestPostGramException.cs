@@ -1,6 +1,6 @@
 ﻿namespace PostGram.Common.Exceptions
 {
-    public class UnprocessableRequestPostGramException : CommonPostGramException
+    public class UnprocessableRequestPostGramException : PostGramException
     {
         public UnprocessableRequestPostGramException()
         {

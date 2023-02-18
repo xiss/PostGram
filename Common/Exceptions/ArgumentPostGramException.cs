@@ -1,6 +1,6 @@
 ﻿namespace PostGram.Common.Exceptions
 {
-    public class ArgumentPostGramException : CriticalPostGramException
+    public class ArgumentPostGramException : PostGramException
     {
         public ArgumentPostGramException()
         {

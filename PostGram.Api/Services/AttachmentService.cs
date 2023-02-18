@@ -34,7 +34,7 @@ namespace PostGram.Api.Services
             }
             catch (Exception e)
             {
-                throw new FilePostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
         }
 
@@ -49,7 +49,7 @@ namespace PostGram.Api.Services
             }
             catch (Exception e)
             {
-                throw new FilePostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
         }
 
@@ -125,7 +125,7 @@ namespace PostGram.Api.Services
             }
             catch (Exception e)
             {
-                throw new FilePostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿namespace PostGram.Common.Exceptions
 {
-    public class BadRequestPostGramException : CriticalPostGramException
+    public class BadRequestPostGramException : PostGramException
     {
         public BadRequestPostGramException()
         {

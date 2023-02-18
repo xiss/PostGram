@@ -37,17 +37,15 @@ namespace PostGram.Api.Services
             Comment comment = _mapper.Map<Comment>(model);
             comment.AuthorId = currentUserId;
 
-            if (model.QuotedCommentId != null)
+            if (model.QuotedCommentId != null && model.QuotedText != null)
             {
                 Comment quotedComment = await GetCommentById(model.QuotedCommentId.Value);
                 comment.QuotedCommentId = quotedComment.Id;
-                if (model.QuotedText != null)
-                {
-                    if (!quotedComment.Body.Contains(model.QuotedText))
-                        throw new UnprocessableRequestPostGramException(
-                            $"Quoted comment {model.QuotedCommentId} does not contain quoted text");
-                    comment.QuotedText = model.QuotedText;
-                }
+
+                if (!quotedComment.Body.Contains(model.QuotedText))
+                    throw new UnprocessableRequestPostGramException(
+                        $"Quoted comment {model.QuotedCommentId} does not contain quoted text");
+                comment.QuotedText = model.QuotedText;
             }
             try
             {
@@ -58,9 +56,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
 
             return comment.Id;
@@ -92,7 +90,7 @@ namespace PostGram.Api.Services
                     break;
 
                 default:
-                    throw new CriticalPostGramException("Unregistered entity type");
+                    throw new PostGramException("Unregistered entity type");
             }
 
             try
@@ -105,9 +103,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
         }
 
@@ -133,9 +131,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
 
             return post.Id;
@@ -169,9 +167,6 @@ namespace PostGram.Api.Services
 
             await DeletePostContents(post.PostContents);
 
-            foreach (Comment comment in post.Comments)
-                await DeleteComment(comment.Id, currentUserId);
-
             try
             {
                 _dataContext.Posts.Update(post);
@@ -182,9 +177,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
         }
 
@@ -326,9 +321,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
 
             return _mapper.Map<LikeModel>(like);
@@ -395,9 +390,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
 
             PostModel result = _mapper.Map<PostModel>(post);
@@ -437,9 +432,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
         }
 
@@ -488,9 +483,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
         }
     }

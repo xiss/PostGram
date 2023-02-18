@@ -108,9 +108,9 @@ namespace PostGram.Api.Services
             {
                 if (e.InnerException != null)
                 {
-                    throw new DbPostGramException(e.InnerException.Message, e.InnerException);
+                    throw new PostGramException(e.InnerException.Message, e.InnerException);
                 }
-                throw new DbPostGramException(e.Message, e);
+                throw new PostGramException(e.Message, e);
             }
         }
 

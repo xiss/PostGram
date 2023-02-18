@@ -1,6 +1,6 @@
 ﻿namespace PostGram.Common.Exceptions
 {
-    public class AuthorizationPostGramException : CommonPostGramException
+    public class AuthorizationPostGramException : PostGramException
     {
         public AuthorizationPostGramException()
         {
