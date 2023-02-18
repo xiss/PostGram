@@ -1,6 +1,8 @@
 ﻿using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations.Internal;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog;
@@ -77,7 +79,8 @@ builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>()
 builder.Services.AddInMemoryRateLimiting();
 
 builder.Services.AddDbContext<PostGram.DAL.DataContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql"),
+        ob => ob.MigrationsAssembly(typeof(Program).Assembly.GetName().Name)));
 
 //Authentication setup
 builder.Services.AddAuthentication(o => o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme)
@@ -119,13 +122,13 @@ using (var serviceScope = ((IApplicationBuilder)app).ApplicationServices.GetServ
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
 //{
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint(Api.EndpointApiName + "/swagger.json", Api.EndpointApiName);
-        options.SwaggerEndpoint(Api.EndpointAuthorizationName + "/swagger.json", Api.EndpointAuthorizationName);
-    });
-    app.UseDeveloperExceptionPage();
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint(Api.EndpointApiName + "/swagger.json", Api.EndpointApiName);
+    options.SwaggerEndpoint(Api.EndpointAuthorizationName + "/swagger.json", Api.EndpointAuthorizationName);
+});
+app.UseDeveloperExceptionPage();
 //}
 
 app.UseHttpsRedirection();
