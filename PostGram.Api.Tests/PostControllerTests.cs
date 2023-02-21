@@ -1,5 +1,4 @@
 using AutoFixture;
-using AutoFixture.AutoMoq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -31,70 +30,65 @@ namespace PostGram.Api.Tests
         public async Task CreateComment_Result_Valid()
         {
             // Arrange
-            Mock<IPostService> service = new Mock<IPostService>();
-            PostController controller = GetMockPostController(service);
+            PostController controller = GetMockPostController();
 
             // Act
             Guid result = await controller.CreateComment(_fixture.Create<CreateCommentModel>());
 
             // Assert
-            Assert.IsAssignableFrom<Guid>(result);
+            Assert.IsType<Guid>(result);
         }
 
         [Fact]
         public async Task CreateLike_Result_Valid()
         {
             // Arrange
-            Mock<IPostService> service = new Mock<IPostService>();
-            PostController controller = GetMockPostController(service);
+            PostController controller = GetMockPostController();
 
             // Act
             Guid result = await controller.CreateLike(_fixture.Create<CreateLikeModel>());
 
             // Assert
-            Assert.IsAssignableFrom<Guid>(result);
+            Assert.IsType<Guid>(result);
         }
 
         [Fact]
         public async Task CreatePost_Result_Valid()
         {
             // Arrange
-            Mock<IPostService> service = new Mock<IPostService>();
-            PostController controller = GetMockPostController(service);
+            PostController controller = GetMockPostController();
 
             // Act
             Guid result = await controller.CreatePost(_fixture.Create<CreatePostModel>());
 
             // Assert
-            Assert.IsAssignableFrom<Guid>(result);
+            Assert.IsType<Guid>(result);
         }
 
         [Fact]
         public async Task DeleteComment_Result_Valid()
         {
             // Arrange
-            Mock<IPostService> service = new Mock<IPostService>();
-            PostController controller = GetMockPostController(service);
+            PostController controller = GetMockPostController();
 
             // Act
             Guid result = await controller.DeleteComment(_fixture.Create<Guid>());
 
             // Assert
-            Assert.IsAssignableFrom<Guid>(result);
+            Assert.IsType<Guid>(result);
         }
 
         [Fact]
         public async Task DeletePost_Result_Valid()
         {
             // Arrange
-            Mock<IPostService> service = new Mock<IPostService>();
-            PostController controller = GetMockPostController(service);
+            PostController controller = GetMockPostController();
 
             // Act
             Guid result = await controller.DeletePost(_fixture.Create<Guid>());
 
             // Assert
-            Assert.IsAssignableFrom<Guid>(result);
+            Assert.IsType<Guid>(result);
         }
 
         [Fact]
@@ -105,9 +99,10 @@ namespace PostGram.Api.Tests
             PostController controller = GetMockPostController(service);
 
             // Act
-            CommentModel result = await controller.GetComment(_fixture.Create<Guid>());
+            CommentModel result =  await controller.GetComment(_fixture.Create<Guid>());
 
             // Assert
+            service.VerifyAll();
             Assert.Equal(TestUrl, result.Author.Avatar?.Link);
         }
 
@@ -131,6 +126,7 @@ namespace PostGram.Api.Tests
             CommentModel result = await controller.GetComment(_fixture.Create<Guid>());
 
             // Assert
+            service.VerifyAll();
             Assert.Null(result.Author.Avatar?.Link);
         }
 
@@ -145,7 +141,8 @@ namespace PostGram.Api.Tests
             CommentModel result = await controller.GetComment(_fixture.Create<Guid>());
 
             // Assert
-            Assert.IsAssignableFrom<CommentModel>(result);
+            service.VerifyAll();
+            Assert.IsType<CommentModel>(result);
         }
 
         [Fact]
@@ -159,11 +156,9 @@ namespace PostGram.Api.Tests
             CommentModel[] result = await controller.GetCommentsForPost(It.IsAny<Guid>());
 
             // Assert
-            Assert.True(result.Length != 0, "result.Length == 0");
-            foreach (var commentModel in result)
-            {
-                Assert.Equal(TestUrl, commentModel.Author.Avatar?.Link);
-            }
+            service.VerifyAll();
+            Assert.NotEmpty(result);
+            Assert.All(result, post => Assert.Equal(TestUrl, post.Author.Avatar?.Link)); ;
         }
 
         [Theory]
@@ -190,11 +185,9 @@ namespace PostGram.Api.Tests
             CommentModel[] result = await controller.GetCommentsForPost(_fixture.Create<Guid>());
 
             // Assert
-            Assert.True(result.Length != 0, "result.Length == 0");
-            foreach (var commentModel in result)
-            {
-                Assert.Null(commentModel.Author.Avatar?.Link);
-            }
+            service.VerifyAll();
+            Assert.NotEmpty(result);
+            Assert.All(result, post => Assert.Null(post.Author.Avatar?.Link));
         }
 
         [Fact]
@@ -208,7 +201,8 @@ namespace PostGram.Api.Tests
             CommentModel[] result = await controller.GetCommentsForPost(It.IsAny<Guid>());
 
             // Assert
-            Assert.IsAssignableFrom<CommentModel[]>(result);
+            service.VerifyAll();
+            Assert.IsType<CommentModel[]>(result);
         }
 
         [Fact]
@@ -222,6 +216,7 @@ namespace PostGram.Api.Tests
             PostModel result = await controller.GetPost(Guid.Empty);
 
             // Assert
+            service.VerifyAll();
             Assert.Equal(TestUrl, result.Author.Avatar?.Link);
         }
 
@@ -245,6 +240,7 @@ namespace PostGram.Api.Tests
             PostModel result = await controller.GetPost(Guid.Empty);
 
             // Assert
+            service.VerifyAll();
             Assert.Null(result.Author.Avatar?.Link);
         }
 
@@ -259,11 +255,9 @@ namespace PostGram.Api.Tests
             PostModel result = await controller.GetPost(Guid.Empty);
 
             // Assert
-            Assert.True(result.Content.Count != 0, "result.Content.Count == 0");
-            foreach (var attachment in result.Content)
-            {
-                Assert.Equal(TestUrl, attachment.Link);
-            }
+            service.VerifyAll();
+            Assert.NotEmpty(result.Content);
+            Assert.All(result.Content, postContent => Assert.Equal(TestUrl, postContent.Link));
         }
 
         [Fact]
@@ -277,7 +271,8 @@ namespace PostGram.Api.Tests
             PostModel result = await controller.GetPost(Guid.Empty);
 
             // Assert
-            Assert.IsAssignableFrom<PostModel>(result);
+            service.VerifyAll();
+            Assert.IsType<PostModel>(result);
         }
 
         [Theory]
@@ -292,8 +287,9 @@ namespace PostGram.Api.Tests
             List<PostModel> result = await controller.GetPosts(take, skip);
 
             // Assert
-            Assert.True(result.Count != 0, "result.Count == 0");
-            result.ForEach(post => Assert.Equal(TestUrl, post.Author.Avatar?.Link));
+            service.VerifyAll();
+            Assert.NotEmpty(result);
+            Assert.All(result, post => Assert.Equal(TestUrl, post.Author.Avatar?.Link));
         }
 
         [Theory]
@@ -317,8 +313,9 @@ namespace PostGram.Api.Tests
             List<PostModel> result = await controller.GetPosts(take, skip);
 
             // Assert
-            Assert.True(result.Count != 0, "result.Count == 0");
-            result.ForEach(post => Assert.Null(post.Author.Avatar?.Link));
+            service.VerifyAll();
+            Assert.NotEmpty(result);
+            Assert.All(result, post => Assert.Null(post.Author.Avatar?.Link));
         }
 
         [Theory]
@@ -333,11 +330,9 @@ namespace PostGram.Api.Tests
             List<PostModel> result = await controller.GetPosts(take, skip);
 
             // Assert
-            Assert.True(result.Count != 0, "result.Count == 0");
-            foreach (var attachment in result.SelectMany(post => post.Content))
-            {
-                Assert.Equal(TestUrl, attachment.Link);
-            }
+            service.VerifyAll();
+            Assert.NotEmpty(result);
+            Assert.All(result.SelectMany(post => post.Content), attachmentModel => Assert.Equal(TestUrl, attachmentModel.Link));
         }
 
         [Theory]
@@ -357,6 +352,7 @@ namespace PostGram.Api.Tests
             List<PostModel> result = await controller.GetPosts(take, 0);
 
             // Assert
+            service.VerifyAll();
             Assert.InRange(result.Count, 0, take);
         }
 
@@ -372,7 +368,8 @@ namespace PostGram.Api.Tests
             List<PostModel> result = await controller.GetPosts(take, skip);
 
             // Assert
-            Assert.IsAssignableFrom<List<PostModel>>(result);
+            service.VerifyAll();
+            Assert.IsType<List<PostModel>>(result);
         }
 
         [Fact]
@@ -386,6 +383,7 @@ namespace PostGram.Api.Tests
             CommentModel result = await controller.UpdateComment(_fixture.Create<UpdateCommentModel>());
 
             // Assert
+            service.VerifyAll();
             Assert.Equal(TestUrl, result.Author.Avatar?.Link);
         }
 
@@ -409,6 +407,7 @@ namespace PostGram.Api.Tests
             CommentModel result = await controller.UpdateComment(_fixture.Create<UpdateCommentModel>());
 
             // Assert
+            service.VerifyAll();
             Assert.Null(result.Author.Avatar?.Link);
         }
 
@@ -423,7 +422,8 @@ namespace PostGram.Api.Tests
             CommentModel result = await controller.UpdateComment(_fixture.Create<UpdateCommentModel>());
 
             // Assert
-            Assert.IsAssignableFrom<CommentModel>(result);
+            service.VerifyAll();
+            Assert.IsType<CommentModel>(result);
         }
 
         [Fact]
@@ -440,7 +440,8 @@ namespace PostGram.Api.Tests
             LikeModel result = await controller.UpdateLike(_fixture.Create<UpdateLikeModel>());
 
             // Assert
-            Assert.IsAssignableFrom<LikeModel>(result);
+            service.VerifyAll();
+            Assert.IsType<LikeModel>(result);
         }
 
         [Fact]
@@ -454,6 +455,7 @@ namespace PostGram.Api.Tests
             PostModel result = await controller.UpdatePost(_fixture.Create<UpdatePostModel>());
 
             // Assert
+            service.VerifyAll();
             Assert.Equal(TestUrl, result.Author.Avatar?.Link);
         }
 
@@ -477,6 +479,7 @@ namespace PostGram.Api.Tests
             PostModel result = await controller.UpdatePost(_fixture.Create<UpdatePostModel>());
 
             // Assert
+            service.VerifyAll();
             Assert.Null(result.Author.Avatar?.Link);
         }
 
@@ -491,10 +494,8 @@ namespace PostGram.Api.Tests
             PostModel result = await controller.UpdatePost(_fixture.Create<UpdatePostModel>());
 
             // Assert
-            foreach (var attachment in result.Content)
-            {
-                Assert.Equal(TestUrl, attachment.Link);
-            }
+            service.VerifyAll();
+            Assert.All(result.Content, postContent => Assert.Equal(TestUrl, postContent.Link));
         }
 
         [Fact]
@@ -508,11 +509,14 @@ namespace PostGram.Api.Tests
             PostModel result = await controller.UpdatePost(_fixture.Create<UpdatePostModel>());
 
             // Assert
-            Assert.IsAssignableFrom<PostModel>(result);
+            service.VerifyAll();
+            Assert.IsType<PostModel>(result);
         }
 
-        private PostController GetMockPostController(Mock<IPostService> service)
+        private PostController GetMockPostController(Mock<IPostService>? service = null)
         {
+            service ??= new Mock<IPostService>();
+
             Mock<IUrlHelper> mockUrlHelper = new Mock<IUrlHelper>();
             mockUrlHelper.Setup(s => s.Action(It.IsAny<UrlActionContext>())).Returns(TestUrl);
 
@@ -534,10 +538,12 @@ namespace PostGram.Api.Tests
 
         private Mock<IPostService> GetMockPostService_GetComment()
         {
+            var a = _fixture.Create<CommentModel>();
+            var t=  a with{Body = "test"};
             Mock<IPostService> service = new Mock<IPostService>();
             service
                 .Setup(s => s.GetComment(It.IsAny<Guid>(), _testUserId))
-                .ReturnsAsync(_fixture.Create<CommentModel>());
+                .ReturnsAsync(t);
             return service;
         }
 

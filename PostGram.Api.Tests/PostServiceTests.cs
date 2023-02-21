@@ -59,21 +59,19 @@ namespace PostGram.Api.Tests
         public async Task CreateComment_DBSaveException_Exception()
         {
             // Arrange
-            Mock<DataContext> context = _fixture.Create<Mock<DataContext>>();
-            await using (context.Object)
-            {
-                Guid postId = await AddPost(context.Object);
-                context.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                    .ThrowsAsync(new DbUpdateException());
-                PostService service = GetPostService(context.Object);
-                CreateCommentModel model = GetCreateCommentModel(postId);
+            Mock<DataContext> mock = _fixture.Create<Mock<DataContext>>();
+            Guid postId = await AddPost(mock.Object);
+            mock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new DbUpdateException());
+            await using DataContext mockContext = mock.Object;
+            PostService service = GetPostService(mockContext);
+            CreateCommentModel model = GetCreateCommentModel(postId);
 
-                // Act
-                Task<Guid> TestFunc() => service.CreateComment(model, Guid.NewGuid());
+            // Act
+            Task<Guid> TestFunc() => service.CreateComment(model, Guid.NewGuid());
 
-                // Assert
-                await Assert.ThrowsAsync<PostGramException>(TestFunc);
-            }
+            // Assert
+            await Assert.ThrowsAsync<PostGramException>(TestFunc);
         }
 
         [Fact]
@@ -150,12 +148,10 @@ namespace PostGram.Api.Tests
             await Assert.ThrowsAsync<UnprocessableRequestPostGramException>(TestFunc);
         }
 
-        [Theory(DisplayName = "Correct handling models with quotedCommentId and quotedText")]
-        [InlineData(null, null, false)]
-        [InlineData("103ed95a-6ea1-43ed-bf0a-cc5ead5f841f", "test", false)]
-        [InlineData("103ed95a-6ea1-43ed-bf0a-cc5ead5f841f", null, true)]
-        [InlineData(null, "test", true)]
-        public async Task CreateComment_QuotedCommentIdAndQuote(string? quotedCommentId, string? quotedText, bool throwException)
+        [Theory]
+        [InlineData("103ed95a-6ea1-43ed-bf0a-cc5ead5f841f", null)]
+        [InlineData(null, "test")]
+        public async Task CreateComment_QuotedCommentIdAndQuote_Exception(string? quotedCommentId, string? quotedText)
         {
             // Arrange
             await using DataContext context = _fixture.Create<DataContext>();
@@ -171,14 +167,29 @@ namespace PostGram.Api.Tests
             Task<Guid> TestFunc() => service.CreateComment(model, _fixture.Create<Guid>());
 
             // Assert
-            if (throwException)
-            {
-                await Assert.ThrowsAsync<UnprocessableRequestPostGramException>(TestFunc);
-            }
-            else
-            {
-                Assert.IsAssignableFrom<Guid>(await TestFunc());
-            }
+            await Assert.ThrowsAsync<UnprocessableRequestPostGramException>(TestFunc);
+        }
+
+        [Theory]
+        [InlineData(null, null)]
+        [InlineData("103ed95a-6ea1-43ed-bf0a-cc5ead5f841f", "test")]
+        public async Task CreateComment_QuotedCommentIdAndQuote_Valid(string? quotedCommentId, string? quotedText)
+        {
+            // Arrange
+            await using DataContext context = _fixture.Create<DataContext>();
+            Guid? quotedCommentIdGuid = quotedCommentId == null ? null : Guid.Parse(quotedCommentId);
+            Guid postId = await AddPost(context);
+            // add comment to quote
+            await AddComment(context, postId, quotedText, commentId: quotedCommentIdGuid);
+            PostService service = GetPostService(context);
+
+            CreateCommentModel model = GetCreateCommentModel(postId, quotedCommentIdGuid, quotedText: quotedText);
+
+            // Act
+            Guid result = await service.CreateComment(model, _fixture.Create<Guid>());
+
+            // Assert
+            Assert.IsType<Guid>(result);
         }
 
         [Fact]
@@ -218,21 +229,19 @@ namespace PostGram.Api.Tests
         public async Task CreateLike_DBSaveException_Exception()
         {
             // Arrange
-            Mock<DataContext> context = _fixture.Create<Mock<DataContext>>();
-            await using (context.Object)
-            {
-                Guid postId = await AddPost(context.Object);
-                context.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                    .ThrowsAsync(new DbUpdateException());
-                PostService service = GetPostService(context.Object);
-                CreateLikeModel model = GetCreateLikeModel(postId);
+            Mock<DataContext> mock = _fixture.Create<Mock<DataContext>>();
+            Guid postId = await AddPost(mock.Object);
+            mock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new DbUpdateException());
+            await using DataContext mockContext = mock.Object;
+            PostService service = GetPostService(mockContext);
+            CreateLikeModel model = GetCreateLikeModel(postId);
 
-                // Act
-                Task<Guid> TestFunc() => service.CreateLike(model, Guid.NewGuid());
+            // Act
+            Task<Guid> TestFunc() => service.CreateLike(model, Guid.NewGuid());
 
-                // Assert
-                await Assert.ThrowsAsync<PostGramException>(TestFunc);
-            }
+            // Assert
+            await Assert.ThrowsAsync<PostGramException>(TestFunc);
         }
 
         [Theory]
@@ -321,18 +330,16 @@ namespace PostGram.Api.Tests
         public async Task CreatePost_DBSaveException_Exception()
         {
             // Arrange
-            Mock<DataContext> context = _fixture.Create<Mock<DataContext>>();
-            await using (context.Object)
-            {
-                context.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new DbUpdateException());
-                PostService service = GetPostService(context.Object);
+            Mock<DataContext> mock = _fixture.Create<Mock<DataContext>>();
+            mock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new DbUpdateException());
+            await using DataContext mockContext = mock.Object;
+            PostService service = GetPostService(mockContext);
 
-                // Act
-                Task<Guid> TestFunc() => service.CreatePost(_fixture.Create<CreatePostModel>(), Guid.NewGuid());
+            // Act
+            Task<Guid> TestFunc() => service.CreatePost(_fixture.Create<CreatePostModel>(), Guid.NewGuid());
 
-                // Assert
-                await Assert.ThrowsAsync<PostGramException>(TestFunc);
-            }
+            // Assert
+            await Assert.ThrowsAsync<PostGramException>(TestFunc);
         }
 
         [Fact]
@@ -347,10 +354,7 @@ namespace PostGram.Api.Tests
             Guid postId = await service.CreatePost(model, Guid.NewGuid());
 
             // Assert
-            foreach (var attachment in model.Attachments)
-            {
-                Assert.Equal(attachment.TempId, context.PostContents.FirstOrDefault(pc => pc.Id == attachment.TempId)?.Id);
-            }
+            Assert.All(model.Attachments, m => Assert.Equal(m.TempId, context.PostContents.FirstOrDefault(pc => pc.Id == m.TempId)?.Id));
         }
 
         [Fact]
@@ -373,21 +377,18 @@ namespace PostGram.Api.Tests
         public async Task DeleteComment_DBSaveException_Exception()
         {
             // Arrange
-            Mock<DataContext> context = _fixture.Create<Mock<DataContext>>();
-            await using (context.Object)
-            {
-                Guid commentId = await AddComment(context.Object);
-                Guid? userId = context.Object.Comments.FirstOrDefault(c => c.Id == commentId)?.AuthorId;
+            Mock<DataContext> mock = _fixture.Create<Mock<DataContext>>();
+            Guid commentId = await AddComment(mock.Object);
+            mock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new DbUpdateException());
+            await using DataContext mockContext = mock.Object;
+            PostService service = GetPostService(mockContext);
+            Guid? userId = mockContext.Comments.FirstOrDefault(c => c.Id == commentId)?.AuthorId;
 
-                context.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new DbUpdateException());
-                PostService service = GetPostService(context.Object);
+            // Act
+            Task<Guid> TestFunc() => service.DeleteComment(commentId, userId.Value);
 
-                // Act
-                Task<Guid> TestFunc() => service.DeleteComment(commentId, userId.Value);
-
-                // Assert
-                await Assert.ThrowsAsync<PostGramException>(TestFunc);
-            }
+            // Assert
+            await Assert.ThrowsAsync<PostGramException>(TestFunc);
         }
 
         [Fact]
@@ -438,25 +439,33 @@ namespace PostGram.Api.Tests
             await Assert.ThrowsAsync<AuthorizationPostGramException>(TestFunc);
         }
 
-        [Fact]
-        public async Task DeletePost_DBSaveException_Exception()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DeletePost_DBSaveException_Exception(bool withPostContent)
         {
             // Arrange
-            Mock<DataContext> context = _fixture.Create<Mock<DataContext>>();
-            await using (context.Object)
+            Mock<DataContext> mock = _fixture.Create<Mock<DataContext>>();
+
+            Guid postId = await AddPost(mock.Object);
+            bool secondCall = false;
+            mock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).Callback(() =>
             {
-                Guid postId = await AddPost(context.Object);
-                Guid? userId = context.Object.Posts.FirstOrDefault(c => c.Id == postId)?.AuthorId;
+                if (withPostContent || secondCall)
+                {
+                    throw new DbUpdateException();
+                }
+                secondCall = true;
+            });
+            await using DataContext mockContext = mock.Object;
+            Guid? userId = mockContext.Posts.FirstOrDefault(c => c.Id == postId)?.AuthorId;
+            PostService service = GetPostService(mockContext);
 
-                context.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new DbUpdateException());
-                PostService service = GetPostService(context.Object);
+            // Act
+            Task<Guid> TestFunc() => service.DeletePost(postId, userId.Value);
 
-                // Act
-                Task<Guid> TestFunc() => service.DeletePost(postId, userId.Value);
-
-                // Assert
-                await Assert.ThrowsAsync<PostGramException>(TestFunc);
-            }
+            // Assert
+            await Assert.ThrowsAsync<PostGramException>(TestFunc);
         }
 
         [Fact]
@@ -538,7 +547,7 @@ namespace PostGram.Api.Tests
             CommentModel comment = await service.GetComment(commentId, Guid.NewGuid());
 
             // Assert
-            Assert.IsAssignableFrom<CommentModel>(comment);
+            Assert.IsType<CommentModel>(comment);
             Assert.Equal(commentId, comment.Id);
         }
 
