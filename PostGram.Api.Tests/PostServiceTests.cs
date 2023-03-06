@@ -1,8 +1,13 @@
-﻿using AutoFixture;
+﻿using System.Diagnostics;
+using AutoFixture;
 using AutoFixture.AutoMoq;
 using EntityFrameworkCore.AutoFixture.InMemory;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Logging;
 using Moq;
+using PostGram.Api.Migrations;
+using PostGram.Api.Models.Attachment;
 using PostGram.Api.Models.Comment;
 using PostGram.Api.Models.Like;
 using PostGram.Api.Models.Post;
@@ -28,7 +33,14 @@ namespace PostGram.Api.Tests
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
             _fixture.Customize(new CompositeCustomization(
-                new InMemoryCustomization(),
+                new InMemoryCustomization()
+                {
+                    Configure = options => options
+                            .LogTo(message => Debug.WriteLine(message))
+                            .EnableSensitiveDataLogging()
+                            .EnableDetailedErrors()
+
+                },
                 new AutoMoqCustomization(),
                 new AutoMapperCustomization(typeof(MapperProfile)),
                 new PostCustomization(),
@@ -100,8 +112,7 @@ namespace PostGram.Api.Tests
         public async Task CreateComment_PostNotExist_Exception()
         {
             // Arrange
-            await using DataContext context = _fixture.Create<DataContext>();
-            PostService service = GetPostService(context);
+            using PostService service = GetPostService();
             CreateCommentModel model = GetCreateCommentModel();
 
             // Act
@@ -414,8 +425,7 @@ namespace PostGram.Api.Tests
         public async Task DeleteComment_NotExistComment_Exception()
         {
             // Arrange
-            await using DataContext context = _fixture.Create<DataContext>();
-            PostService service = GetPostService(context);
+            using PostService service = GetPostService();
 
             // Act
             Task<Guid> TestFunc() => service.DeleteComment(Guid.NewGuid(), Guid.NewGuid());
@@ -490,8 +500,7 @@ namespace PostGram.Api.Tests
         public async Task DeletePost_NotExistPost_Exception()
         {
             // Arrange
-            await using DataContext context = _fixture.Create<DataContext>();
-            PostService service = GetPostService(context);
+            using PostService service = GetPostService();
 
             // Act
             Task<Guid> TestFunc() => service.DeletePost(Guid.NewGuid(), Guid.NewGuid());
@@ -573,8 +582,7 @@ namespace PostGram.Api.Tests
         public async Task GetComment_NotExistComment_Exception()
         {
             // Arrange
-            await using DataContext context = _fixture.Create<DataContext>();
-            PostService service = GetPostService(context);
+            using PostService service = GetPostService();
 
             // Act
             Task<CommentModel> TestFunc() => service.GetComment(Guid.NewGuid(), Guid.NewGuid());
@@ -646,8 +654,7 @@ namespace PostGram.Api.Tests
         public async Task GetCommentsForPost_PostNotExist_Exception()
         {
             // Arrange
-            await using DataContext context = _fixture.Create<DataContext>();
-            PostService service = GetPostService(context);
+            using PostService service = GetPostService();
 
             // Act
             Task<CommentModel[]> TestFunc() => service.GetCommentsForPost(Guid.NewGuid(), Guid.NewGuid());
@@ -695,14 +702,198 @@ namespace PostGram.Api.Tests
         public async Task GetPost_PostNotExist_Exception()
         {
             // Arrange
-            await using DataContext context = _fixture.Create<DataContext>();
-            PostService service = GetPostService(context);
+            using PostService service = GetPostService();
 
             // Act
             Task<PostModel> TestFunc() => service.GetPost(Guid.NewGuid(), Guid.NewGuid());
 
             // Assert
             await Assert.ThrowsAsync<NotFoundPostGramException>(TestFunc);
+        }
+
+        [Theory]
+        [InlineData(10, 0)]
+        [InlineData(0, 0)]
+        [InlineData(0, 10)]
+        public async Task GetPosts_PostsNotExist_Exception(int takeAmount, int skipAmount)
+        {
+            // Arrange
+            using PostService service = GetPostService();
+
+            // Act
+            Task<List<PostModel>> TestFunc() => service.GetPosts(takeAmount, skipAmount, Guid.NewGuid());
+
+            // Assert
+            await Assert.ThrowsAsync<NotFoundPostGramException>(TestFunc);
+        }
+
+        [Fact]
+        public async Task GetPosts_LikesByUser_Filled()
+        {
+            // Arrange
+            await using DataContext context = _fixture.Create<DataContext>();
+            PostService service = GetPostService(context);
+            List<Guid> expectedLikes = new List<Guid>();
+
+            Guid userId = await AddUser(context);
+            Guid postId = await AddPost(context, authorId: userId);
+            expectedLikes.Add(await AddLike(context, userId, postId, LikableEntities.Post));
+
+            // Act
+            List<PostModel> result = await service.GetPosts(1, 0, userId);
+
+            // Assert
+            Assert.All(result, x => Assert.IsType<LikeModel>(x.LikeByUser));
+            Assert.All(result, x => Assert.Contains(expectedLikes, e => e == x.LikeByUser?.Id));
+        }
+
+        [Fact]
+        public async Task GetPosts_PostContent_Include()
+        {
+            // Arrange
+            await using DataContext context = _fixture.Create<DataContext>();
+            PostService service = GetPostService(context);
+
+            Guid userId = await AddUser(context);
+            Guid postId = await AddPost(context, authorId: userId);
+            List<Guid> expectedGuids = context.PostContents.Where(x => x.PostId == postId).Select(x => x.Id).ToList();
+
+            // Act
+            List<PostModel> result = await service.GetPosts(1, 0, userId);
+
+            // Assert
+            Assert.Equal(expectedGuids, result.FirstOrDefault()?.Content.Select(x => x.Id));
+        }
+
+        [Fact]
+        public async Task GetPosts_Author_Include()
+        {
+            // Arrange
+            await using DataContext context = _fixture.Create<DataContext>();
+            PostService service = GetPostService(context);
+
+            Guid userId = await AddUser(context);
+            Guid postId = await AddPost(context, authorId: userId);
+
+            // Act
+            List<PostModel> result = await service.GetPosts(1, 0, userId);
+
+            // Assert
+            Assert.Equal(userId, result.FirstOrDefault()?.Author.Id);
+        }
+
+        [Fact]
+        public async Task UpdateComment_DBSaveException_Exception()
+        {
+            // Arrange
+            Mock<DataContext> mock = _fixture.Create<Mock<DataContext>>();
+
+            Guid postId = await AddPost(mock.Object);
+            Guid userId = await AddUser(mock.Object);
+            Guid commentId = await AddComment(mock.Object, postId, userId: userId);
+
+            mock.Setup(x => x
+                .SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .Callback(() => throw new DbUpdateException());
+
+            await using DataContext mockContext = mock.Object;
+            PostService service = GetPostService(mockContext);
+            UpdateCommentModel model = GetUpdateCommentModel(commentId);
+
+            // Act
+            Task<CommentModel> TestFunc() => service.UpdateComment(model, userId);
+
+            // Assert
+            await Assert.ThrowsAsync<PostGramException>(TestFunc);
+        }
+
+        [Fact]
+        public async Task UpdateComment_CommentNotExist_Exception()
+        {
+            // Arrange
+            Mock<DataContext> mock = _fixture.Create<Mock<DataContext>>();
+
+            Guid userId = await AddUser(mock.Object);
+
+            mock.Setup(x => x
+                    .SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .Callback(() => throw new DbUpdateException());
+
+            await using DataContext mockContext = mock.Object;
+            PostService service = GetPostService(mockContext);
+            UpdateCommentModel model = GetUpdateCommentModel(Guid.NewGuid());
+
+            // Act
+            Task<CommentModel> TestFunc() => service.UpdateComment(model, userId);
+
+            // Assert
+            await Assert.ThrowsAsync<NotFoundPostGramException>(TestFunc);
+        }
+
+        [Fact]
+        public async Task UpdateComment_CreatedByAnotherUser_Exception()
+        {
+            // Arrange
+            Mock<DataContext> mock = _fixture.Create<Mock<DataContext>>();
+
+            Guid postId = await AddPost(mock.Object);
+            Guid userId = await AddUser(mock.Object);
+            Guid commentId = await AddComment(mock.Object, postId);
+
+            mock.Setup(x => x
+                    .SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .Callback(() => throw new DbUpdateException());
+
+            await using DataContext mockContext = mock.Object;
+            PostService service = GetPostService(mockContext);
+            UpdateCommentModel model = GetUpdateCommentModel(commentId);
+
+            // Act
+            Task<CommentModel> TestFunc() => service.UpdateComment(model, userId);
+
+            // Assert
+            await Assert.ThrowsAsync<AuthorizationPostGramException>(TestFunc);
+        }
+
+        [Fact]
+        public async Task UpdateComment_NewBody_Valid()
+        {
+            // Arrange
+            await using DataContext context = _fixture.Create<DataContext>();
+            PostService service = GetPostService(context);
+
+            Guid postId = await AddPost(context);
+            Guid userId = await AddUser(context);
+            Guid commentId = await AddComment(context, postId, userId: userId);
+            UpdateCommentModel model = GetUpdateCommentModel(commentId);
+
+            // Act
+            CommentModel result = await service.UpdateComment(model, userId);
+
+            // Assert
+            Assert.Equal(model.NewBody, result.Body);
+            Assert.NotNull(result.Edited);
+            Assert.True(result.Edited - DateTimeOffset.Now < TimeSpan.FromSeconds(1));
+        }
+
+        [Fact]
+        public async Task UpdateComment_LikeByUser_Filled()
+        {
+            // Arrange
+            await using DataContext context = _fixture.Create<DataContext>();
+            PostService service = GetPostService(context);
+            Guid postId = await AddPost(context);
+            Guid userId = await AddUser(context);
+            Guid commentId = await AddComment(context, postId, userId: userId);
+            UpdateCommentModel model = GetUpdateCommentModel(commentId);
+            Guid likeId = await AddLike(context, userId, commentId, LikableEntities.Comment);
+
+            // Act
+            CommentModel comment = await service.UpdateComment(model, userId);
+
+            // Assert
+            Assert.IsType<LikeModel>(comment.LikeByUser);
+            Assert.Equal(likeId, comment.LikeByUser?.Id);
         }
 
         private async Task<Guid> AddComment(
@@ -712,7 +903,8 @@ namespace PostGram.Api.Tests
             Guid? quotedCommentId = null,
             string? quotedText = null,
             bool isDeleted = false,
-            Guid? commentId = null)
+            Guid? commentId = null,
+            Guid? userId = null)
         {
             Comment comment = _fixture.Create<Comment>();
             comment.Id = quotedCommentId ?? Guid.NewGuid();
@@ -723,6 +915,10 @@ namespace PostGram.Api.Tests
             comment.Id = commentId ?? Guid.NewGuid();
             comment.QuotedCommentId = quotedCommentId;
             comment.QuotedText = quotedText;
+
+            if (userId != null)
+                comment.Author = context.Users.First(u => u.Id == userId);
+
             if (quotedCommentId != null)
                 comment.QuotedComment = context.Comments.First(c => c.Id == quotedCommentId);
 
@@ -740,6 +936,7 @@ namespace PostGram.Api.Tests
             Like like = _fixture.Create<Like>();
             like.EntityId = entityId ?? Guid.NewGuid();
             like.EntityType = entityType;
+
             if (authorId != null)
             {
                 User author = context.Users.First(u => u.Id == authorId);
@@ -825,8 +1022,16 @@ namespace PostGram.Api.Tests
                 .Create();
         }
 
-        private PostService GetPostService(DataContext context)
+        private UpdateCommentModel GetUpdateCommentModel(Guid commentId)
         {
+            return _fixture.Build<UpdateCommentModel>()
+                .With(u => u.Id, commentId)
+                .Create();
+        }
+
+        private PostService GetPostService(DataContext? context = null)
+        {
+            context ??= _fixture.Create<DataContext>();
             _fixture.Inject(context);
             return _fixture.Create<PostService>();
         }
