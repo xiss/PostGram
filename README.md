@@ -9,3 +9,6 @@ It is maintain creation, editing and deleting of posts, comments, likes, users, 
 - EF Core 7.0.0
 - NLog 5.1.5
 - PostgreSQL
+- AutoFixture 4.17.0
+- Xunit 2.4.1
+- Moq 4.18.2
