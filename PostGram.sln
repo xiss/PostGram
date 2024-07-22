@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostGram.Common", "Common\P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostGram.Api.Tests", "PostGram.Api.Tests\PostGram.Api.Tests.csproj", "{062B5A17-E66D-42DB-B597-1D568E8B8A49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostGram.BLL", "PostGram.BLL\PostGram.BLL.csproj", "{846ACCBD-91A6-4B58-BD1B-9436D747E9AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostGram.BLL", "PostGram.BLL\PostGram.BLL.csproj", "{846ACCBD-91A6-4B58-BD1B-9436D747E9AF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{CACE78D0-D7F3-47C8-B961-EFB036C204F5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,6 +44,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{062B5A17-E66D-42DB-B597-1D568E8B8A49} = {CACE78D0-D7F3-47C8-B961-EFB036C204F5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E05DD16-B99A-49F1-A8C3-5D77176756A4}

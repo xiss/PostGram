@@ -6,9 +6,12 @@ using Microsoft.OpenApi.Models;
 using NLog;
 using NLog.Web;
 using PostGram.Api;
-using PostGram.Api.Configs;
 using PostGram.Api.Middlewares;
+using PostGram.BLL;
+using PostGram.BLL.Services;
+using PostGram.Common.Configs;
 using PostGram.Common.Constants;
+using PostGram.Common.Interfaces.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,7 +59,7 @@ builder.Services.AddSwaggerGen(o =>
     o.SwaggerDoc(Api.EndpointAuthorizationName, new OpenApiInfo { Title = Api.EndpointAuthorizationName });
     o.SwaggerDoc(Api.EndpointApiName, new OpenApiInfo { Title = Api.EndpointApiName });
 });
-
+//TODO перейти на simple injector
 builder.Services.AddAutoMapper(typeof(MapperProfile).Assembly);
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();

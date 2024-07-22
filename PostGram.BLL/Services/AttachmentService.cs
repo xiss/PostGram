@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using PostGram.Api.Configs;
+using PostGram.Common.Configs;
 using PostGram.Common.Exceptions;
 using PostGram.Common.Interfaces.Services;
 using PostGram.Common.Models.Attachment;

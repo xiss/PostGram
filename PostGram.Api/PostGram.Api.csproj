@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\PostGram.Common.csproj" />
+    <ProjectReference Include="..\PostGram.BLL\PostGram.BLL.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PostGram.Api.Configs;
 using PostGram.Common;
+using PostGram.Common.Configs;
 using PostGram.Common.Constants;
 using PostGram.Common.Exceptions;
 using PostGram.Common.Interfaces.Services;

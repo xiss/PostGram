@@ -1,7 +1,6 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using System.Text;
+﻿using System.Text;
 
-namespace PostGram.Api.Configs
+namespace PostGram.Common.Configs
 {
     public class AuthConfig
     {

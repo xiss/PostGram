@@ -1,4 +1,4 @@
-﻿namespace PostGram.Api.Configs
+﻿namespace PostGram.Common.Configs
 {
     public class AppConfig
     {
