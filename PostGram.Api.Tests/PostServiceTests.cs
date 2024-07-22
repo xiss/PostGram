@@ -1,23 +1,20 @@
-﻿using System.Diagnostics;
-using AutoFixture;
+﻿using AutoFixture;
 using AutoFixture.AutoMoq;
 using EntityFrameworkCore.AutoFixture.InMemory;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.Extensions.Logging;
 using Moq;
-using PostGram.Api.Migrations;
-using PostGram.Api.Models.Attachment;
-using PostGram.Api.Models.Comment;
-using PostGram.Api.Models.Like;
-using PostGram.Api.Models.Post;
-using PostGram.Api.Services;
 using PostGram.Api.Tests.Customizations;
 using PostGram.Common.Enums;
 using PostGram.Common.Exceptions;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
-
+using System.Diagnostics;
+using PostGram.BLL;
+using PostGram.BLL.Services;
+using PostGram.Common.Models.Comment;
+using PostGram.Common.Models.Like;
+using PostGram.Common.Models.Post;
+//TODO Перенести в отдельный проект
 namespace PostGram.Api.Tests
 {
     public class PostServiceTests
@@ -39,7 +36,6 @@ namespace PostGram.Api.Tests
                             .LogTo(message => Debug.WriteLine(message))
                             .EnableSensitiveDataLogging()
                             .EnableDetailedErrors()
-
                 },
                 new AutoMoqCustomization(),
                 new AutoMapperCustomization(typeof(MapperProfile)),

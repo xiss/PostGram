@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PostGram.Api.Helpers;
-using PostGram.Api.Models.Attachment;
-using PostGram.Api.Models.Subscription;
-using PostGram.Api.Models.User;
-using PostGram.Api.Services;
+using PostGram.Common.Interfaces.Services;
+using PostGram.Common.Models.Attachment;
+using PostGram.Common.Models.Subscription;
+using PostGram.Common.Models.User;
 
 namespace PostGram.Api.Controllers
 {

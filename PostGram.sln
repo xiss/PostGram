@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostGram.DAL", "PostGram.DA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostGram.Common", "Common\PostGram.Common.csproj", "{0222905F-161C-49D4-A431-0B7AB4732229}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostGram.Api.Tests", "PostGram.Api.Tests\PostGram.Api.Tests.csproj", "{062B5A17-E66D-42DB-B597-1D568E8B8A49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostGram.Api.Tests", "PostGram.Api.Tests\PostGram.Api.Tests.csproj", "{062B5A17-E66D-42DB-B597-1D568E8B8A49}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostGram.BLL", "PostGram.BLL\PostGram.BLL.csproj", "{846ACCBD-91A6-4B58-BD1B-9436D747E9AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{062B5A17-E66D-42DB-B597-1D568E8B8A49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{062B5A17-E66D-42DB-B597-1D568E8B8A49}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{062B5A17-E66D-42DB-B597-1D568E8B8A49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{846ACCBD-91A6-4B58-BD1B-9436D747E9AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{846ACCBD-91A6-4B58-BD1B-9436D747E9AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{846ACCBD-91A6-4B58-BD1B-9436D747E9AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{846ACCBD-91A6-4B58-BD1B-9436D747E9AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

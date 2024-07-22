@@ -6,9 +6,9 @@ namespace PostGram.Api.Configs
     public class AuthConfig
     {
         public static readonly string SectionName = "Auth";
-        public string Issuer { get; set; } = String.Empty;
-        public string Audience { get; set; } = String.Empty;
-        public string Key { get; set; } = String.Empty;
+        public string Issuer { get; set; } = string.Empty;
+        public string Audience { get; set; } = string.Empty;
+        public string Key { get; set; } = string.Empty;
         public int LifeTime { get; set; }
 
         public SymmetricSecurityKey GetSymmetricSecurityKey()

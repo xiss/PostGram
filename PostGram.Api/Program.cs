@@ -1,16 +1,13 @@
 ﻿using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations.Internal;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog;
 using NLog.Web;
 using PostGram.Api;
 using PostGram.Api.Configs;
-using PostGram.Api.Middleware;
-using PostGram.Api.Services;
+using PostGram.Api.Middlewares;
 using PostGram.Common.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
