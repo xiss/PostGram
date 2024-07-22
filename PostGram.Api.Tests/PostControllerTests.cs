@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Moq;
 using PostGram.Api.Controllers;
-using PostGram.Api.Models.Comment;
-using PostGram.Api.Models.Like;
-using PostGram.Api.Models.Post;
-using PostGram.Api.Models.User;
-using PostGram.Api.Services;
 using PostGram.Common.Constants;
 using System.Security.Claims;
+using PostGram.Common.Interfaces.Services;
+using PostGram.Common.Models.Comment;
+using PostGram.Common.Models.Like;
+using PostGram.Common.Models.Post;
+using PostGram.Common.Models.User;
 
 namespace PostGram.Api.Tests
 {
@@ -538,6 +538,7 @@ namespace PostGram.Api.Tests
 
         private Mock<IPostService> GetMockPostService_GetComment()
         {
+            //TODO
             var a = _fixture.Create<CommentModel>();
             var t=  a with{Body = "test"};
             Mock<IPostService> service = new Mock<IPostService>();

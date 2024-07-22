@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PostGram.Api.Models.Token;
-using PostGram.Api.Models.User;
-using PostGram.Api.Services;
 using PostGram.Api.Helpers;
+using PostGram.Common.Interfaces.Services;
+using PostGram.Common.Models.Token;
+using PostGram.Common.Models.User;
 
 namespace PostGram.Api.Controllers
 {
