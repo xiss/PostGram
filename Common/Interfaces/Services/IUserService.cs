@@ -1,6 +1,7 @@
-﻿using PostGram.Common.Models.Attachment;
-using PostGram.Common.Models.Subscription;
-using PostGram.Common.Models.User;
+﻿using PostGram.Common.Dtos.Attachment;
+using PostGram.Common.Dtos.Subscription;
+using PostGram.Common.Dtos.User;
+using PostGram.Common.Requests;
 
 namespace PostGram.Common.Interfaces.Services
 {
@@ -18,15 +19,15 @@ namespace PostGram.Common.Interfaces.Services
 
         Task<Guid> DeleteUser(Guid userId);
 
-        Task<List<SubscriptionModel>> GetMasterSubscriptions(Guid currentUserId);
+        Task<List<SubscriptionDto>> GetMasterSubscriptions(Guid currentUserId);
 
-        Task<List<SubscriptionModel>> GetSlaveSubscriptions(Guid currentUserId);
+        Task<List<SubscriptionDto>> GetSlaveSubscriptions(Guid currentUserId);
 
-        Task<UserModel> GetUser(Guid userId);
+        Task<UserDto> GetUser(Guid userId);
 
-        Task<List<UserModel>> GetUsers();
+        Task<List<UserDto>> GetUsers();
 
-        Task<SubscriptionModel> UpdateSubscription(UpdateSubscriptionModel model, Guid currentUserId);
-        Task<UserModel> UpdateUser(UpdateUserModel model, Guid currentUserId);
+        Task<SubscriptionDto> UpdateSubscription(UpdateSubscriptionModel model, Guid currentUserId);
+        Task<UserDto> UpdateUser(UpdateUserModel model, Guid currentUserId);
     }
 }

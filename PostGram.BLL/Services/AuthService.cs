@@ -1,181 +1,190 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using PostGram.Api.Configs;
 using PostGram.Common;
 using PostGram.Common.Configs;
 using PostGram.Common.Constants;
+using PostGram.Common.Dtos.Token;
+using PostGram.Common.Dtos.User;
 using PostGram.Common.Exceptions;
 using PostGram.Common.Interfaces.Services;
-using PostGram.Common.Models.Token;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
 
-namespace PostGram.BLL.Services
+namespace PostGram.BLL.Services;
+
+public class AuthService : IDisposable, IAuthService
 {
-    public class AuthService : IDisposable, IAuthService
+    private readonly AuthConfig _authConfig;
+    private readonly DataContext _dataContext;
+    private readonly IMapper _mapper;
+
+    public AuthService(DataContext dataContext, IOptions<AuthConfig> authConfig, IMapper mapper)
     {
-        private readonly AuthConfig _authConfig;
-        private readonly DataContext _dataContext;
+        _dataContext = dataContext;
+        _authConfig = authConfig.Value;
+        _mapper = mapper;
+    }
 
-        public AuthService(DataContext dataContext, IOptions<AuthConfig> authConfig)
+    public void Dispose()
+    {
+        _dataContext.Dispose();
+    }
+
+    public async Task<TokenDto> GetToken(string login, string password)
+    {
+        User user = await GetUserByCredential(login, password);
+
+        var session = await _dataContext.UserSessions.AddAsync(new()
         {
-            _dataContext = dataContext;
-            _authConfig = authConfig.Value;
+            Id = Guid.NewGuid(),
+            Created = DateTimeOffset.UtcNow,
+            RefreshTokenId = Guid.NewGuid(),
+            User = user
+        });
+        await _dataContext.SaveChangesAsync();
+        return GenerateTokens(session.Entity);
+    }
+
+    public async Task<TokenDto> GetTokenByRefreshToken(string refreshToken)
+    {
+        TokenValidationParameters validationParameters = new()
+        {
+            ValidateIssuer = false,
+            ValidateIssuerSigningKey = true,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            IssuerSigningKey = GetSymmetricSecurityKey(_authConfig.Key)
+        };
+        var principal = new JwtSecurityTokenHandler().ValidateToken(refreshToken, validationParameters, out var securityToken);
+
+        if (securityToken is not JwtSecurityToken jwtSecurityToken
+            || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                StringComparison.InvariantCultureIgnoreCase))
+        {
+            throw new AuthorizationPostGramException("Invalid security token");
         }
 
-        public void Dispose()
+        if (Enumerable.FirstOrDefault<Claim>(principal.Claims, c => c.Type == ClaimNames.RefreshTokenId)?.Value is string refreshIdString
+            && Guid.TryParse(refreshIdString, out var refreshTokenId))
         {
-            _dataContext.Dispose();
-        }
+            UserSession session = await GetUserSessionByRefreshToken(refreshTokenId);
+            if (!session.IsActive)
+                throw new AuthorizationPostGramException("Session is inactive");
 
-        public async Task<TokenModel> GetToken(string login, string password)
-        {
-            User user = await GetUserByCredential(login, password);
+            User user = session.User;
 
-            var session = await _dataContext.UserSessions.AddAsync(new()
-            {
-                Id = Guid.NewGuid(),
-                Created = DateTimeOffset.UtcNow,
-                RefreshTokenId = Guid.NewGuid(),
-                User = user
-            });
+            session.RefreshTokenId = Guid.NewGuid();
             await _dataContext.SaveChangesAsync();
-            return GenerateTokens(session.Entity);
+            return GenerateTokens(session);
         }
-
-        public async Task<TokenModel> GetTokenByRefreshToken(string refreshToken)
+        else
         {
-            TokenValidationParameters validationParameters = new()
-            {
-                ValidateIssuer = false,
-                ValidateIssuerSigningKey = true,
-                ValidateAudience = false,
-                ValidateLifetime = true,
-                IssuerSigningKey = _authConfig.GetSymmetricSecurityKey()
-            };
-            var principal = new JwtSecurityTokenHandler().ValidateToken(refreshToken, validationParameters, out var securityToken);
+            throw new AuthorizationPostGramException("Invalid refresh token");
+        }
+    }
 
-            if (securityToken is not JwtSecurityToken jwtSecurityToken
-                || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
-                    StringComparison.InvariantCultureIgnoreCase))
+    public async Task<UserSessionDto> GetUserSessionById(Guid id)
+    {
+        UserSession? session = await _dataContext.UserSessions.FirstOrDefaultAsync(s => s.Id == id);
+        if (session == null)
+            throw new NotFoundPostGramException("Session with Id " + id + " not found");
+
+        return _mapper.Map<UserSessionDto>(session);
+    }
+
+    public async Task Logout(Guid userId, Guid sessionId)
+    {
+        UserSession? session = await _dataContext.UserSessions
+            .FirstOrDefaultAsync(us => us.Id == sessionId);
+        if (session == null)
+            throw new NotFoundPostGramException($"Session: {sessionId} for user: {userId} not found");
+        session.IsActive = false;
+
+        try
+        {
+            _dataContext.UserSessions.Update(session);
+            await _dataContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException e)
+        {
+            if (e.InnerException != null)
             {
-                throw new AuthorizationPostGramException("Invalid security token");
+                throw new PostGramException(e.InnerException.Message, e.InnerException);
             }
-
-            if (Enumerable.FirstOrDefault<Claim>(principal.Claims, c => c.Type == ClaimNames.RefreshTokenId)?.Value is string refreshIdString
-                && Guid.TryParse(refreshIdString, out var refreshTokenId))
-            {
-                UserSession session = await GetUserSessionByRefreshToken(refreshTokenId);
-                if (!session.IsActive)
-                    throw new AuthorizationPostGramException("Session is inactive");
-
-                User user = session.User;
-
-                session.RefreshTokenId = Guid.NewGuid();
-                await _dataContext.SaveChangesAsync();
-                return GenerateTokens(session);
-            }
-            else
-            {
-                throw new AuthorizationPostGramException("Invalid refresh token");
-            }
+            throw new PostGramException(e.Message, e);
         }
+    }
 
-        public async Task<UserSession> GetUserSessionById(Guid id)
+    private TokenDto GenerateTokens(UserSession session)
+    {
+        DateTime now = DateTime.Now;
+
+        //SecurityToken
+        Claim[] claims =
         {
-            UserSession? session = await _dataContext.UserSessions.FirstOrDefaultAsync(s => s.Id == id);
-            if (session == null)
-                throw new NotFoundPostGramException("Session with Id " + id + " not found");
+            new(ClaimsIdentity.DefaultNameClaimType,  session.User.Name),
+            new(ClaimNames.Login , session.User.Nickname),
+            new(ClaimNames.UserId, session.User.Id.ToString()),
+            new(ClaimNames.SessionId, session.Id.ToString())
+        };
+        JwtSecurityToken securityToken = new JwtSecurityToken(
+            issuer: _authConfig.Issuer,
+            audience: _authConfig.Audience,
+            notBefore: now,
+            claims: claims,
+            expires: now.AddMinutes(_authConfig.LifeTime),
+            signingCredentials: new SigningCredentials(GetSymmetricSecurityKey(_authConfig.Key),
+                SecurityAlgorithms.HmacSha256));
+        string encodedToken = new JwtSecurityTokenHandler().WriteToken(securityToken);
 
-            return session;
-        }
-
-        public async Task Logout(Guid userId, Guid sessionId)
+        //RefreshToken
+        claims = new Claim[]
         {
-            UserSession? session = await _dataContext.UserSessions
-               .FirstOrDefaultAsync(us => us.Id == sessionId);
-            if (session == null)
-                throw new NotFoundPostGramException($"Session: {sessionId} for user: {userId} not found");
-            session.IsActive = false;
+            new(ClaimNames.RefreshTokenId, session.RefreshTokenId.ToString()),
+        };
+        JwtSecurityToken refreshToken = new JwtSecurityToken(
+            notBefore: now,
+            claims: claims,
+            expires: now.AddHours(_authConfig.LifeTime),
+            signingCredentials: new SigningCredentials(GetSymmetricSecurityKey(_authConfig.Key),
+                SecurityAlgorithms.HmacSha256));
+        string encodedRefreshToken = new JwtSecurityTokenHandler().WriteToken(refreshToken);
 
-            try
-            {
-                _dataContext.UserSessions.Update(session);
-                await _dataContext.SaveChangesAsync();
-            }
-            catch (DbUpdateException e)
-            {
-                if (e.InnerException != null)
-                {
-                    throw new PostGramException(e.InnerException.Message, e.InnerException);
-                }
-                throw new PostGramException(e.Message, e);
-            }
-        }
+        return new TokenDto() { RefreshToken = encodedRefreshToken, SecurityToken = encodedToken };
+    }
 
-        private TokenModel GenerateTokens(UserSession session)
-        {
-            DateTime now = DateTime.Now;
+    private async Task<User> GetUserByCredential(string login, string password)
+    {
+        User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == login.ToLower());
 
-            //SecurityToken
-            Claim[] claims =
-            {
-                new(ClaimsIdentity.DefaultNameClaimType,  session.User.Name),
-                new(ClaimNames.Login , session.User.Nickname),
-                new(ClaimNames.UserId, session.User.Id.ToString()),
-                new(ClaimNames.SessionId, session.Id.ToString())
-            };
-            JwtSecurityToken securityToken = new JwtSecurityToken(
-                issuer: _authConfig.Issuer,
-                audience: _authConfig.Audience,
-                notBefore: now,
-                claims: claims,
-                expires: now.AddMinutes(_authConfig.LifeTime),
-                signingCredentials: new SigningCredentials(_authConfig.GetSymmetricSecurityKey(),
-                    SecurityAlgorithms.HmacSha256));
-            string encodedToken = new JwtSecurityTokenHandler().WriteToken(securityToken);
+        if (user == null)
+            throw new NotFoundPostGramException("login: " + login);
 
-            //RefreshToken
-            claims = new Claim[]
-            {
-                new(ClaimNames.RefreshTokenId, session.RefreshTokenId.ToString()),
-            };
-            JwtSecurityToken refreshToken = new JwtSecurityToken(
-                notBefore: now,
-                claims: claims,
-                expires: now.AddHours(_authConfig.LifeTime),
-                signingCredentials: new SigningCredentials(_authConfig.GetSymmetricSecurityKey(),
-                    SecurityAlgorithms.HmacSha256));
-            string encodedRefreshToken = new JwtSecurityTokenHandler().WriteToken(refreshToken);
+        if (!HashHelper.VerifySha256(password, user.PasswordHash))
+            throw new AuthorizationPostGramException("Password incorrect for login: " + login);
 
-            return new TokenModel() { RefreshToken = encodedRefreshToken, SecurityToken = encodedToken };
-        }
+        return user;
+    }
 
-        private async Task<User> GetUserByCredential(string login, string password)
-        {
-            User? user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == login.ToLower());
+    private async Task<UserSession> GetUserSessionByRefreshToken(Guid refreshTokenId)
+    {
+        UserSession? session = await _dataContext.UserSessions
+            .Include(s => s.User)
+            .FirstOrDefaultAsync(s => s.RefreshTokenId == refreshTokenId);
+        if (session == null)
+            throw new NotFoundPostGramException("Session with refreshTokenId " + refreshTokenId + " not found");
 
-            if (user == null)
-                throw new NotFoundPostGramException("login: " + login);
+        return session;
+    }
 
-            if (!HashHelper.VerifySha256(password, user.PasswordHash))
-                throw new AuthorizationPostGramException("Password incorrect for login: " + login);
-
-            return user;
-        }
-
-        private async Task<UserSession> GetUserSessionByRefreshToken(Guid refreshTokenId)
-        {
-            UserSession? session = await _dataContext.UserSessions
-                .Include(s => s.User)
-                .FirstOrDefaultAsync(s => s.RefreshTokenId == refreshTokenId);
-            if (session == null)
-                throw new NotFoundPostGramException("Session with refreshTokenId " + refreshTokenId + " not found");
-
-            return session;
-        }
+    //TODO Метод точно должен быть тут и быть статичным?
+    public static SymmetricSecurityKey GetSymmetricSecurityKey(string key)
+    {
+        return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
     }
 }

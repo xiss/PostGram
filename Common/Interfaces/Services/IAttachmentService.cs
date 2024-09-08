@@ -1,18 +1,16 @@
 ﻿using Microsoft.AspNetCore.Http;
-using PostGram.Common.Models.Attachment;
+using PostGram.Common.Dtos.Attachment;
 
-namespace PostGram.Common.Interfaces.Services
+namespace PostGram.Common.Interfaces.Services;
+
+public interface IAttachmentService
 {
-    public interface IAttachmentService
-    {
-        Task<string> ApplyFile(string temporaryFileId);
+    Task<string> ApplyFile(string temporaryFileId);
 
-        void DeleteFile(Guid id);
-        void Dispose();
-        Task<FileInfoModel> GetAvatarForUser(Guid userId);
+    void DeleteFile(Guid id);
+    Task<FileInfoDto> GetAvatarForUser(Guid userId);
 
-        Task<FileInfoModel> GetPostContent(Guid postContentId, Guid currentUserId);
+    Task<FileInfoDto> GetPostContent(Guid postContentId, Guid currentUserId);
 
-        Task<MetadataModel> UploadFile(IFormFile file);
-    }
+    Task<MetadataModel> UploadFile(IFormFile file);
 }

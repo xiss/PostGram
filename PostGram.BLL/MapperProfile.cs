@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
-using PostGram.Common.Models.Attachment;
-using PostGram.Common.Models.Comment;
-using PostGram.Common.Models.Like;
-using PostGram.Common.Models.Post;
-using PostGram.Common.Models.Subscription;
-using PostGram.Common.Models.User;
+using PostGram.Common.Dtos.Attachment;
+using PostGram.Common.Dtos.Comment;
+using PostGram.Common.Dtos.Like;
+using PostGram.Common.Dtos.Post;
+using PostGram.Common.Dtos.Subscription;
+using PostGram.Common.Dtos.User;
+using PostGram.Common.Requests;
 using PostGram.DAL.Entities;
 
 namespace PostGram.BLL
@@ -18,11 +19,11 @@ namespace PostGram.BLL
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()))
                 .ForMember(d => d.PasswordHash, m => m.MapFrom(s => Common.HashHelper.GetHashSha256(s.Password)))
                 .ForMember(d => d.BirthDate, m => m.MapFrom(s => s.BirthDate.UtcDateTime));
-            CreateMap<User, UserModel>();
+            CreateMap<User, UserDto>();
 
             //Attachment
-            CreateMap<Avatar, AttachmentModel>();
-            CreateMap<PostContent, AttachmentModel>();
+            CreateMap<Avatar, AttachmentDto>();
+            CreateMap<PostContent, AttachmentDto>();
             CreateMap<MetadataModel, PostContent>()
                 .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow))
                 .ForMember(d => d.Id, m => m.MapFrom(s => s.TempId));
@@ -32,7 +33,7 @@ namespace PostGram.BLL
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()))
                 .ForMember(d => d.PostContents, m => m.MapFrom(s => new List<PostContent>()))
                 .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow));
-            CreateMap<Post, PostModel>()
+            CreateMap<Post, PostDto>()
                 .ForMember(d => d.Content, m => m.MapFrom(s => s.PostContents))
                 .ForMember(d => d.DislikeCount, m => m.MapFrom(s => s.Likes.Count(l => l.IsLike == false)))
                 .ForMember(d => d.LikeCount, m => m.MapFrom(s => s.Likes.Count(l => l.IsLike == true)))
@@ -43,7 +44,7 @@ namespace PostGram.BLL
                 .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow))
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()));
 
-            CreateMap<Comment, CommentModel>()
+            CreateMap<Comment, CommentDto>()
                 .ForMember(d => d.DislikeCount, m => m.MapFrom(s => s.Likes.Count(l => l.IsLike == false)))
                 .ForMember(d => d.LikeCount, m => m.MapFrom(s => s.Likes.Count(l => l.IsLike == true)));
 
@@ -51,10 +52,10 @@ namespace PostGram.BLL
             CreateMap<CreateLikeModel, Like>()
                 .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow))
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()));
-            CreateMap<Like, LikeModel>();
+            CreateMap<Like, LikeDto>();
 
             //Subscriptions
-            CreateMap<Subscription, SubscriptionModel>();
+            CreateMap<Subscription, SubscriptionDto>();
         }
     }
 }

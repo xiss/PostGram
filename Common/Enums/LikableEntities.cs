@@ -1,9 +1,8 @@
 ﻿
-namespace PostGram.Common.Enums
+namespace PostGram.Common.Enums;
+
+public enum LikableEntities
 {
-    public enum LikableEntities
-    {
-        Post,
-        Comment
-    }
+    Post,
+    Comment
 }

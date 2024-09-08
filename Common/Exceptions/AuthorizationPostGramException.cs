@@ -1,17 +1,16 @@
-﻿namespace PostGram.Common.Exceptions
+﻿namespace PostGram.Common.Exceptions;
+
+public class AuthorizationPostGramException : PostGramException
 {
-    public class AuthorizationPostGramException : PostGramException
+    public AuthorizationPostGramException()
     {
-        public AuthorizationPostGramException()
-        {
-        }
+    }
 
-        public AuthorizationPostGramException(string message) : base(message)
-        {
-        }
+    public AuthorizationPostGramException(string message) : base(message)
+    {
+    }
 
-        public AuthorizationPostGramException(string message, Exception inner) : base(message, inner)
-        {
-        }
+    public AuthorizationPostGramException(string message, Exception inner) : base(message, inner)
+    {
     }
 }

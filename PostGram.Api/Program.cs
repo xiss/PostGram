@@ -5,7 +5,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog;
 using NLog.Web;
-using PostGram.Api;
 using PostGram.Api.Middlewares;
 using PostGram.BLL;
 using PostGram.BLL.Services;
@@ -95,7 +94,7 @@ builder.Services.AddAuthentication(o => o.DefaultScheme = JwtBearerDefaults.Auth
             ValidAudience = authConfig.Audience,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = authConfig.GetSymmetricSecurityKey(),
+            IssuerSigningKey = AuthService.GetSymmetricSecurityKey(authConfig.Key),
             ClockSkew = TimeSpan.Zero
         };
     });

@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using PostGram.Common.Dtos.Attachment;
+using PostGram.Common.Dtos.Subscription;
+using PostGram.Common.Dtos.User;
 using PostGram.Common.Exceptions;
 using PostGram.Common.Interfaces.Services;
-using PostGram.Common.Models.Attachment;
-using PostGram.Common.Models.Subscription;
-using PostGram.Common.Models.User;
+using PostGram.Common.Requests;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
 
@@ -168,41 +169,41 @@ namespace PostGram.BLL.Services
             _dataContext.Dispose();
         }
 
-        public async Task<List<SubscriptionModel>> GetMasterSubscriptions(Guid currentUserId)
+        public async Task<List<SubscriptionDto>> GetMasterSubscriptions(Guid currentUserId)
         {
-            List<SubscriptionModel> subscriptions = await _dataContext.Subscriptions
+            List<SubscriptionDto> subscriptions = await _dataContext.Subscriptions
                 .Where(s => s.MasterId == currentUserId)
-                .ProjectTo<SubscriptionModel>(_mapper.ConfigurationProvider)
+                .ProjectTo<SubscriptionDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
             if (subscriptions.Count == 0)
                 throw new NotFoundPostGramException($"Not found master subscription for user {currentUserId}");
             return subscriptions;
         }
 
-        public async Task<List<SubscriptionModel>> GetSlaveSubscriptions(Guid currentUserId)
+        public async Task<List<SubscriptionDto>> GetSlaveSubscriptions(Guid currentUserId)
         {
-            List<SubscriptionModel> subscriptions = await _dataContext.Subscriptions
+            List<SubscriptionDto> subscriptions = await _dataContext.Subscriptions
                 .Where(s => s.SlaveId == currentUserId)
-                .ProjectTo<SubscriptionModel>(_mapper.ConfigurationProvider)
+                .ProjectTo<SubscriptionDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
             if (subscriptions.Count == 0)
                 throw new NotFoundPostGramException($"Not found slave subscription for user {currentUserId}");
             return subscriptions;
         }
 
-        public async Task<UserModel> GetUser(Guid userId)
+        public async Task<UserDto> GetUser(Guid userId)
         {
             User user = await GetUserById(userId);
-            return _mapper.Map<UserModel>(user);
+            return _mapper.Map<UserDto>(user);
         }
 
-        public async Task<List<UserModel>> GetUsers()
+        public async Task<List<UserDto>> GetUsers()
         {
-            List<UserModel> models = await _dataContext
+            List<UserDto> models = await _dataContext
                 .Users
                 .Include(x => x.Avatar)
                 .AsNoTracking()
-                .ProjectTo<UserModel>(_mapper.ConfigurationProvider)
+                .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
             if (models.Count == 0)
@@ -210,7 +211,7 @@ namespace PostGram.BLL.Services
             return models;
         }
 
-        public async Task<SubscriptionModel> UpdateSubscription(UpdateSubscriptionModel model, Guid currentUserId)
+        public async Task<SubscriptionDto> UpdateSubscription(UpdateSubscriptionModel model, Guid currentUserId)
         {
             Subscription? subscription = await _dataContext.Subscriptions.FirstOrDefaultAsync(s => s.Id == model.Id);
             if (subscription == null)
@@ -229,7 +230,7 @@ namespace PostGram.BLL.Services
             try
             {
                 await _dataContext.SaveChangesAsync();
-                return _mapper.Map<SubscriptionModel>(subscription);
+                return _mapper.Map<SubscriptionDto>(subscription);
             }
             catch (DbUpdateException e)
             {
@@ -241,7 +242,7 @@ namespace PostGram.BLL.Services
             }
         }
 
-        public async Task<UserModel> UpdateUser(UpdateUserModel model, Guid currentUserId)
+        public async Task<UserDto> UpdateUser(UpdateUserModel model, Guid currentUserId)
         {
             User user = await GetUserById(model.UserId);
 
@@ -274,7 +275,7 @@ namespace PostGram.BLL.Services
                 throw new PostGramException(e.Message, e);
             }
 
-            return _mapper.Map<UserModel>(user);
+            return _mapper.Map<UserDto>(user);
         }
 
         private async Task<User> GetUserById(Guid id)

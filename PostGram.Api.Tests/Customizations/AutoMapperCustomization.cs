@@ -1,20 +1,19 @@
 ﻿using AutoFixture;
 using AutoMapper;
 
-namespace PostGram.Api.Tests.Customizations
+namespace PostGram.Api.Tests.Customizations;
+
+public class AutoMapperCustomization : ICustomization
 {
-    public class AutoMapperCustomization : ICustomization
+    private readonly IMapper _mapper;
+
+    public AutoMapperCustomization(Type profileType)
     {
-        private readonly IMapper _mapper;
+        _mapper = new Mapper(new MapperConfiguration(options => options.AddProfile(profileType)));
+    }
 
-        public AutoMapperCustomization(Type profileType)
-        {
-            _mapper = new Mapper(new MapperConfiguration(options => options.AddProfile(profileType)));
-        }
-
-        public void Customize(IFixture fixture)
-        {
-            fixture.Inject(_mapper);
-        }
+    public void Customize(IFixture fixture)
+    {
+        fixture.Inject(_mapper);
     }
 }

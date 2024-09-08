@@ -1,15 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace PostGram.DAL.Entities.Configs
+namespace PostGram.DAL.Entities.Configs;
+
+internal class AttachmentConfig : IEntityTypeConfiguration<Attachment>
 {
-    internal class AttachmentConfig : IEntityTypeConfiguration<Attachment>
+    public void Configure(EntityTypeBuilder<Attachment> builder)
     {
-        public void Configure(EntityTypeBuilder<Attachment> builder)
-        {
-            builder.HasOne(a => a.Author)
-                .WithMany()
-                .IsRequired(false);
-        }
+        builder.HasOne(a => a.Author)
+            .WithMany()
+            .IsRequired(false);
     }
 }
