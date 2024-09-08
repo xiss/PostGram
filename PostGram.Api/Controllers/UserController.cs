@@ -46,8 +46,9 @@ public class UserController : ControllerBase
     [HttpDelete]
     public async Task DeleteCurrentUserAvatar()
     {
-        Guid avatarId = await _userService.DeleteAvatarForUser(this.GetCurrentUserId());
-        _attachmentService.DeleteFile(avatarId);
+        //TODO Починить
+        //Guid avatarId = await _userService.DeleteAvatarForUser(this.GetCurrentUserId());
+        //_attachmentService.DeleteFile(avatarId);
     }
 
     [HttpGet]
