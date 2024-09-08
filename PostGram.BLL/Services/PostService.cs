@@ -26,7 +26,7 @@ public class PostService : IPostService
         _attachmentService = attachmentService;
     }
 
-    public async Task<Guid> CreateComment(CreateCommentModel model, Guid currentUserId)
+    public async Task CreateComment(CreateCommentModel model, Guid currentUserId)
     {
         if (!await CheckPostExist(model.PostId))
             throw new NotFoundPostGramException("Post not found: " + model.PostId);
@@ -62,11 +62,9 @@ public class PostService : IPostService
             }
             throw new PostGramException(e.Message, e);
         }
-
-        return comment.Id;
     }
 
-    public async Task<Guid> CreateLike(CreateLikeModel model, Guid currentUserId)
+    public async Task CreateLike(CreateLikeModel model, Guid currentUserId)
     {
         Like like = _mapper.Map<Like>(model);
         like.AuthorId = currentUserId;
@@ -99,7 +97,6 @@ public class PostService : IPostService
         {
             _dataContext.Likes.Add(like);
             await _dataContext.SaveChangesAsync();
-            return like.Id;
         }
         catch (DbUpdateException e)
         {
@@ -111,7 +108,7 @@ public class PostService : IPostService
         }
     }
 
-    public async Task<Guid> CreatePost(CreatePostModel model, Guid currentUserId)
+    public async Task CreatePost(CreatePostModel model, Guid currentUserId)
     {
         Post post = _mapper.Map<Post>(model);
         post.AuthorId = currentUserId;
@@ -137,22 +134,18 @@ public class PostService : IPostService
             }
             throw new PostGramException(e.Message, e);
         }
-
-        return post.Id;
     }
 
-    public async Task<Guid> DeleteComment(Guid commentId, Guid currentUserId)
+    public async Task DeleteComment(Guid commentId, Guid currentUserId)
     {
         Comment comment = await GetCommentById(commentId);
         if (comment.AuthorId != currentUserId)
             throw new AuthorizationPostGramException("Cannot delete comment created by another user");
         comment.IsDeleted = true;
         await UpdateComment(comment);
-
-        return commentId;
     }
 
-    public async Task<Guid> DeletePost(Guid postId, Guid currentUserId)
+    public async Task DeletePost(Guid postId, Guid currentUserId)
     {
         Post? post = await _dataContext.Posts
             .Include(p => p.PostContents)
@@ -173,7 +166,6 @@ public class PostService : IPostService
         {
             _dataContext.Posts.Update(post);
             await _dataContext.SaveChangesAsync();
-            return postId;
         }
         catch (DbUpdateException e)
         {
@@ -283,7 +275,7 @@ public class PostService : IPostService
         return result;
     }
 
-    public async Task<CommentDto> UpdateComment(UpdateCommentModel model, Guid currentUserId)
+    public async Task UpdateComment(UpdateCommentModel model, Guid currentUserId)
     {
         Comment comment = await GetCommentById(model.Id);
         if (comment.AuthorId != currentUserId)
@@ -291,15 +283,9 @@ public class PostService : IPostService
         comment.Body = model.NewBody;
         comment.Edited = DateTimeOffset.UtcNow;
         await UpdateComment(comment);
-
-        CommentDto result = _mapper.Map<CommentDto>(comment);
-        result.LikeByUser = _mapper
-            .Map<LikeDto>(comment.Likes
-                .FirstOrDefault(l => l.AuthorId == currentUserId));
-        return result;
     }
 
-    public async Task<LikeDto> UpdateLike(UpdateLikeModel model, Guid currentUserId)
+    public async Task UpdateLike(UpdateLikeModel model, Guid currentUserId)
     {
         Like? like = await _dataContext.Likes.FirstOrDefaultAsync(l => l.Id == model.Id);
         if (like == null)
@@ -321,11 +307,9 @@ public class PostService : IPostService
             }
             throw new PostGramException(e.Message, e);
         }
-
-        return _mapper.Map<LikeDto>(like);
     }
 
-    public async Task<PostDto> UpdatePost(UpdatePostModel model, Guid currentUserId)
+    public async Task UpdatePost(UpdatePostModel model, Guid currentUserId)
     {
         Post? post = await _dataContext.Posts
             .Include(p => p.PostContents)
@@ -390,12 +374,6 @@ public class PostService : IPostService
             }
             throw new PostGramException(e.Message, e);
         }
-
-        PostDto result = _mapper.Map<PostDto>(post);
-        result.LikeByUser = _mapper
-            .Map<LikeDto>(post.Likes
-                .FirstOrDefault(l => l.AuthorId == currentUserId));
-        return result;
     }
 
     private async Task<bool> CheckCommentExist(Guid commentId)

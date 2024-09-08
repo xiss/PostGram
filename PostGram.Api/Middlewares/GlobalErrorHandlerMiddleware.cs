@@ -7,13 +7,13 @@ public class GlobalErrorHandlerMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly NLog.Logger _logger;
-    private readonly ILogger _logger2;
-    public GlobalErrorHandlerMiddleware(RequestDelegate next, ILogger logger2)
+    //private readonly ILogger _logger2;
+    public GlobalErrorHandlerMiddleware(RequestDelegate next)
     {
         _next = next;
         // TODO Выпилить это, юзать ILogger
         _logger = NLog.LogManager.GetCurrentClassLogger();
-        _logger2 = logger2;
+        //_logger2 = logger2;
     }
 
     public async Task InvokeAsync(HttpContext context)

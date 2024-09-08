@@ -12,5 +12,5 @@ public interface IAttachmentService
 
     Task<FileInfoDto> GetPostContent(Guid postContentId, Guid currentUserId);
 
-    Task<MetadataModel> UploadFile(IFormFile file);
+    Task UploadFile(IFormFile file);
 }

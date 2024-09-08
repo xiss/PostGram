@@ -34,35 +34,32 @@ public class AttachmentController : ControllerBase
     public async Task<ActionResult> GetAvatarForUser(Guid userId, bool download = false)
     {
         FileInfoDto internalModel = await _attachmentService.GetAvatarForUser(userId);
-        return RenderAttachment(internalModel, download);
+        return GetAttachmentStream(internalModel, download);
     }
 
     [HttpGet]
     public async Task<ActionResult> GetPostContent(Guid postContentId, bool download = false)
     {
         FileInfoDto model = await _attachmentService.GetPostContent(postContentId, this.GetCurrentUserId());
-        return RenderAttachment(model, download);
+        return GetAttachmentStream(model, download);
     }
 
     [HttpPost]
-    public async Task<MetadataModel> UploadFile(IFormFile file)
+    public async Task UploadAttachment(IFormFile file)
     {
-        return await _attachmentService.UploadFile(file);
+        await _attachmentService.UploadFile(file);
     }
 
     [HttpPost]
-    public async Task<IEnumerable<MetadataModel>> UploadFiles([FromForm] List<IFormFile> files)
+    public async Task UploadAttachments([FromForm] List<IFormFile> files)
     {
-        List<MetadataModel> modelList = new List<MetadataModel>();
         foreach (var file in files)
         {
-            modelList.Add(await _attachmentService.UploadFile(file));
+            await _attachmentService.UploadFile(file);
         }
-
-        return modelList;
     }
 
-    private FileStreamResult RenderAttachment(FileInfoDto model, bool download)
+    private FileStreamResult GetAttachmentStream(FileInfoDto model, bool download)
     {
         FileStream stream = new FileStream(model.Path, FileMode.Open);
         if (download)

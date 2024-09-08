@@ -10,7 +10,7 @@ using PostGram.DAL.Entities;
 
 namespace PostGram.BLL.Services;
 
-public class AttachmentService : IDisposable, IAttachmentService
+public class AttachmentService :  IAttachmentService
 {
     private readonly AppConfig _appConfig;
     private readonly DataContext _dataContext;
@@ -55,11 +55,7 @@ public class AttachmentService : IDisposable, IAttachmentService
         }
     }
 
-    public void Dispose()
-    {
-        _dataContext.Dispose();
-    }
-
+  
     public async Task<FileInfoDto> GetAvatarForUser(Guid userId)
     {
         Avatar? avatar = await _dataContext.Avatars.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == userId);
@@ -92,7 +88,8 @@ public class AttachmentService : IDisposable, IAttachmentService
         return new FileInfoDto() { MimeType = postContent.MimeType, Name = postContent.Name, Path = Path.Combine(_appConfig.AttachmentsFolderPath, postContent.Id.ToString()) };
     }
 
-    public async Task<MetadataModel> UploadFile(IFormFile file)
+    // TODO попробовать использовать S3
+    public async Task UploadFile(IFormFile file)
     {
         MetadataModel model = new()
         {
@@ -107,8 +104,6 @@ public class AttachmentService : IDisposable, IAttachmentService
         {
             await file.CopyToAsync(stream);
         }
-
-        return model;
     }
 
     private bool CheckAttachmentsExists(string attachmentName)

@@ -12,7 +12,7 @@ using PostGram.DAL.Entities;
 
 namespace PostGram.BLL.Services
 {
-    public class UserService : IUserService, IDisposable
+    public class UserService : IUserService
     {
         private readonly DataContext _dataContext;
         private readonly IMapper _mapper;
@@ -59,7 +59,7 @@ namespace PostGram.BLL.Services
             return await _dataContext.Users.AnyAsync(u => u.Email.ToLower() == email.ToLower());
         }
 
-        public async Task<Guid> CreateSubscription(CreateSubscriptionModel model, Guid currentUserId)
+        public async Task CreateSubscription(CreateSubscriptionModel model, Guid currentUserId)
         {
             if (!await _dataContext.Users.AnyAsync(u => u.Id == model.MasterId))
                 throw new NotFoundPostGramException($"User {model.MasterId} not found");
@@ -81,7 +81,6 @@ namespace PostGram.BLL.Services
             {
                 await _dataContext.Subscriptions.AddAsync(subscription);
                 await _dataContext.SaveChangesAsync();
-                return subscription.Id;
             }
             catch (DbUpdateException e)
             {
@@ -93,7 +92,7 @@ namespace PostGram.BLL.Services
             }
         }
 
-        public async Task<Guid> CreateUser(CreateUserModel model)
+        public async Task CreateUser(CreateUserModel model)
         {
             if (await CheckUserExist(model.Email))
                 throw new UnprocessableRequestPostGramException("User with email already exist, email: " + model.Email);
@@ -114,16 +113,13 @@ namespace PostGram.BLL.Services
                 }
                 throw new PostGramException(e.Message, e);
             }
-
-            return user.Id;
         }
 
-        public async Task<Guid> DeleteAvatarForUser(Guid userId)
+        public async Task DeleteAvatarForUser(Guid userId)
         {
             User user = await GetUserById(userId);
             if (user.Avatar == null)
                 throw new NotFoundPostGramException($"User {userId} does't have avatar.");
-            Guid avatarId = user.AvatarId!.Value;
             try
             {
                 _dataContext.Avatars.Remove(user.Avatar);
@@ -137,11 +133,9 @@ namespace PostGram.BLL.Services
                 }
                 throw new PostGramException(e.Message, e);
             }
-
-            return avatarId;
         }
 
-        public async Task<Guid> DeleteUser(Guid userId)
+        public async Task DeleteUser(Guid userId)
         {
             User user = await GetUserById(userId);
             if (user == null)
@@ -160,13 +154,6 @@ namespace PostGram.BLL.Services
                 }
                 throw new PostGramException(e.Message, e);
             }
-
-            return userId;
-        }
-
-        public void Dispose()
-        {
-            _dataContext.Dispose();
         }
 
         public async Task<List<SubscriptionDto>> GetMasterSubscriptions(Guid currentUserId)
@@ -211,7 +198,7 @@ namespace PostGram.BLL.Services
             return models;
         }
 
-        public async Task<SubscriptionDto> UpdateSubscription(UpdateSubscriptionModel model, Guid currentUserId)
+        public async Task UpdateSubscription(UpdateSubscriptionModel model, Guid currentUserId)
         {
             Subscription? subscription = await _dataContext.Subscriptions.FirstOrDefaultAsync(s => s.Id == model.Id);
             if (subscription == null)
@@ -230,7 +217,6 @@ namespace PostGram.BLL.Services
             try
             {
                 await _dataContext.SaveChangesAsync();
-                return _mapper.Map<SubscriptionDto>(subscription);
             }
             catch (DbUpdateException e)
             {
@@ -242,10 +228,11 @@ namespace PostGram.BLL.Services
             }
         }
 
-        public async Task<UserDto> UpdateUser(UpdateUserModel model, Guid currentUserId)
+        public async Task UpdateUser(UpdateUserModel model, Guid currentUserId)
         {
             User user = await GetUserById(model.UserId);
 
+            //TODO Куда убрать валидацию?
             if (user.Id != currentUserId)
                 throw new AuthorizationPostGramException("Cannot modify another user");
             if (model.NewBirthDate != null)
@@ -261,9 +248,9 @@ namespace PostGram.BLL.Services
             if (model.NewSurname != null)
                 user.Surname = model.NewSurname;
 
+            //TODO Убрать отсюда эти обработки ошибок
             try
             {
-                //await _dataContext.Users.AddAsync(user);
                 await _dataContext.SaveChangesAsync();
             }
             catch (DbUpdateException e)
@@ -274,8 +261,6 @@ namespace PostGram.BLL.Services
                 }
                 throw new PostGramException(e.Message, e);
             }
-
-            return _mapper.Map<UserDto>(user);
         }
 
         private async Task<User> GetUserById(Guid id)

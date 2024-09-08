@@ -11,13 +11,13 @@ namespace PostGram.Common.Interfaces.Services
 
         Task<bool> CheckUserExist(string email);
 
-        Task<Guid> CreateSubscription(CreateSubscriptionModel model, Guid currentUserId);
+        Task CreateSubscription(CreateSubscriptionModel model, Guid currentUserId);
 
-        Task<Guid> CreateUser(CreateUserModel model);
+        Task CreateUser(CreateUserModel model);
 
-        Task<Guid> DeleteAvatarForUser(Guid userId);
+        Task DeleteAvatarForUser(Guid userId);
 
-        Task<Guid> DeleteUser(Guid userId);
+        Task DeleteUser(Guid userId);
 
         Task<List<SubscriptionDto>> GetMasterSubscriptions(Guid currentUserId);
 
@@ -27,7 +27,7 @@ namespace PostGram.Common.Interfaces.Services
 
         Task<List<UserDto>> GetUsers();
 
-        Task<SubscriptionDto> UpdateSubscription(UpdateSubscriptionModel model, Guid currentUserId);
-        Task<UserDto> UpdateUser(UpdateUserModel model, Guid currentUserId);
+        Task UpdateSubscription(UpdateSubscriptionModel model, Guid currentUserId);
+        Task UpdateUser(UpdateUserModel model, Guid currentUserId);
     }
 }

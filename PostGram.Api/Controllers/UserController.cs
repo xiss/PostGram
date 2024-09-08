@@ -32,33 +32,28 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<Guid> CreateSubscription(CreateSubscriptionModel model)
+    public async Task CreateSubscription(CreateSubscriptionModel model)
     {
-        return await _userService.CreateSubscription(model, this.GetCurrentUserId());
+        await _userService.CreateSubscription(model, this.GetCurrentUserId());
     }
 
     [HttpDelete]
-    public async Task<Guid> DeleteCurrentUser()
+    public async Task DeleteCurrentUser()
     {
-        return await _userService.DeleteUser(this.GetCurrentUserId());
+        await _userService.DeleteUser(this.GetCurrentUserId());
     }
 
     [HttpDelete]
-    public async Task<Guid> DeleteCurrentUserAvatar()
+    public async Task DeleteCurrentUserAvatar()
     {
         Guid avatarId = await _userService.DeleteAvatarForUser(this.GetCurrentUserId());
         _attachmentService.DeleteFile(avatarId);
-        return avatarId;
     }
 
     [HttpGet]
     public async Task<UserDto> GetCurrentUser()
     {
-        UserDto model = await _userService.GetUser(this.GetCurrentUserId());
-        //TODO
-        //if (model.Avatar != null)
-        //    model.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Id);
-        return model;
+        return await _userService.GetUser(this.GetCurrentUserId());
     }
 
     [HttpGet]
@@ -76,25 +71,18 @@ public class UserController : ControllerBase
     [HttpGet]
     public async Task<IEnumerable<UserDto>> GetUsers()
     {
-        List<UserDto> models = await _userService.GetUsers();
-        //TODO
-        //foreach (UserDto user in models)
-        //{
-        //    if (user.Avatar != null)
-        //        user.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, user.Id);
-        //}
-        return models;
+        return await _userService.GetUsers();
     }
 
     [HttpPut]
-    public async Task<SubscriptionDto> UpdateSubscription(UpdateSubscriptionModel model)
+    public async Task UpdateSubscription(UpdateSubscriptionModel model)
     {
-        return await _userService.UpdateSubscription(model, this.GetCurrentUserId());
+        await _userService.UpdateSubscription(model, this.GetCurrentUserId());
     }
 
     [HttpPut]
-    public async Task<UserDto> UpdateUser(UpdateUserModel model)
+    public async Task TaskUpdateUser(UpdateUserModel model)
     {
-        return await _userService.UpdateUser(model, this.GetCurrentUserId());
+        await _userService.UpdateUser(model, this.GetCurrentUserId());
     }
 }
