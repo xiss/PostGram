@@ -17,5 +17,4 @@ public class User
     public virtual ICollection<UserSession>? Sessions { get; set; } = new List<UserSession>();
     public virtual ICollection<Subscription> Slaves { get; set; } = new List<Subscription>();
     public virtual ICollection<Subscription> Masters { get; set; } = new List<Subscription>();
-
 }

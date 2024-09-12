@@ -1,7 +1,7 @@
 ﻿using PostGram.Common.Dtos.Attachment;
 using PostGram.Common.Dtos.Subscription;
 using PostGram.Common.Dtos.User;
-using PostGram.Common.Requests;
+using PostGram.Common.Requests.Commands;
 
 namespace PostGram.Common.Interfaces.Services
 {
@@ -11,9 +11,9 @@ namespace PostGram.Common.Interfaces.Services
 
         Task<bool> CheckUserExist(string email);
 
-        Task CreateSubscription(CreateSubscriptionModel model, Guid currentUserId);
+        Task CreateSubscription(CreateSubscriptionCommand model, Guid currentUserId);
 
-        Task CreateUser(CreateUserModel model);
+        Task CreateUser(CreateUserCommand model);
 
         Task DeleteAvatarForUser(Guid userId);
 
@@ -27,7 +27,8 @@ namespace PostGram.Common.Interfaces.Services
 
         Task<List<UserDto>> GetUsers();
 
-        Task UpdateSubscription(UpdateSubscriptionModel model, Guid currentUserId);
-        Task UpdateUser(UpdateUserModel model, Guid currentUserId);
+        Task UpdateSubscription(UpdateSubscriptionCommand model, Guid currentUserId);
+
+        Task UpdateUser(UpdateUserCommand model, Guid currentUserId);
     }
 }

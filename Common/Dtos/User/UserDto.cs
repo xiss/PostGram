@@ -2,7 +2,7 @@
 
 namespace PostGram.Common.Dtos.User;
 
-public record UserDto 
+public record UserDto
 {
     public AttachmentDto? Avatar { get; init; }
     public Guid Id { get; init; }

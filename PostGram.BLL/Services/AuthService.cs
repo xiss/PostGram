@@ -1,7 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -14,6 +11,9 @@ using PostGram.Common.Exceptions;
 using PostGram.Common.Interfaces.Services;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace PostGram.BLL.Services;
 
@@ -23,11 +23,18 @@ public class AuthService : IDisposable, IAuthService
     private readonly DataContext _dataContext;
     private readonly IMapper _mapper;
 
+    //TODO IOptions<AuthConfig> надо прокидывать как AuthConfig
     public AuthService(DataContext dataContext, IOptions<AuthConfig> authConfig, IMapper mapper)
     {
         _dataContext = dataContext;
         _authConfig = authConfig.Value;
         _mapper = mapper;
+    }
+
+    //TODO Метод точно должен быть тут и быть статичным?
+    public static SymmetricSecurityKey GetSymmetricSecurityKey(string key)
+    {
+        return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
     }
 
     public void Dispose()
@@ -180,11 +187,5 @@ public class AuthService : IDisposable, IAuthService
             throw new NotFoundPostGramException("Session with refreshTokenId " + refreshTokenId + " not found");
 
         return session;
-    }
-
-    //TODO Метод точно должен быть тут и быть статичным?
-    public static SymmetricSecurityKey GetSymmetricSecurityKey(string key)
-    {
-        return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
     }
 }

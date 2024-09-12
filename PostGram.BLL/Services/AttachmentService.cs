@@ -10,7 +10,7 @@ using PostGram.DAL.Entities;
 
 namespace PostGram.BLL.Services;
 
-public class AttachmentService :  IAttachmentService
+public class AttachmentService : IAttachmentService
 {
     private readonly AppConfig _appConfig;
     private readonly DataContext _dataContext;
@@ -55,7 +55,6 @@ public class AttachmentService :  IAttachmentService
         }
     }
 
-  
     public async Task<FileInfoDto> GetAvatarForUser(Guid userId)
     {
         Avatar? avatar = await _dataContext.Avatars.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == userId);

@@ -7,6 +7,7 @@ public class GlobalErrorHandlerMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly NLog.Logger _logger;
+
     //private readonly ILogger _logger2;
     public GlobalErrorHandlerMiddleware(RequestDelegate next)
     {

@@ -6,7 +6,7 @@ using PostGram.Common.Dtos.Subscription;
 using PostGram.Common.Dtos.User;
 using PostGram.Common.Exceptions;
 using PostGram.Common.Interfaces.Services;
-using PostGram.Common.Requests;
+using PostGram.Common.Requests.Commands;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
 
@@ -59,7 +59,7 @@ namespace PostGram.BLL.Services
             return await _dataContext.Users.AnyAsync(u => u.Email.ToLower() == email.ToLower());
         }
 
-        public async Task CreateSubscription(CreateSubscriptionModel model, Guid currentUserId)
+        public async Task CreateSubscription(CreateSubscriptionCommand model, Guid currentUserId)
         {
             if (!await _dataContext.Users.AnyAsync(u => u.Id == model.MasterId))
                 throw new NotFoundPostGramException($"User {model.MasterId} not found");
@@ -92,7 +92,7 @@ namespace PostGram.BLL.Services
             }
         }
 
-        public async Task CreateUser(CreateUserModel model)
+        public async Task CreateUser(CreateUserCommand model)
         {
             if (await CheckUserExist(model.Email))
                 throw new UnprocessableRequestPostGramException("User with email already exist, email: " + model.Email);
@@ -198,7 +198,7 @@ namespace PostGram.BLL.Services
             return models;
         }
 
-        public async Task UpdateSubscription(UpdateSubscriptionModel model, Guid currentUserId)
+        public async Task UpdateSubscription(UpdateSubscriptionCommand model, Guid currentUserId)
         {
             Subscription? subscription = await _dataContext.Subscriptions.FirstOrDefaultAsync(s => s.Id == model.Id);
             if (subscription == null)
@@ -228,7 +228,7 @@ namespace PostGram.BLL.Services
             }
         }
 
-        public async Task UpdateUser(UpdateUserModel model, Guid currentUserId)
+        public async Task UpdateUser(UpdateUserCommand model, Guid currentUserId)
         {
             User user = await GetUserById(model.UserId);
 

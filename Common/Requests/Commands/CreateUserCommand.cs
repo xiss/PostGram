@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-using PostGram.Common.Constants;
+﻿using PostGram.Common.Constants;
+using PostGram.Common.Interfaces.Base.Commands;
+using System.ComponentModel.DataAnnotations;
 
-namespace PostGram.Common.Requests;
+namespace PostGram.Common.Requests.Commands;
 
-public record CreateUserModel
+public record CreateUserCommand : ICommand
 {
     public DateTimeOffset BirthDate { get; init; }
 
@@ -22,7 +23,6 @@ public record CreateUserModel
     [StringLength(ModelValidation.UserPasswordLength)]
     public string Password { get; init; } = string.Empty;
     [StringLength(ModelValidation.UserPasswordLength)]
-
     [Required]
     public string PasswordRetry { get; init; } = string.Empty;
     [StringLength(ModelValidation.UserPatronymicLength)]

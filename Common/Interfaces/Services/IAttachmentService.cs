@@ -8,6 +8,7 @@ public interface IAttachmentService
     Task<string> ApplyFile(string temporaryFileId);
 
     void DeleteFile(Guid id);
+
     Task<FileInfoDto> GetAvatarForUser(Guid userId);
 
     Task<FileInfoDto> GetPostContent(Guid postContentId, Guid currentUserId);

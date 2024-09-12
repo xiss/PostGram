@@ -1,6 +1,6 @@
 ﻿namespace PostGram.DAL.Entities;
 
-public class Post 
+public class Post
 {
     public Guid Id { get; set; }
     public Guid AuthorId { get; set; }

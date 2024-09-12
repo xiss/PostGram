@@ -5,7 +5,7 @@ using PostGram.Common.Dtos.Attachment;
 using PostGram.Common.Dtos.Subscription;
 using PostGram.Common.Dtos.User;
 using PostGram.Common.Interfaces.Services;
-using PostGram.Common.Requests;
+using PostGram.Common.Requests.Commands;
 
 namespace PostGram.Api.Controllers;
 
@@ -32,7 +32,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    public async Task CreateSubscription(CreateSubscriptionModel model)
+    public async Task CreateSubscription(CreateSubscriptionCommand model)
     {
         await _userService.CreateSubscription(model, this.GetCurrentUserId());
     }
@@ -76,13 +76,13 @@ public class UserController : ControllerBase
     }
 
     [HttpPut]
-    public async Task UpdateSubscription(UpdateSubscriptionModel model)
+    public async Task UpdateSubscription(UpdateSubscriptionCommand model)
     {
         await _userService.UpdateSubscription(model, this.GetCurrentUserId());
     }
 
     [HttpPut]
-    public async Task TaskUpdateUser(UpdateUserModel model)
+    public async Task TaskUpdateUser(UpdateUserCommand model)
     {
         await _userService.UpdateUser(model, this.GetCurrentUserId());
     }

@@ -6,8 +6,11 @@ using PostGram.Common.Dtos.Like;
 using PostGram.Common.Dtos.Post;
 using PostGram.Common.Enums;
 using PostGram.Common.Exceptions;
+using PostGram.Common.Interfaces.Base.Commands;
 using PostGram.Common.Interfaces.Services;
-using PostGram.Common.Requests;
+using PostGram.Common.Requests.Commands;
+using PostGram.Common.Requests.Queries;
+using PostGram.Common.Results;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
 
@@ -26,45 +29,12 @@ public class PostService : IPostService
         _attachmentService = attachmentService;
     }
 
-    public async Task CreateComment(CreateCommentModel model, Guid currentUserId)
+    public async Task CreateComment(CreateCommentCommand model, Guid currentUserId)
     {
-        if (!await CheckPostExist(model.PostId))
-            throw new NotFoundPostGramException("Post not found: " + model.PostId);
-        if (model.QuotedCommentId == null ^ model.QuotedText == null)
-        {
-            throw new UnprocessableRequestPostGramException(
-                "QuotedCommentId and QuotedText must be null at the same time or must have value at the same time");
-        }
-
-        Comment comment = _mapper.Map<Comment>(model);
-        comment.AuthorId = currentUserId;
-
-        if (model.QuotedCommentId != null && model.QuotedText != null)
-        {
-            Comment quotedComment = await GetCommentById(model.QuotedCommentId.Value);
-            comment.QuotedCommentId = quotedComment.Id;
-
-            if (!quotedComment.Body.Contains((string)model.QuotedText))
-                throw new UnprocessableRequestPostGramException(
-                    $"Quoted comment {model.QuotedCommentId} does not contain quoted text");
-            comment.QuotedText = model.QuotedText;
-        }
-        try
-        {
-            await _dataContext.Comments.AddAsync(comment);
-            await _dataContext.SaveChangesAsync();
-        }
-        catch (DbUpdateException e)
-        {
-            if (e.InnerException != null)
-            {
-                throw new PostGramException(e.InnerException.Message, e.InnerException);
-            }
-            throw new PostGramException(e.Message, e);
-        }
+        
     }
 
-    public async Task CreateLike(CreateLikeModel model, Guid currentUserId)
+    public async Task CreateLike(CreateLikeCommand model, Guid currentUserId)
     {
         Like like = _mapper.Map<Like>(model);
         like.AuthorId = currentUserId;
@@ -108,7 +78,7 @@ public class PostService : IPostService
         }
     }
 
-    public async Task CreatePost(CreatePostModel model, Guid currentUserId)
+    public async Task CreatePost(CreatePostCommand model, Guid currentUserId)
     {
         Post post = _mapper.Map<Post>(model);
         post.AuthorId = currentUserId;
@@ -136,24 +106,24 @@ public class PostService : IPostService
         }
     }
 
-    public async Task DeleteComment(Guid commentId, Guid currentUserId)
+    public async Task DeleteComment(DeleteCommentCommand deleteCommentCommand, Guid currentUserId)
     {
-        Comment comment = await GetCommentById(commentId);
+        Comment comment = await GetCommentById(deleteCommentCommand.CommentId);
         if (comment.AuthorId != currentUserId)
             throw new AuthorizationPostGramException("Cannot delete comment created by another user");
         comment.IsDeleted = true;
         await UpdateComment(comment);
     }
 
-    public async Task DeletePost(Guid postId, Guid currentUserId)
+    public async Task DeletePost(DeletePostCommand deletePostCommand, Guid currentUserId)
     {
         Post? post = await _dataContext.Posts
             .Include(p => p.PostContents)
             .Include(p => p.Comments)
-            .FirstOrDefaultAsync(p => p.Id == postId);
+            .FirstOrDefaultAsync(p => p.Id == deletePostCommand.PostId);
 
         if (post == null)
-            throw new NotFoundPostGramException($"Post {postId} not found");
+            throw new NotFoundPostGramException($"Post {deletePostCommand.PostId} not found");
 
         if (post.AuthorId != currentUserId)
             throw new AuthorizationPostGramException("Cannot delete post created by another user id");
@@ -177,31 +147,31 @@ public class PostService : IPostService
         }
     }
 
-    public async Task<CommentDto> GetComment(Guid commentId, Guid currentUserId)
+    public async Task<GetCommentResult> GetComment(GetCommentQuery getCommentCommand, Guid currentUserId)
     {
-        Comment comment = await GetCommentById(commentId);
+        Comment comment = await GetCommentById(getCommentCommand.CommentId);
         CommentDto result = _mapper.Map<CommentDto>(comment);
 
         result.LikeByUser = _mapper
             .Map<LikeDto>(comment.Likes
                 .FirstOrDefault(l => l.AuthorId == currentUserId));
-        return result;
+        return new GetCommentResult() { Comment = result };
     }
 
-    public async Task<CommentDto[]> GetCommentsForPost(Guid postId, Guid currentUserId)
+    public async Task<GetCommentsForPostResult> GetCommentsForPost(GetCommentsForPostQuery getCommentQuery, Guid currentUserId)
     {
         Comment[] comments = await _dataContext.Comments
             .Include(c => c.Likes)
             .Include(c => c.Author)
             .ThenInclude(a => a.Avatar)
             .AsNoTracking()
-            .Where(c => c.PostId == postId)
+            .Where(c => c.PostId == getCommentQuery.PostId)
             .OrderBy(c => c.Created)
             .ToArrayAsync();
         if (comments.Length == 0)
-            throw new NotFoundPostGramException("Comments not found for post: " + postId);
+            throw new NotFoundPostGramException("Comments not found for post: " + getCommentQuery.PostId);
 
-        CommentDto[] result = _mapper.Map<CommentDto[]>(comments);
+        var result = _mapper.Map<List<CommentDto>>(comments);
         foreach (var comment in result)
         {
             comment.LikeByUser = _mapper
@@ -209,10 +179,10 @@ public class PostService : IPostService
                     .FirstOrDefault(c => c.Id == comment.Id)?.Likes
                     .FirstOrDefault(l => l.AuthorId == currentUserId));
         }
-        return result;
+        return new GetCommentsForPostResult() { Comments = result };
     }
 
-    public async Task<PostDto> GetPost(Guid postId, Guid currentUserId)
+    public async Task<GetPostResult> GetPost(GetPostQuery getPostQuery, Guid currentUserId)
     {
         List<Guid> subscriptions = await GetAvailableSubscriptionsForSlaveUser(currentUserId);
 
@@ -225,9 +195,9 @@ public class PostService : IPostService
             .Include(p => p.Comments
                 .OrderBy(c => c.Created))
             .ThenInclude(c => c.Likes)
-            .FirstOrDefaultAsync(p => p.Id == postId);
+            .FirstOrDefaultAsync(p => p.Id == getPostQuery.PostId);
         if (post == null)
-            throw new NotFoundPostGramException("Post not found: " + postId);
+            throw new NotFoundPostGramException("Post not found: " + getPostQuery.PostId);
 
         if (post.AuthorId != currentUserId && !subscriptions.Contains(post.AuthorId))
             throw new AuthorizationPostGramException($"User {currentUserId} cannot access post {post.Id}");
@@ -237,10 +207,10 @@ public class PostService : IPostService
         result.LikeByUser = _mapper
             .Map<LikeDto>(post.Likes
                 .FirstOrDefault(l => l.AuthorId == currentUserId));
-        return result;
+        return new GetPostResult() { Post = result };
     }
 
-    public async Task<List<PostDto>> GetPosts(int takeAmount, int skipAmount, Guid currentUserId)
+    public async Task<GetPostsResult> GetPosts(GetPostsQuery getPostsQuery, Guid currentUserId)
     {
         List<Guid> subscriptions = await GetAvailableSubscriptionsForSlaveUser(currentUserId);
 
@@ -256,8 +226,8 @@ public class PostService : IPostService
             .Where(p => subscriptions
                 .Contains(p.AuthorId) || p.AuthorId == currentUserId)
             .OrderByDescending(p => p.Created)
-            .Skip(skipAmount)
-            .Take(takeAmount)
+            .Skip(getPostsQuery.SkipAmount)
+            .Take(getPostsQuery.TakeAmount)
             .AsNoTracking()
             .ToListAsync();
 
@@ -272,10 +242,10 @@ public class PostService : IPostService
                     .FirstOrDefault(p => p.Id == post.Id)?.Likes
                     .FirstOrDefault(l => l.AuthorId == currentUserId));
         }
-        return result;
+        return new GetPostsResult() { Posts = result };
     }
 
-    public async Task UpdateComment(UpdateCommentModel model, Guid currentUserId)
+    public async Task UpdateComment(UpdateCommentCommand model, Guid currentUserId)
     {
         Comment comment = await GetCommentById(model.Id);
         if (comment.AuthorId != currentUserId)
@@ -285,7 +255,7 @@ public class PostService : IPostService
         await UpdateComment(comment);
     }
 
-    public async Task UpdateLike(UpdateLikeModel model, Guid currentUserId)
+    public async Task UpdateLike(UpdateLikeCommand model, Guid currentUserId)
     {
         Like? like = await _dataContext.Likes.FirstOrDefaultAsync(l => l.Id == model.Id);
         if (like == null)
@@ -309,7 +279,7 @@ public class PostService : IPostService
         }
     }
 
-    public async Task UpdatePost(UpdatePostModel model, Guid currentUserId)
+    public async Task UpdatePost(UpdatePostCommand model, Guid currentUserId)
     {
         Post? post = await _dataContext.Posts
             .Include(p => p.PostContents)
@@ -386,10 +356,7 @@ public class PostService : IPostService
         return await _dataContext.Likes.AnyAsync(l => l.AuthorId == authorId && l.EntityId == entityId);
     }
 
-    private async Task<bool> CheckPostExist(Guid postId)
-    {
-        return await _dataContext.Posts.AnyAsync(u => u.Id == postId);
-    }
+    
 
     private async Task DeletePostContents(ICollection<PostContent> postContents)
     {
@@ -463,3 +430,62 @@ public class PostService : IPostService
         }
     }
 }
+
+public class DeleteCommentService : ICommandService<DeleteCommentCommand>
+{
+    public Task Execute(DeleteCommentCommand command)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+
+public class CreateCommentService : ICommandService<CreateCommentCommand>
+{
+    private readonly DataContext _dataContext;
+    private readonly IMapper _mapper;
+
+    public async Task Execute(CreateCommentCommand command)
+    {
+        if (!await CheckPostExist(command.PostId))
+            throw new NotFoundPostGramException("Post not found: " + command.PostId);
+        if (command.QuotedCommentId == null ^ command.QuotedText == null)
+        {
+            throw new UnprocessableRequestPostGramException(
+                "QuotedCommentId and QuotedText must be null at the same time or must have value at the same time");
+        }
+
+        Comment comment = _mapper.Map<Comment>(command);
+        comment.AuthorId = currentUserId;
+
+        if (command.QuotedCommentId != null && command.QuotedText != null)
+        {
+            Comment quotedComment = await GetCommentById(command.QuotedCommentId.Value);
+            comment.QuotedCommentId = quotedComment.Id;
+
+            if (!quotedComment.Body.Contains((string)command.QuotedText))
+                throw new UnprocessableRequestPostGramException(
+                    $"Quoted comment {command.QuotedCommentId} does not contain quoted text");
+            comment.QuotedText = command.QuotedText;
+        }
+        try
+        {
+            await _dataContext.Comments.AddAsync(comment);
+            await _dataContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException e)
+        {
+            if (e.InnerException != null)
+            {
+                throw new PostGramException(e.InnerException.Message, e.InnerException);
+            }
+            throw new PostGramException(e.Message, e);
+        }
+    }
+
+    private async Task<bool> CheckPostExist(Guid postId)
+    {
+        return await _dataContext.Posts.AnyAsync(u => u.Id == postId);
+    }
+}
+

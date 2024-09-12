@@ -11,7 +11,7 @@ using PostGram.Common.Dtos.Like;
 using PostGram.Common.Dtos.Post;
 using PostGram.Common.Interfaces.Services;
 using PostGram.Common.Dtos.User;
-using PostGram.Common.Requests;
+using PostGram.Common.Requests.Commands;
 
 namespace PostGram.Api.Tests
 {
@@ -34,7 +34,7 @@ namespace PostGram.Api.Tests
             PostController controller = GetMockPostController();
 
             // Act
-            Guid result = await controller.CreateComment(_fixture.Create<CreateCommentModel>());
+            Guid result = await controller.CreateComment(_fixture.Create<CreateCommentCommand>());
 
             // Assert
             Assert.IsType<Guid>(result);
@@ -47,7 +47,7 @@ namespace PostGram.Api.Tests
             PostController controller = GetMockPostController();
 
             // Act
-            Guid result = await controller.CreateLike(_fixture.Create<CreateLikeModel>());
+            Guid result = await controller.CreateLike(_fixture.Create<CreateLikeCommand>());
 
             // Assert
             Assert.IsType<Guid>(result);
@@ -60,7 +60,7 @@ namespace PostGram.Api.Tests
             PostController controller = GetMockPostController();
 
             // Act
-            Guid result = await controller.CreatePost(_fixture.Create<CreatePostModel>());
+            Guid result = await controller.CreatePost(_fixture.Create<CreatePostCommand>());
 
             // Assert
             Assert.IsType<Guid>(result);
@@ -113,7 +113,7 @@ namespace PostGram.Api.Tests
             // Arrange
             Mock<IPostService> service = new Mock<IPostService>();
             service
-                .Setup(s => s.GetComment(It.IsAny<Guid>(), It.IsAny<Guid>()))
+                .Setup(s => s.GetComment(new GetCommentQuery(It.IsAny<Guid>()), It.IsAny<Guid>()))
                 .ReturnsAsync(_fixture
                     .Build<CommentDto>()
                     .With(m => m.Author, _fixture
@@ -169,7 +169,7 @@ namespace PostGram.Api.Tests
             // Arrange
             Mock<IPostService> service = new Mock<IPostService>();
             service
-                .Setup(s => s.GetCommentsForPost(It.IsAny<Guid>(), _testUserId))
+                .Setup(s => s.GetCommentsForPost(new GetCommentQuery(It.IsAny<Guid>(), _testUserId)))
                 .ReturnsAsync(Enumerable
                     .Range(skip, take)
                     .Select(x => _fixture
@@ -227,7 +227,7 @@ namespace PostGram.Api.Tests
             // Arrange
             Mock<IPostService> service = new Mock<IPostService>();
             service
-                .Setup(s => s.GetPost(It.IsAny<Guid>(), _testUserId))
+                .Setup(s => s.GetPost(new GetPostQuery(It.IsAny<Guid>()), _testUserId))
                 .ReturnsAsync(_fixture
                     .Build<PostDto>()
                     .With(m => m.Author, _fixture
@@ -300,7 +300,7 @@ namespace PostGram.Api.Tests
             // Arrange
             Mock<IPostService> service = new Mock<IPostService>();
             service
-                .Setup(s => s.GetPosts(take, skip, _testUserId))
+                .Setup(s => s.GetPosts(new GetPostsQuery(take, skip), _testUserId))
                 .ReturnsAsync(Enumerable.Range(skip, take).Select(x => _fixture
                     .Build<PostDto>()
                     .With(m => m.Author, _fixture
@@ -345,7 +345,7 @@ namespace PostGram.Api.Tests
             // Arrange
             Mock<IPostService> service = new Mock<IPostService>();
             service
-                .Setup(s => s.GetPosts(take, It.IsAny<int>(), It.IsAny<Guid>()))
+                .Setup(s => s.GetPosts(new GetPostsQuery(take, It.IsAny<int>()), It.IsAny<Guid>()))
                 .ReturnsAsync(_fixture.CreateMany<PostDto>(take).ToList);
             PostController controller = GetMockPostController(service);
 
@@ -381,7 +381,7 @@ namespace PostGram.Api.Tests
             PostController controller = GetMockPostController(service);
 
             // Act
-            CommentDto result = await controller.UpdateComment(_fixture.Create<UpdateCommentModel>());
+            CommentDto result = await controller.UpdateComment(_fixture.Create<UpdateCommentCommand>());
 
             // Assert
             service.VerifyAll();
@@ -394,7 +394,7 @@ namespace PostGram.Api.Tests
             // Arrange
             Mock<IPostService> service = new Mock<IPostService>();
             service
-                .Setup(s => s.UpdateComment(It.IsAny<UpdateCommentModel>(), _testUserId))
+                .Setup(s => s.UpdateComment(It.IsAny<UpdateCommentCommand>(), _testUserId))
                 .ReturnsAsync(_fixture
                     .Build<CommentDto>()
                     .With(m => m.Author, _fixture
@@ -405,7 +405,7 @@ namespace PostGram.Api.Tests
             PostController controller = GetMockPostController(service);
 
             // Act
-            CommentDto result = await controller.UpdateComment(_fixture.Create<UpdateCommentModel>());
+            CommentDto result = await controller.UpdateComment(_fixture.Create<UpdateCommentCommand>());
 
             // Assert
             service.VerifyAll();
@@ -420,7 +420,7 @@ namespace PostGram.Api.Tests
             PostController controller = GetMockPostController(service);
 
             // Act
-            CommentDto result = await controller.UpdateComment(_fixture.Create<UpdateCommentModel>());
+            CommentDto result = await controller.UpdateComment(_fixture.Create<UpdateCommentCommand>());
 
             // Assert
             service.VerifyAll();
@@ -433,12 +433,12 @@ namespace PostGram.Api.Tests
             // Arrange
             Mock<IPostService> service = new Mock<IPostService>();
             service
-                .Setup(s => s.UpdateLike(It.IsAny<UpdateLikeModel>(), It.IsAny<Guid>()))
+                .Setup(s => s.UpdateLike(It.IsAny<UpdateLikeCommand>(), It.IsAny<Guid>()))
                 .ReturnsAsync(_fixture.Create<LikeDto>());
             PostController controller = GetMockPostController(service);
 
             // Act
-            LikeDto result = await controller.UpdateLike(_fixture.Create<UpdateLikeModel>());
+            LikeDto result = await controller.UpdateLike(_fixture.Create<UpdateLikeCommand>());
 
             // Assert
             service.VerifyAll();
@@ -453,7 +453,7 @@ namespace PostGram.Api.Tests
             PostController controller = GetMockPostController(service);
 
             // Act
-            PostDto result = await controller.UpdatePost(_fixture.Create<UpdatePostModel>());
+            PostDto result = await controller.UpdatePost(_fixture.Create<UpdatePostCommand>());
 
             // Assert
             service.VerifyAll();
@@ -466,7 +466,7 @@ namespace PostGram.Api.Tests
             // Arrange
             Mock<IPostService> service = new Mock<IPostService>();
             service
-                .Setup(s => s.UpdatePost(It.IsAny<UpdatePostModel>(), _testUserId))
+                .Setup(s => s.UpdatePost(It.IsAny<UpdatePostCommand>(), _testUserId))
                 .ReturnsAsync(_fixture
                     .Build<PostDto>()
                     .With(m => m.Author, _fixture
@@ -477,7 +477,7 @@ namespace PostGram.Api.Tests
             PostController controller = GetMockPostController(service);
 
             // Act
-            PostDto result = await controller.UpdatePost(_fixture.Create<UpdatePostModel>());
+            PostDto result = await controller.UpdatePost(_fixture.Create<UpdatePostCommand>());
 
             // Assert
             service.VerifyAll();
@@ -492,7 +492,7 @@ namespace PostGram.Api.Tests
             PostController controller = GetMockPostController(service);
 
             // Act
-            PostDto result = await controller.UpdatePost(_fixture.Create<UpdatePostModel>());
+            PostDto result = await controller.UpdatePost(_fixture.Create<UpdatePostCommand>());
 
             // Assert
             service.VerifyAll();
@@ -507,7 +507,7 @@ namespace PostGram.Api.Tests
             PostController controller = GetMockPostController(service);
 
             // Act
-            PostDto result = await controller.UpdatePost(_fixture.Create<UpdatePostModel>());
+            PostDto result = await controller.UpdatePost(_fixture.Create<UpdatePostCommand>());
 
             // Assert
             service.VerifyAll();
@@ -544,7 +544,7 @@ namespace PostGram.Api.Tests
             var t=  a with{Body = "test"};
             Mock<IPostService> service = new Mock<IPostService>();
             service
-                .Setup(s => s.GetComment(It.IsAny<Guid>(), _testUserId))
+                .Setup(s => s.GetComment(new GetCommentQuery(It.IsAny<Guid>()), _testUserId))
                 .ReturnsAsync(t);
             return service;
         }
@@ -553,7 +553,7 @@ namespace PostGram.Api.Tests
         {
             Mock<IPostService> service = new Mock<IPostService>();
             service
-                .Setup(s => s.GetCommentsForPost(It.IsAny<Guid>(), _testUserId))
+                .Setup(s => s.GetCommentsForPost(new GetCommentQuery(It.IsAny<Guid>(), _testUserId)))
                 .ReturnsAsync(_fixture.CreateMany<CommentDto>(10).ToArray);
             return service;
         }
@@ -562,7 +562,7 @@ namespace PostGram.Api.Tests
         {
             Mock<IPostService> service = new Mock<IPostService>();
             service
-                .Setup(s => s.GetPost(It.IsAny<Guid>(), _testUserId))
+                .Setup(s => s.GetPost(new GetPostQuery(It.IsAny<Guid>()), _testUserId))
                 .ReturnsAsync(_fixture.Create<PostDto>());
             return service;
         }
@@ -571,7 +571,7 @@ namespace PostGram.Api.Tests
         {
             Mock<IPostService> service = new Mock<IPostService>();
             service
-                .Setup(s => s.GetPosts(It.IsAny<int>(), It.IsAny<int>(), _testUserId))
+                .Setup(s => s.GetPosts(new GetPostsQuery(It.IsAny<int>(), It.IsAny<int>()), _testUserId))
                 .ReturnsAsync(_fixture.Create<List<PostDto>>());
             return service;
         }
@@ -580,7 +580,7 @@ namespace PostGram.Api.Tests
         {
             Mock<IPostService> service = new Mock<IPostService>();
             service
-                .Setup(s => s.UpdateComment(It.IsAny<UpdateCommentModel>(), _testUserId))
+                .Setup(s => s.UpdateComment(It.IsAny<UpdateCommentCommand>(), _testUserId))
                 .ReturnsAsync(_fixture.Create<CommentDto>());
             return service;
         }
@@ -589,7 +589,7 @@ namespace PostGram.Api.Tests
         {
             Mock<IPostService> service = new Mock<IPostService>();
             service
-                .Setup(s => s.UpdatePost(It.IsAny<UpdatePostModel>(), _testUserId))
+                .Setup(s => s.UpdatePost(It.IsAny<UpdatePostCommand>(), _testUserId))
                 .ReturnsAsync(_fixture.Create<PostDto>());
             return service;
         }

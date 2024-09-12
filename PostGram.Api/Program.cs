@@ -69,7 +69,6 @@ builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>()
 builder.Services.Configure<AuthConfig>(authSection);
 builder.Services.Configure<AppConfig>(builder.Configuration.GetSection(AppConfig.SectionName));
 
-
 //ClientRateLimit setup
 builder.Services.AddOptions();
 builder.Services.AddMemoryCache();

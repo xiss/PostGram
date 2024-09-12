@@ -14,7 +14,8 @@ using PostGram.BLL.Services;
 using PostGram.Common.Dtos.Comment;
 using PostGram.Common.Dtos.Like;
 using PostGram.Common.Dtos.Post;
-using PostGram.Common.Requests;
+using PostGram.Common.Interfaces.Services;
+using PostGram.Common.Requests.Commands;
 //TODO Перенести в отдельный проект
 namespace PostGram.Api.Tests;
 
@@ -54,7 +55,7 @@ public class PostServiceTests
         await using DataContext context = _fixture.Create<DataContext>();
         Guid userId = Guid.NewGuid();
         Guid postId = await AddPost(context);
-        CreateCommentModel model = GetCreateCommentModel(postId);
+        CreateCommentCommand model = GetCreateCommentModel(postId);
         PostService service = GetPostService(context);
 
         // Act
@@ -74,7 +75,7 @@ public class PostServiceTests
             .ThrowsAsync(new DbUpdateException());
         await using DataContext mockContext = mock.Object;
         PostService service = GetPostService(mockContext);
-        CreateCommentModel model = GetCreateCommentModel(postId);
+        CreateCommentCommand model = GetCreateCommentModel(postId);
 
         // Act
         Task<Guid> TestFunc() => service.CreateComment(model, Guid.NewGuid());
@@ -96,7 +97,7 @@ public class PostServiceTests
         }
         await context.SaveChangesAsync();
         PostService service = GetPostService(context);
-        CreateCommentModel model = GetCreateCommentModel(postId);
+        CreateCommentCommand model = GetCreateCommentModel(postId);
 
         // Act
         Task<Guid> Func() => service.CreateComment(model, _fixture.Create<Guid>());
@@ -110,7 +111,7 @@ public class PostServiceTests
     {
         // Arrange
         PostService service = GetPostService();
-        CreateCommentModel model = GetCreateCommentModel();
+        CreateCommentCommand model = GetCreateCommentModel();
 
         // Act
         Task<Guid> TestFunc() => service.CreateComment(model, _fixture.Create<Guid>());
@@ -128,7 +129,7 @@ public class PostServiceTests
         Guid postId = await AddPost(context);
         Guid commentId = await AddComment(context, postId, quotedText);
 
-        CreateCommentModel model = GetCreateCommentModel(postId, commentId, quotedText: quotedText);
+        CreateCommentCommand model = GetCreateCommentModel(postId, commentId, quotedText: quotedText);
         PostService service = GetPostService(context);
 
         // Act
@@ -147,7 +148,7 @@ public class PostServiceTests
         Guid postId = await AddPost(context);
         Guid commentId = await AddComment(context, postId);
         PostService service = GetPostService(context);
-        CreateCommentModel model = GetCreateCommentModel(postId, commentId, quotedText: _fixture.Create<string>());
+        CreateCommentCommand model = GetCreateCommentModel(postId, commentId, quotedText: _fixture.Create<string>());
 
         // Act
         Task<Guid> TestFunc() => service.CreateComment(model, _fixture.Create<Guid>());
@@ -169,7 +170,7 @@ public class PostServiceTests
         await AddComment(context, postId, quotedText, commentId: quotedCommentIdGuid);
         PostService service = GetPostService(context);
 
-        CreateCommentModel model = GetCreateCommentModel(postId, quotedCommentIdGuid, quotedText: quotedText);
+        CreateCommentCommand model = GetCreateCommentModel(postId, quotedCommentIdGuid, quotedText: quotedText);
 
         // Act
         Task<Guid> TestFunc() => service.CreateComment(model, _fixture.Create<Guid>());
@@ -191,7 +192,7 @@ public class PostServiceTests
         await AddComment(context, postId, quotedText, commentId: quotedCommentIdGuid);
         PostService service = GetPostService(context);
 
-        CreateCommentModel model = GetCreateCommentModel(postId, quotedCommentIdGuid, quotedText: quotedText);
+        CreateCommentCommand model = GetCreateCommentModel(postId, quotedCommentIdGuid, quotedText: quotedText);
 
         // Act
         Guid result = await service.CreateComment(model, _fixture.Create<Guid>());
@@ -207,7 +208,7 @@ public class PostServiceTests
         await using DataContext context = _fixture.Create<DataContext>();
         Guid postId = await AddPost(context);
         PostService service = GetPostService(context);
-        CreateCommentModel model = GetCreateCommentModel(postId, Guid.NewGuid(), quotedText: _fixture.Create<string>());
+        CreateCommentCommand model = GetCreateCommentModel(postId, Guid.NewGuid(), quotedText: _fixture.Create<string>());
 
         // Act
         Task<Guid> TestFunc() => service.CreateComment(model, _fixture.Create<Guid>());
@@ -223,7 +224,7 @@ public class PostServiceTests
         await using DataContext context = _fixture.Create<DataContext>();
         Guid userId = Guid.NewGuid();
         Guid postId = await AddPost(context);
-        CreateLikeModel model = GetCreateLikeModel(postId, LikableEntities.Post);
+        CreateLikeCommand model = GetCreateLikeModel(postId, LikableEntities.Post);
         PostService service = GetPostService(context);
 
         // Act
@@ -243,7 +244,7 @@ public class PostServiceTests
             .ThrowsAsync(new DbUpdateException());
         await using DataContext mockContext = mock.Object;
         PostService service = GetPostService(mockContext);
-        CreateLikeModel model = GetCreateLikeModel(postId);
+        CreateLikeCommand model = GetCreateLikeModel(postId);
 
         // Act
         Task<Guid> TestFunc() => service.CreateLike(model, Guid.NewGuid());
@@ -272,7 +273,7 @@ public class PostServiceTests
                 break;
         }
         Guid userId = await AddUser(context);
-        CreateLikeModel model = GetCreateLikeModel(entity, likableEntity);
+        CreateLikeCommand model = GetCreateLikeModel(entity, likableEntity);
         PostService service = GetPostService(context);
 
         // Act
@@ -290,7 +291,7 @@ public class PostServiceTests
         // Arrange
         await using DataContext context = _fixture.Create<DataContext>();
         Guid userId = await AddUser(context);
-        CreateLikeModel model = GetCreateLikeModel(Guid.NewGuid(), likableEntity);
+        CreateLikeCommand model = GetCreateLikeModel(Guid.NewGuid(), likableEntity);
         PostService service = GetPostService(context);
 
         // Act
@@ -308,7 +309,7 @@ public class PostServiceTests
         Guid userId = await AddUser(context);
         Guid postId = await AddPost(context);
         Guid likeId = await AddLike(context, userId, postId, LikableEntities.Post);
-        CreateLikeModel model = GetCreateLikeModel(postId, LikableEntities.Post);
+        CreateLikeCommand model = GetCreateLikeModel(postId, LikableEntities.Post);
         PostService service = GetPostService(context);
 
         // Act
@@ -324,7 +325,7 @@ public class PostServiceTests
         // Arrange
         await using DataContext context = _fixture.Create<DataContext>();
         Guid userId = Guid.NewGuid();
-        CreatePostModel model = GetCreatePostModel();
+        CreatePostCommand model = GetCreatePostModel();
         PostService service = GetPostService(context);
 
         // Act
@@ -344,7 +345,7 @@ public class PostServiceTests
         PostService service = GetPostService(mockContext);
 
         // Act
-        Task<Guid> TestFunc() => service.CreatePost(_fixture.Create<CreatePostModel>(), Guid.NewGuid());
+        Task<Guid> TestFunc() => service.CreatePost(_fixture.Create<CreatePostCommand>(), Guid.NewGuid());
 
         // Assert
         await Assert.ThrowsAsync<PostGramException>(TestFunc);
@@ -355,7 +356,7 @@ public class PostServiceTests
     {
         // Arrange
         await using DataContext context = _fixture.Create<DataContext>();
-        CreatePostModel model = GetCreatePostModel();
+        CreatePostCommand model = GetCreatePostModel();
         PostService service = GetPostService(context);
 
         // Act
@@ -375,7 +376,7 @@ public class PostServiceTests
         PostService service = GetPostService(context);
 
         // Act
-        Task<Guid> TestFunc() => service.DeleteComment(commentId, Guid.NewGuid());
+        Task<Guid> TestFunc() => service.DeleteComment(new DeleteCommentCommand(commentId), Guid.NewGuid());
 
         // Assert
         await Assert.ThrowsAsync<AuthorizationPostGramException>(TestFunc);
@@ -393,7 +394,7 @@ public class PostServiceTests
         Guid? userId = mockContext.Comments.FirstOrDefault(c => c.Id == commentId)?.AuthorId;
 
         // Act
-        Task<Guid> TestFunc() => service.DeleteComment(commentId, userId.Value);
+        Task<Guid> TestFunc() => service.DeleteComment(new DeleteCommentCommand(commentId), userId.Value);
 
         // Assert
         await Assert.ThrowsAsync<PostGramException>(TestFunc);
@@ -410,7 +411,7 @@ public class PostServiceTests
         PostService service = GetPostService(context);
 
         // Act
-        Guid? result = userId == null ? null : await service.DeleteComment(commentId, userId.Value);
+        Guid? result = userId == null ? null : await service.DeleteComment(new DeleteCommentCommand(commentId), userId.Value);
         Comment? deletedComment = context.Comments.IgnoreQueryFilters().FirstOrDefault(c => c.Id == commentId);
 
         // Assert
@@ -425,7 +426,7 @@ public class PostServiceTests
         PostService service = GetPostService();
 
         // Act
-        Task<Guid> TestFunc() => service.DeleteComment(Guid.NewGuid(), Guid.NewGuid());
+        Task<Guid> TestFunc() => service.DeleteComment(new DeleteCommentCommand(Guid.NewGuid()), Guid.NewGuid());
 
         // Assert
         await Assert.ThrowsAsync<NotFoundPostGramException>(TestFunc);
@@ -440,7 +441,7 @@ public class PostServiceTests
         PostService service = GetPostService(context);
 
         // Act
-        Task<Guid> TestFunc() => service.DeletePost(postId, Guid.NewGuid());
+        Task<Guid> TestFunc() => service.DeletePost(new DeletePostCommand(postId), Guid.NewGuid());
 
         // Assert
         await Assert.ThrowsAsync<AuthorizationPostGramException>(TestFunc);
@@ -469,7 +470,7 @@ public class PostServiceTests
         PostService service = GetPostService(mockContext);
 
         // Act
-        Task<Guid> TestFunc() => service.DeletePost(postId, userId.Value);
+        Task<Guid> TestFunc() => service.DeletePost(new DeletePostCommand(postId), userId.Value);
 
         // Assert
         await Assert.ThrowsAsync<PostGramException>(TestFunc);
@@ -485,7 +486,7 @@ public class PostServiceTests
         PostService service = GetPostService(context);
 
         // Act
-        Guid? result = userId == null ? null : await service.DeletePost(postId, userId.Value);
+        Guid? result = userId == null ? null : await service.DeletePost(new DeletePostCommand(postId), userId.Value);
         Post? deletedPost = context.Posts.IgnoreQueryFilters().FirstOrDefault(c => c.Id == postId);
 
         // Assert
@@ -500,7 +501,7 @@ public class PostServiceTests
         PostService service = GetPostService();
 
         // Act
-        Task<Guid> TestFunc() => service.DeletePost(Guid.NewGuid(), Guid.NewGuid());
+        Task<Guid> TestFunc() => service.DeletePost(new DeletePostCommand(Guid.NewGuid()), Guid.NewGuid());
 
         // Assert
         await Assert.ThrowsAsync<NotFoundPostGramException>(TestFunc);
@@ -516,7 +517,7 @@ public class PostServiceTests
         PostService service = GetPostService(context);
 
         // Act
-        await service.DeletePost(postId, userId.Value);
+        await service.DeletePost(new DeletePostCommand(postId), userId.Value);
 
         // Assert
         List<PostContent> deletedPostContents = context.PostContents.Where(pc => pc.PostId == postId).ToList();
@@ -535,7 +536,7 @@ public class PostServiceTests
         await context.SaveChangesAsync();
 
         // Act
-        Task<CommentDto> TestFunc() => service.GetComment(commentId, Guid.NewGuid());
+        Task<CommentDto> TestFunc() => service.GetComment(new GetCommentQuery(commentId), Guid.NewGuid());
 
         // Assert
         await Assert.ThrowsAsync<NotFoundPostGramException>(TestFunc);
@@ -550,7 +551,7 @@ public class PostServiceTests
         PostService service = GetPostService(context);
 
         // Act
-        CommentDto comment = await service.GetComment(commentId, Guid.NewGuid());
+        CommentDto comment = await service.GetComment(new GetCommentQuery(commentId), Guid.NewGuid());
 
         // Assert
         Assert.IsType<CommentDto>(comment);
@@ -568,7 +569,7 @@ public class PostServiceTests
         Guid likeId = await AddLike(context, userId, commentId, LikableEntities.Comment);
 
         // Act
-        CommentDto comment = await service.GetComment(commentId, userId);
+        CommentDto comment = await service.GetComment(new GetCommentQuery(commentId), userId);
 
         // Assert
         Assert.IsType<LikeDto>(comment.LikeByUser);
@@ -582,7 +583,7 @@ public class PostServiceTests
         PostService service = GetPostService();
 
         // Act
-        Task<CommentDto> TestFunc() => service.GetComment(Guid.NewGuid(), Guid.NewGuid());
+        Task<CommentDto> TestFunc() => service.GetComment(new GetCommentQuery(Guid.NewGuid()), Guid.NewGuid());
 
         // Assert
         await Assert.ThrowsAsync<NotFoundPostGramException>(TestFunc);
@@ -600,7 +601,7 @@ public class PostServiceTests
         await context.SaveChangesAsync();
 
         // Act
-        Task<CommentDto[]> TestFunc() => service.GetCommentsForPost(postId, Guid.NewGuid());
+        Task<CommentDto[]> TestFunc() => service.GetCommentsForPost(new GetCommentQuery(postId, Guid.NewGuid()));
 
         // Assert
         await Assert.ThrowsAsync<NotFoundPostGramException>(TestFunc);
@@ -615,7 +616,7 @@ public class PostServiceTests
         Guid postId = await AddPost(context);
 
         // Act
-        CommentDto[] result = await service.GetCommentsForPost(postId, Guid.NewGuid());
+        CommentDto[] result = await service.GetCommentsForPost(new GetCommentQuery(postId, Guid.NewGuid()));
         Comment[] expectedResult =
             context.Comments.Where(c => c.PostId == postId).OrderBy(c => c.Created).ToArray();
 
@@ -640,7 +641,7 @@ public class PostServiceTests
         Guid likeId = await AddLike(context, userId, commentId, LikableEntities.Comment);
 
         // Act
-        CommentDto[] result = await service.GetCommentsForPost(postId, userId);
+        CommentDto[] result = await service.GetCommentsForPost(new GetCommentQuery(postId, userId));
 
         // Assert
         Assert.IsType<CommentDto[]>(result);
@@ -654,7 +655,7 @@ public class PostServiceTests
         PostService service = GetPostService();
 
         // Act
-        Task<CommentDto[]> TestFunc() => service.GetCommentsForPost(Guid.NewGuid(), Guid.NewGuid());
+        Task<CommentDto[]> TestFunc() => service.GetCommentsForPost(new GetCommentQuery(Guid.NewGuid(), Guid.NewGuid()));
 
         // Assert
         await Assert.ThrowsAsync<NotFoundPostGramException>(TestFunc);
@@ -672,7 +673,7 @@ public class PostServiceTests
         Guid likeId = await AddLike(context, userId, postId, LikableEntities.Post);
 
         // Act
-        PostDto result = await service.GetPost(postId, userId);
+        PostDto result = await service.GetPost(new GetPostQuery(postId), userId);
 
         // Assert
         Assert.IsType<LikeDto>(result.LikeByUser);
@@ -689,7 +690,7 @@ public class PostServiceTests
         Guid postId = await AddPost(context);
 
         // Act
-        Task<PostDto> TestFunc() => service.GetPost(postId, userId);
+        Task<PostDto> TestFunc() => service.GetPost(new GetPostQuery(postId), userId);
 
         // Assert
         await Assert.ThrowsAsync<AuthorizationPostGramException>(TestFunc);
@@ -702,7 +703,7 @@ public class PostServiceTests
         PostService service = GetPostService();
 
         // Act
-        Task<PostDto> TestFunc() => service.GetPost(Guid.NewGuid(), Guid.NewGuid());
+        Task<PostDto> TestFunc() => service.GetPost(new GetPostQuery(Guid.NewGuid()), Guid.NewGuid());
 
         // Assert
         await Assert.ThrowsAsync<NotFoundPostGramException>(TestFunc);
@@ -718,7 +719,7 @@ public class PostServiceTests
         PostService service = GetPostService();
 
         // Act
-        Task<List<PostDto>> TestFunc() => service.GetPosts(takeAmount, skipAmount, Guid.NewGuid());
+        Task<List<PostDto>> TestFunc() => service.GetPosts(new GetPostsQuery(takeAmount, skipAmount), Guid.NewGuid());
 
         // Assert
         await Assert.ThrowsAsync<NotFoundPostGramException>(TestFunc);
@@ -737,7 +738,7 @@ public class PostServiceTests
         expectedLikes.Add(await AddLike(context, userId, postId, LikableEntities.Post));
 
         // Act
-        List<PostDto> result = await service.GetPosts(1, 0, userId);
+        List<PostDto> result = await service.GetPosts(new GetPostsQuery(1, 0), userId);
 
         // Assert
         Assert.All(result, x => Assert.IsType<LikeDto>(x.LikeByUser));
@@ -756,7 +757,7 @@ public class PostServiceTests
         List<Guid> expectedGuids = context.PostContents.Where(x => x.PostId == postId).Select(x => x.Id).ToList();
 
         // Act
-        List<PostDto> result = await service.GetPosts(1, 0, userId);
+        List<PostDto> result = await service.GetPosts(new GetPostsQuery(1, 0), userId);
 
         // Assert
         Assert.Equal(expectedGuids, result.FirstOrDefault()?.Content.Select(x => x.Id));
@@ -773,7 +774,7 @@ public class PostServiceTests
         Guid postId = await AddPost(context, authorId: userId);
 
         // Act
-        List<PostDto> result = await service.GetPosts(1, 0, userId);
+        List<PostDto> result = await service.GetPosts(new GetPostsQuery(1, 0), userId);
 
         // Assert
         Assert.Equal(userId, result.FirstOrDefault()?.Author.Id);
@@ -795,7 +796,7 @@ public class PostServiceTests
 
         await using DataContext mockContext = mock.Object;
         PostService service = GetPostService(mockContext);
-        UpdateCommentModel model = GetUpdateCommentModel(commentId);
+        UpdateCommentCommand model = GetUpdateCommentModel(commentId);
 
         // Act
         Task<CommentDto> TestFunc() => service.UpdateComment(model, userId);
@@ -818,7 +819,7 @@ public class PostServiceTests
 
         await using DataContext mockContext = mock.Object;
         PostService service = GetPostService(mockContext);
-        UpdateCommentModel model = GetUpdateCommentModel(Guid.NewGuid());
+        UpdateCommentCommand model = GetUpdateCommentModel(Guid.NewGuid());
 
         // Act
         Task<CommentDto> TestFunc() => service.UpdateComment(model, userId);
@@ -843,7 +844,7 @@ public class PostServiceTests
 
         await using DataContext mockContext = mock.Object;
         PostService service = GetPostService(mockContext);
-        UpdateCommentModel model = GetUpdateCommentModel(commentId);
+        UpdateCommentCommand model = GetUpdateCommentModel(commentId);
 
         // Act
         Task<CommentDto> TestFunc() => service.UpdateComment(model, userId);
@@ -862,7 +863,7 @@ public class PostServiceTests
         Guid postId = await AddPost(context);
         Guid userId = await AddUser(context);
         Guid commentId = await AddComment(context, postId, userId: userId);
-        UpdateCommentModel model = GetUpdateCommentModel(commentId);
+        UpdateCommentCommand model = GetUpdateCommentModel(commentId);
 
         // Act
         CommentDto result = await service.UpdateComment(model, userId);
@@ -882,7 +883,7 @@ public class PostServiceTests
         Guid postId = await AddPost(context);
         Guid userId = await AddUser(context);
         Guid commentId = await AddComment(context, postId, userId: userId);
-        UpdateCommentModel model = GetUpdateCommentModel(commentId);
+        UpdateCommentCommand model = GetUpdateCommentModel(commentId);
         Guid likeId = await AddLike(context, userId, commentId, LikableEntities.Comment);
 
         // Act
@@ -984,14 +985,14 @@ public class PostServiceTests
         return user.Id;
     }
 
-    private CreateCommentModel GetCreateCommentModel(
+    private CreateCommentCommand GetCreateCommentModel(
         Guid? postId = null,
         Guid? quotedCommentId = null,
         string? body = null,
         string? quotedText = null)
     {
         return _fixture
-            .Build<CreateCommentModel>()
+            .Build<CreateCommentCommand>()
             .With(c => c.PostId, postId ?? _fixture.Create<Guid>())
             .With(c => c.QuotedCommentId, quotedCommentId)
             .With(c => c.QuotedText, quotedText)
@@ -999,29 +1000,29 @@ public class PostServiceTests
             .Create();
     }
 
-    private CreateLikeModel GetCreateLikeModel(
+    private CreateLikeCommand GetCreateLikeModel(
         Guid entityId,
         LikableEntities? entityType = LikableEntities.Post,
         bool isLike = true)
     {
-        return _fixture.Build<CreateLikeModel>()
+        return _fixture.Build<CreateLikeCommand>()
             .With(c => c.EntityId, entityId)
             .With(c => c.EntityType, entityType)
             .With(c => c.IsLike, isLike)
             .Create();
     }
 
-    private CreatePostModel GetCreatePostModel(string? header = null, string? body = null)
+    private CreatePostCommand GetCreatePostModel(string? header = null, string? body = null)
     {
-        return _fixture.Build<CreatePostModel>()
+        return _fixture.Build<CreatePostCommand>()
             .With(c => c.Body, body ?? _fixture.Create<string>())
             .With(c => c.Header, header ?? _fixture.Create<string>())
             .Create();
     }
 
-    private UpdateCommentModel GetUpdateCommentModel(Guid commentId)
+    private UpdateCommentCommand GetUpdateCommentModel(Guid commentId)
     {
-        return _fixture.Build<UpdateCommentModel>()
+        return _fixture.Build<UpdateCommentCommand>()
             .With(u => u.Id, commentId)
             .Create();
     }

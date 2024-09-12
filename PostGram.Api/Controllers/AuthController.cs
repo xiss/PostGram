@@ -4,6 +4,7 @@ using PostGram.Api.Helpers;
 using PostGram.Common.Dtos.Token;
 using PostGram.Common.Interfaces.Services;
 using PostGram.Common.Requests;
+using PostGram.Common.Requests.Commands;
 
 namespace PostGram.Api.Controllers;
 
@@ -14,6 +15,7 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IUserService _userService;
+
     public AuthController(IUserService userService, IAuthService authService)
     {
         _userService = userService;
@@ -30,11 +32,11 @@ public class AuthController : ControllerBase
     [HttpPost]
     public async Task<TokenDto> RefreshToken(RefreshTokenRequestModel model)
     {
-        return await _authService.GetTokenByRefreshToken(model.RefreshToken); 
+        return await _authService.GetTokenByRefreshToken(model.RefreshToken);
     }
 
     [HttpPost]
-    public async Task RegisterUser(CreateUserModel model)
+    public async Task RegisterUser(CreateUserCommand model)
     {
         await _userService.CreateUser(model);
     }
@@ -42,6 +44,6 @@ public class AuthController : ControllerBase
     [HttpPost]
     public async Task<TokenDto> Token(TokenRequestModel model)
     {
-        return await _authService.GetToken(model.Login, model.Password); 
+        return await _authService.GetToken(model.Login, model.Password);
     }
 }

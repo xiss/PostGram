@@ -1,10 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-using PostGram.Common.Constants;
+﻿using PostGram.Common.Constants;
 using PostGram.Common.Dtos.Attachment;
+using PostGram.Common.Interfaces.Base.Commands;
 
-namespace PostGram.Common.Requests;
+using System.ComponentModel.DataAnnotations;
 
-public record UpdatePostModel
+namespace PostGram.Common.Requests.Commands;
+
+public record UpdatePostCommand : ICommand
 {
     [Required]
     public Guid Id { get; init; }

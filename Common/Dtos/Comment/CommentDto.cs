@@ -15,5 +15,5 @@ public record CommentDto
     public int DislikeCount { get; init; }
     public Guid? QuotedCommentId { get; init; }
     public string? QuotedText { get; init; }
-    public  LikeDto? LikeByUser { get; set; }
+    public LikeDto? LikeByUser { get; set; }
 }

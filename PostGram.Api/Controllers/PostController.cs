@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PostGram.Api.Helpers;
-using PostGram.Common.Dtos.Attachment;
-using PostGram.Common.Dtos.Comment;
-using PostGram.Common.Dtos.Like;
-using PostGram.Common.Dtos.Post;
-using PostGram.Common.Dtos.User;
 using PostGram.Common.Interfaces.Services;
-using PostGram.Common.Requests;
+using PostGram.Common.Requests.Commands;
+using PostGram.Common.Requests.Queries;
+using PostGram.Common.Results;
 
 namespace PostGram.Api.Controllers;
 
@@ -25,87 +22,76 @@ public class PostController : ControllerBase
     }
 
     [HttpPost]
-    public async Task CreateComment(CreateCommentModel model)
+    public async Task CreateComment(CreateCommentCommand command)
     {
-        await _postService.CreateComment(model, this.GetCurrentUserId());
+        await _postService.CreateComment(command, this.GetCurrentUserId());
     }
 
     [HttpPost]
-    public async Task CreateLike(CreateLikeModel model)
+    public async Task CreateLike(CreateLikeCommand command)
     {
-        await _postService.CreateLike(model, this.GetCurrentUserId());
+        await _postService.CreateLike(command, this.GetCurrentUserId());
     }
 
     [HttpPost]
-    public async Task CreatePost(CreatePostModel model)
+    public async Task CreatePost(CreatePostCommand command)
     {
-        await _postService.CreatePost(model, this.GetCurrentUserId());
+        await _postService.CreatePost(command, this.GetCurrentUserId());
     }
 
     [HttpDelete]
-    public async Task DeleteComment(Guid commentId)
+    public async Task DeleteComment(DeleteCommentCommand command)
     {
-        await _postService.DeleteComment(commentId, this.GetCurrentUserId());
+        await _postService.DeleteComment(command, this.GetCurrentUserId());
     }
 
     [HttpDelete]
-    public async Task DeletePost(Guid postId)
+    public async Task DeletePost(DeletePostCommand command)
     {
-        await _postService.DeletePost(postId, this.GetCurrentUserId());
+        await _postService.DeletePost(command, this.GetCurrentUserId());
     }
 
     [HttpGet]
-    public async Task<CommentDto> GetComment(Guid commentId)
+    public async Task<GetCommentResult> GetComment(GetCommentQuery query)
     {
-        return await _postService.GetComment(commentId, this.GetCurrentUserId());
+        return await _postService.GetComment(query, this.GetCurrentUserId());
     }
 
     [HttpGet]
-    public async Task<CommentDto[]> GetCommentsForPost(Guid postId)
+    public async Task<GetCommentsForPostResult> GetCommentsForPost(GetCommentsForPostQuery query)
     {
-        return await _postService.GetCommentsForPost(postId, this.GetCurrentUserId());
+        return await _postService.GetCommentsForPost(query, this.GetCurrentUserId());
     }
 
     [HttpGet]
-    public async Task<PostDto> GetPost(Guid postId)
+    public async Task<GetPostResult> GetPost(GetPostQuery query)
     {
-        return await _postService.GetPost(postId, this.GetCurrentUserId());
+        return await _postService.GetPost(query, this.GetCurrentUserId());
     }
 
     [HttpGet]
-    public async Task<List<PostDto>> GetPosts(int take = 10, int skip = 0)
+    public async Task<GetPostsResult> GetPosts(GetPostsQuery query)
     {
-        return await _postService.GetPosts(take, skip, this.GetCurrentUserId());
+        return await _postService.GetPosts(query, this.GetCurrentUserId());
     }
 
     [HttpPut]
-    public async Task UpdateComment(UpdateCommentModel model)
+    public async Task UpdateComment(UpdateCommentCommand command)
     {
-        await _postService.UpdateComment(model, this.GetCurrentUserId());
+        await _postService.UpdateComment(command, this.GetCurrentUserId());
     }
 
     [HttpPut]
-    public async Task UpdateLike(UpdateLikeModel model)
+    public async Task UpdateLike(UpdateLikeCommand command)
     {
-        await _postService.UpdateLike(model, this.GetCurrentUserId());
+        await _postService.UpdateLike(command, this.GetCurrentUserId());
     }
 
     [HttpPut]
-    public async Task UpdatePost(UpdatePostModel model)
+    public async Task UpdatePost(UpdatePostCommand command)
     {
-        await _postService.UpdatePost(model, this.GetCurrentUserId());
+        await _postService.UpdatePost(command, this.GetCurrentUserId());
     }
-
-    //private void AddAvatarLink(UserDto model)
-    //{
-    //    //if (model.Avatar != null)
-    //    //    model.Avatar.Link = AttachmentController.GetLinkForAvatar(Url, model.Id);
-    //}
-
-    //private void AddPostContentLink(AttachmentDto model)
-    //{
-    //    //model.Link = AttachmentController.GetLinkForPostContent(Url, model.Id);
-    //}
 
     //TODO ужимать картинки и делать 2 версии разного размера
 }

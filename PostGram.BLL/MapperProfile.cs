@@ -5,7 +5,7 @@ using PostGram.Common.Dtos.Like;
 using PostGram.Common.Dtos.Post;
 using PostGram.Common.Dtos.Subscription;
 using PostGram.Common.Dtos.User;
-using PostGram.Common.Requests;
+using PostGram.Common.Requests.Commands;
 using PostGram.DAL.Entities;
 
 namespace PostGram.BLL
@@ -15,7 +15,7 @@ namespace PostGram.BLL
         public MapperProfile()
         {
             //User
-            CreateMap<CreateUserModel, User>()
+            CreateMap<CreateUserCommand, User>()
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()))
                 .ForMember(d => d.PasswordHash, m => m.MapFrom(s => Common.HashHelper.GetHashSha256(s.Password)))
                 .ForMember(d => d.BirthDate, m => m.MapFrom(s => s.BirthDate.UtcDateTime));
@@ -29,7 +29,7 @@ namespace PostGram.BLL
                 .ForMember(d => d.Id, m => m.MapFrom(s => s.TempId));
 
             //Post
-            CreateMap<CreatePostModel, Post>()
+            CreateMap<CreatePostCommand, Post>()
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()))
                 .ForMember(d => d.PostContents, m => m.MapFrom(s => new List<PostContent>()))
                 .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow));
@@ -40,7 +40,7 @@ namespace PostGram.BLL
                 .ForMember(d => d.CommentCount, m => m.MapFrom(s => s.Comments.Count));
 
             //Comment
-            CreateMap<CreateCommentModel, Comment>()
+            CreateMap<CreateCommentCommand, Comment>()
                 .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow))
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()));
 
@@ -49,7 +49,7 @@ namespace PostGram.BLL
                 .ForMember(d => d.LikeCount, m => m.MapFrom(s => s.Likes.Count(l => l.IsLike == true)));
 
             //Like
-            CreateMap<CreateLikeModel, Like>()
+            CreateMap<CreateLikeCommand, Like>()
                 .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow))
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()));
             CreateMap<Like, LikeDto>();
