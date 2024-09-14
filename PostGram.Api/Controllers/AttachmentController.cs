@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PostGram.Api.Helpers;
+using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Dtos.Attachment;
-using PostGram.Common.Interfaces.Services;
 
 namespace PostGram.Api.Controllers;
 
@@ -18,17 +18,6 @@ public class AttachmentController : ControllerBase
     {
         _attachmentService = attachmentService;
     }
-
-    // TODO Зачем добапвлять ссылки?
-    //public static string GetLinkForAvatar(IUrlHelper urlHelper, Guid userId)
-    //{
-    //    return urlHelper.ControllerAction<AttachmentController>(nameof(GetAvatarForUser), new { userId })!;
-    //}
-
-    //public static string GetLinkForPostContent(IUrlHelper urlHelper, Guid postContentId)
-    //{
-    //    return urlHelper.ControllerAction<AttachmentController>(nameof(GetPostContent), new { postContentId })!;
-    //}
 
     [HttpGet]
     public async Task<ActionResult> GetAvatarForUser(Guid userId, bool download = false)
@@ -62,8 +51,8 @@ public class AttachmentController : ControllerBase
     private FileStreamResult GetAttachmentStream(FileInfoDto model, bool download)
     {
         FileStream stream = new FileStream(model.Path, FileMode.Open);
-        if (download)
-            return File(stream, model.MimeType, $"{model.Name}.{Path.GetExtension(model.Name)}");
-        return File(stream, model.MimeType);
+        return download 
+            ? File(stream, model.MimeType, $"{model.Name}.{Path.GetExtension(model.Name)}") 
+            : File(stream, model.MimeType);
     }
 }

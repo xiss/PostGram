@@ -3,7 +3,7 @@ using PostGram.Common.Dtos.Subscription;
 using PostGram.Common.Dtos.User;
 using PostGram.Common.Requests.Commands;
 
-namespace PostGram.Common.Interfaces.Services
+namespace PostGram.BLL.Interfaces.Services
 {
     public interface IUserService
     {

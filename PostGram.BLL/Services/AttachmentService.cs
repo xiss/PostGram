@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Configs;
 using PostGram.Common.Dtos.Attachment;
 using PostGram.Common.Exceptions;
-using PostGram.Common.Interfaces.Services;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
 

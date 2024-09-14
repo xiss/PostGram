@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PostGram.Api.Helpers;
+using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Dtos.Token;
-using PostGram.Common.Interfaces.Services;
 using PostGram.Common.Requests;
 using PostGram.Common.Requests.Commands;
 

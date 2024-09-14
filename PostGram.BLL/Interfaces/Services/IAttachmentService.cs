@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using PostGram.Common.Dtos.Attachment;
 
-namespace PostGram.Common.Interfaces.Services;
+namespace PostGram.BLL.Interfaces.Services;
 
 public interface IAttachmentService
 {

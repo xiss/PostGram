@@ -1,6 +1,5 @@
-﻿using PostGram.Common.Constants;
-using PostGram.Common.Interfaces.Base.Commands;
-
+﻿using PostGram.BLL.Interfaces.Base.Commands;
+using PostGram.Common.Constants;
 using System.ComponentModel.DataAnnotations;
 
 namespace PostGram.Common.Requests.Commands;

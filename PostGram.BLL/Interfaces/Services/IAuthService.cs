@@ -1,7 +1,7 @@
 ﻿using PostGram.Common.Dtos.Token;
 using PostGram.Common.Dtos.User;
 
-namespace PostGram.Common.Interfaces.Services;
+namespace PostGram.BLL.Interfaces.Services;
 
 public interface IAuthService
 {

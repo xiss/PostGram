@@ -1,4 +1,4 @@
-﻿using PostGram.Common.Interfaces.Base.Queries;
+﻿using PostGram.BLL.Interfaces.Base.Queries;
 
 namespace PostGram.Common.Requests.Queries;
 

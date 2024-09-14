@@ -7,10 +7,10 @@ using NLog;
 using NLog.Web;
 using PostGram.Api.Middlewares;
 using PostGram.BLL;
+using PostGram.BLL.Interfaces.Services;
 using PostGram.BLL.Services;
 using PostGram.Common.Configs;
 using PostGram.Common.Constants;
-using PostGram.Common.Interfaces.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,7 +61,7 @@ builder.Services.AddSwaggerGen(o =>
 //TODO перейти на simple injector
 builder.Services.AddAutoMapper(typeof(MapperProfile).Assembly);
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserService, UserService>();
+//builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();

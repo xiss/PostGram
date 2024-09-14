@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PostGram.Api.Helpers;
-using PostGram.Common.Interfaces.Services;
+using PostGram.BLL.Interfaces.Base.Commands;
+using PostGram.BLL.Interfaces.Base.Queries;
 using PostGram.Common.Requests.Commands;
 using PostGram.Common.Requests.Queries;
 using PostGram.Common.Results;
@@ -14,83 +14,54 @@ namespace PostGram.Api.Controllers;
 [Authorize]
 public class PostController : ControllerBase
 {
-    private readonly IPostService _postService;
+    private readonly ICommandHandler<CreatePostCommand> _createPostHandler;
+    private readonly ICommandHandler<DeletePostCommand> _deletePostHandler;
+    private readonly IQueryHandler<GetPostQuery, GetPostResult> _getPostHandler;
+    private readonly IQueryHandler<GetPostsQuery, GetPostsResult> _getPostsHandler;
+    private readonly ICommandHandler<UpdatePostCommand> _updatePostHandler;
 
-    public PostController(IPostService postService)
+    public PostController(
+        ICommandHandler<CreatePostCommand> createPostHandler,
+        ICommandHandler<DeletePostCommand> deletePostHandler,
+        IQueryHandler<GetPostQuery, GetPostResult> getPostHandler,
+        IQueryHandler<GetPostsQuery, GetPostsResult> getPostsHandler,
+        ICommandHandler<UpdatePostCommand> updatePostHandler)
     {
-        _postService = postService;
-    }
-
-    [HttpPost]
-    public async Task CreateComment(CreateCommentCommand command)
-    {
-        await _postService.CreateComment(command, this.GetCurrentUserId());
-    }
-
-    [HttpPost]
-    public async Task CreateLike(CreateLikeCommand command)
-    {
-        await _postService.CreateLike(command, this.GetCurrentUserId());
+        _createPostHandler = createPostHandler ?? throw new ArgumentNullException(nameof(createPostHandler));
+        _deletePostHandler = deletePostHandler ?? throw new ArgumentNullException(nameof(deletePostHandler));
+        _getPostHandler = getPostHandler ?? throw new ArgumentNullException(nameof(getPostHandler));
+        _getPostsHandler = getPostsHandler ?? throw new ArgumentNullException(nameof(getPostsHandler));
+        _updatePostHandler = updatePostHandler ?? throw new ArgumentNullException(nameof(updatePostHandler));
     }
 
     [HttpPost]
     public async Task CreatePost(CreatePostCommand command)
     {
-        await _postService.CreatePost(command, this.GetCurrentUserId());
-    }
-
-    [HttpDelete]
-    public async Task DeleteComment(DeleteCommentCommand command)
-    {
-        await _postService.DeleteComment(command, this.GetCurrentUserId());
+        await _createPostHandler.Execute(command);
     }
 
     [HttpDelete]
     public async Task DeletePost(DeletePostCommand command)
     {
-        await _postService.DeletePost(command, this.GetCurrentUserId());
-    }
-
-    [HttpGet]
-    public async Task<GetCommentResult> GetComment(GetCommentQuery query)
-    {
-        return await _postService.GetComment(query, this.GetCurrentUserId());
-    }
-
-    [HttpGet]
-    public async Task<GetCommentsForPostResult> GetCommentsForPost(GetCommentsForPostQuery query)
-    {
-        return await _postService.GetCommentsForPost(query, this.GetCurrentUserId());
+        await _deletePostHandler.Execute(command);
     }
 
     [HttpGet]
     public async Task<GetPostResult> GetPost(GetPostQuery query)
     {
-        return await _postService.GetPost(query, this.GetCurrentUserId());
+        return await _getPostHandler.Execute(query);
     }
 
     [HttpGet]
     public async Task<GetPostsResult> GetPosts(GetPostsQuery query)
     {
-        return await _postService.GetPosts(query, this.GetCurrentUserId());
-    }
-
-    [HttpPut]
-    public async Task UpdateComment(UpdateCommentCommand command)
-    {
-        await _postService.UpdateComment(command, this.GetCurrentUserId());
-    }
-
-    [HttpPut]
-    public async Task UpdateLike(UpdateLikeCommand command)
-    {
-        await _postService.UpdateLike(command, this.GetCurrentUserId());
+        return await _getPostsHandler.Execute(query);
     }
 
     [HttpPut]
     public async Task UpdatePost(UpdatePostCommand command)
     {
-        await _postService.UpdatePost(command, this.GetCurrentUserId());
+        await _updatePostHandler.Execute(command);
     }
 
     //TODO ужимать картинки и делать 2 версии разного размера

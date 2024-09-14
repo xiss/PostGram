@@ -8,12 +8,12 @@ using PostGram.Common.Constants;
 using PostGram.Common.Dtos.Token;
 using PostGram.Common.Dtos.User;
 using PostGram.Common.Exceptions;
-using PostGram.Common.Interfaces.Services;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using PostGram.BLL.Interfaces.Services;
 
 namespace PostGram.BLL.Services;
 

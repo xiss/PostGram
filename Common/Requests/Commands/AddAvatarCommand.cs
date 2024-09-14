@@ -1,7 +1,6 @@
 ﻿using PostGram.Common.Dtos.Attachment;
-using PostGram.Common.Interfaces.Base.Commands;
-
 using System.ComponentModel.DataAnnotations;
+using PostGram.BLL.Interfaces.Base.Commands;
 
 namespace PostGram.Common.Requests.Commands;
 

@@ -1,5 +1,5 @@
-﻿using PostGram.Common.Constants;
-using PostGram.Common.Interfaces.Services;
+﻿using PostGram.BLL.Interfaces.Services;
+using PostGram.Common.Constants;
 
 namespace PostGram.Api.Middlewares;
 

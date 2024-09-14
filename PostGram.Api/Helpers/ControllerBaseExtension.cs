@@ -4,8 +4,10 @@ using PostGram.Common.Exceptions;
 
 namespace PostGram.Api.Helpers;
 
+// TODO удалить класс
 public static class ControllerBaseExtension
 {
+    
     public static Guid GetCurrentUserId(this ControllerBase controller)
     {
         string? userIdStr = controller.User.Claims.FirstOrDefault(c => c.Type == ClaimNames.UserId)?.Value;
