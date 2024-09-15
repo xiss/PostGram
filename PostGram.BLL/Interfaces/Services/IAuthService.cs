@@ -1,5 +1,4 @@
-﻿using PostGram.Common.Dtos.Token;
-using PostGram.Common.Dtos.User;
+﻿using PostGram.Common.Dtos;
 
 namespace PostGram.BLL.Interfaces.Services;
 

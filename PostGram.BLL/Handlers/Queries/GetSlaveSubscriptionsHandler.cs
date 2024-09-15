@@ -3,7 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using PostGram.BLL.Interfaces.Base.Queries;
 using PostGram.BLL.Interfaces.Providers;
-using PostGram.Common.Dtos.Subscription;
+using PostGram.Common.Dtos;
 using PostGram.Common.Exceptions;
 using PostGram.Common.Requests.Queries;
 using PostGram.Common.Results;

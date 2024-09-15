@@ -2,21 +2,20 @@
 using PostGram.BLL.Interfaces.Base.Queries;
 using PostGram.BLL.Interfaces.Providers;
 using PostGram.BLL.Interfaces.Services;
-using PostGram.Common.Dtos.Comment;
-using PostGram.Common.Dtos.Like;
+using PostGram.Common.Dtos;
 using PostGram.Common.Requests.Queries;
 using PostGram.Common.Results;
 using PostGram.DAL.Entities;
 
 namespace PostGram.BLL.Handlers.Queries;
 
-public class GetCommentQueryHandler : IQueryHandler<GetCommentQuery, GetCommentResult>
+public class GetCommentHandler : IQueryHandler<GetCommentQuery, GetCommentResult>
 {
     private readonly IMapper _mapper;
     private readonly IClaimsProvider _claimsProvider;
     private readonly ICommentService _commentService;
 
-    public GetCommentQueryHandler(IMapper mapper, IClaimsProvider claimsProvider, ICommentService commentService)
+    public GetCommentHandler(IMapper mapper, IClaimsProvider claimsProvider, ICommentService commentService)
     {
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _claimsProvider = claimsProvider ?? throw new ArgumentNullException(nameof(claimsProvider));

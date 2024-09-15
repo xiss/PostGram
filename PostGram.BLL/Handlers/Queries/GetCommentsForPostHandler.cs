@@ -2,8 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PostGram.BLL.Interfaces.Base.Queries;
 using PostGram.BLL.Interfaces.Providers;
-using PostGram.Common.Dtos.Comment;
-using PostGram.Common.Dtos.Like;
+using PostGram.Common.Dtos;
 using PostGram.Common.Exceptions;
 using PostGram.Common.Requests.Queries;
 using PostGram.Common.Results;
@@ -12,13 +11,13 @@ using PostGram.DAL.Entities;
 
 namespace PostGram.BLL.Handlers.Queries;
 
-public class GetCommentsForPostQueryHandler : IQueryHandler<GetCommentsForPostQuery, GetCommentsForPostResult>
+public class GetCommentsForPostHandler : IQueryHandler<GetCommentsForPostQuery, GetCommentsForPostResult>
 {
     private readonly DataContext _dataContext;
     private readonly IMapper _mapper;
     private readonly IClaimsProvider _claimsProvider;
 
-    public GetCommentsForPostQueryHandler(DataContext dataContext, IMapper mapper, IClaimsProvider claimsProvider)
+    public GetCommentsForPostHandler(DataContext dataContext, IMapper mapper, IClaimsProvider claimsProvider)
     {
         _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

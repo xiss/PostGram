@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PostGram.Api.Helpers;
 using PostGram.BLL.Interfaces.Services;
-using PostGram.Common.Dtos.Token;
+using PostGram.Common.Dtos;
 using PostGram.Common.Requests;
 using PostGram.Common.Requests.Commands;
 
@@ -33,12 +33,6 @@ public class AuthController : ControllerBase
     public async Task<TokenDto> RefreshToken(RefreshTokenRequestModel model)
     {
         return await _authService.GetTokenByRefreshToken(model.RefreshToken);
-    }
-
-    [HttpPost]
-    public async Task RegisterUser(CreateUserCommand model)
-    {
-        await _userService.CreateUser(model);
     }
 
     [HttpPost]

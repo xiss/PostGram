@@ -1,6 +1,6 @@
 ﻿using PostGram.Common.Dtos.Attachment;
 
-namespace PostGram.Common.Dtos.User;
+namespace PostGram.Common.Dtos;
 
 public record UserDto
 {

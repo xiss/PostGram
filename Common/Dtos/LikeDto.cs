@@ -1,6 +1,6 @@
 ﻿using PostGram.Common.Enums;
 
-namespace PostGram.Common.Dtos.Like;
+namespace PostGram.Common.Dtos;
 
 public record LikeDto
 {

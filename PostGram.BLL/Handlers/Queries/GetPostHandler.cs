@@ -3,8 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PostGram.BLL.Interfaces.Base.Queries;
 using PostGram.BLL.Interfaces.Providers;
 using PostGram.BLL.Interfaces.Services;
-using PostGram.Common.Dtos.Like;
-using PostGram.Common.Dtos.Post;
+using PostGram.Common.Dtos;
 using PostGram.Common.Exceptions;
 using PostGram.Common.Requests.Queries;
 using PostGram.Common.Results;
@@ -13,14 +12,14 @@ using PostGram.DAL.Entities;
 
 namespace PostGram.BLL.Handlers.Queries;
 
-public class GetPostQueryHandler : IQueryHandler<GetPostQuery, GetPostResult>
+public class GetPostHandler : IQueryHandler<GetPostQuery, GetPostResult>
 {
     private readonly DataContext _dataContext;
     private readonly IMapper _mapper;
     private readonly IClaimsProvider _claimsProvider;
     private readonly ISubscriptionsService _subscriptionsService;
 
-    public GetPostQueryHandler(DataContext dataContext, IMapper mapper, IClaimsProvider claimsProvider,
+    public GetPostHandler(DataContext dataContext, IMapper mapper, IClaimsProvider claimsProvider,
         ISubscriptionsService subscriptionsService)
     {
         _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));

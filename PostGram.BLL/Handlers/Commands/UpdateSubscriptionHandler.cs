@@ -8,12 +8,12 @@ using PostGram.DAL.Entities;
 
 namespace PostGram.BLL.Handlers.Commands;
 
-public class UpdateSubscriptionCommandHandler : ICommandHandler<UpdateSubscriptionCommand>
+public class UpdateSubscriptionHandler : ICommandHandler<UpdateSubscriptionCommand>
 {
     private readonly DataContext _dataContext;
     private readonly IClaimsProvider _claimsProvider;
 
-    public UpdateSubscriptionCommandHandler(DataContext dataContext, IClaimsProvider claimsProvider)
+    public UpdateSubscriptionHandler(DataContext dataContext, IClaimsProvider claimsProvider)
     {
         _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
         _claimsProvider = claimsProvider ?? throw new ArgumentNullException(nameof(claimsProvider));

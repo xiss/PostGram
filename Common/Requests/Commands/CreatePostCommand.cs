@@ -16,5 +16,5 @@ public record CreatePostCommand : ICommand
     public string Body { get; init; } = string.Empty;
 
     [Required]
-    public virtual ICollection<MetadataModel> Attachments { get; init; } = new List<MetadataModel>();
+    public virtual ICollection<MetadataDto> Attachments { get; init; } = new List<MetadataDto>();
 }

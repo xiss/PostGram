@@ -90,7 +90,7 @@ public class AttachmentService : IAttachmentService
     // TODO попробовать использовать S3
     public async Task UploadFile(IFormFile file)
     {
-        MetadataModel model = new()
+        MetadataDto model = new()
         {
             TempId = Guid.NewGuid(),
             Name = file.FileName,

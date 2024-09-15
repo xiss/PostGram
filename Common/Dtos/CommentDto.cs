@@ -1,7 +1,4 @@
-﻿using PostGram.Common.Dtos.Like;
-using PostGram.Common.Dtos.User;
-
-namespace PostGram.Common.Dtos.Comment;
+﻿namespace PostGram.Common.Dtos;
 
 public record CommentDto
 {

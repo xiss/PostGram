@@ -1,4 +1,4 @@
-﻿namespace PostGram.Common.Dtos.Subscription;
+﻿namespace PostGram.Common.Dtos;
 
 public record SubscriptionDto
 {

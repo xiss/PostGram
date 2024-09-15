@@ -1,10 +1,6 @@
 ﻿using AutoMapper;
+using PostGram.Common.Dtos;
 using PostGram.Common.Dtos.Attachment;
-using PostGram.Common.Dtos.Comment;
-using PostGram.Common.Dtos.Like;
-using PostGram.Common.Dtos.Post;
-using PostGram.Common.Dtos.Subscription;
-using PostGram.Common.Dtos.User;
 using PostGram.Common.Requests.Commands;
 using PostGram.DAL.Entities;
 
@@ -24,7 +20,7 @@ namespace PostGram.BLL
             //Attachment
             CreateMap<Avatar, AttachmentDto>();
             CreateMap<PostContent, AttachmentDto>();
-            CreateMap<MetadataModel, PostContent>()
+            CreateMap<MetadataDto, PostContent>()
                 .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow))
                 .ForMember(d => d.Id, m => m.MapFrom(s => s.TempId));
 

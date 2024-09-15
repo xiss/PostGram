@@ -1,4 +1,4 @@
-﻿namespace PostGram.Common.Dtos.User;
+﻿namespace PostGram.Common.Dtos;
 
 public record UserSessionDto
 {

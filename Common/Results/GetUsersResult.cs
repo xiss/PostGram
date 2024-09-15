@@ -3,7 +3,7 @@ using PostGram.Common.Dtos;
 
 namespace PostGram.Common.Results;
 
-public record GetPostsResult : IQueryResult
+public record GetUsersResult : IQueryResult
 {
-    public required List<PostDto> Posts { get; init; }
+    public List<UserDto> Users { get; init; }
 }

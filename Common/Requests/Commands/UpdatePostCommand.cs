@@ -13,6 +13,6 @@ public record UpdatePostCommand : ICommand
     public string? UpdatedHeader { get; init; } = null;
     [StringLength(ModelValidation.PostBodyLength)]
     public string? UpdatedBody { get; init; } = null;
-    public ICollection<MetadataModel> NewContent { get; init; } = new List<MetadataModel>();
+    public ICollection<MetadataDto> NewContent { get; init; } = new List<MetadataDto>();
     public ICollection<AttachmentDto> ContentToDelete { get; init; } = new List<AttachmentDto>();
 }

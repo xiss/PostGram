@@ -52,7 +52,7 @@ public class UpdatePostHandler : ICommandHandler<UpdatePostCommand>
 
         //Add new content
         if (command.NewContent.Count > 0)
-            foreach (MetadataModel postContent in command.NewContent)
+            foreach (MetadataDto postContent in command.NewContent)
             {
                 //Если это повторный запрос и мы уже добавили, второй раз не добавляем.
                 if (post.PostContents.Any(pc => pc.Id == postContent.TempId))

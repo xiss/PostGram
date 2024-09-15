@@ -14,7 +14,7 @@ namespace PostGram.Api.Controllers;
 [Authorize]
 public class CommentController : ControllerBase
 {
-    // TODO Вопрос. Получается больше 4 зависимостей, что делать если их будет еще больше, пилить еще?
+    // TODO Вопрос. Получается больше 4 зависимостей, что делать если их будет еще больше, пилить еще или делать фасадные сервисы?
     private readonly ICommandHandler<CreateCommentCommand> _createCommentHandler;
     private readonly ICommandHandler<DeleteCommentCommand> _deleteCommentHandler;
     private readonly IQueryHandler<GetCommentQuery, GetCommentResult> _getCommentHandler;

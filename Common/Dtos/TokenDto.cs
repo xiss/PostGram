@@ -1,4 +1,4 @@
-﻿namespace PostGram.Common.Dtos.Token;
+﻿namespace PostGram.Common.Dtos;
 
 public record TokenDto
 {

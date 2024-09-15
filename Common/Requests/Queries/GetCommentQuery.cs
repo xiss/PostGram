@@ -1,4 +1,5 @@
 ﻿using PostGram.BLL.Interfaces.Base.Queries;
+using PostGram.Common.Dtos.User;
 
 namespace PostGram.Common.Requests.Queries;
 

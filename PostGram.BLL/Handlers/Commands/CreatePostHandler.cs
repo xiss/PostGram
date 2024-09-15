@@ -34,7 +34,7 @@ public class CreatePostHandler : ICommandHandler<CreatePostCommand>
 
         try
         {
-            foreach (MetadataModel metadataModel in command.Attachments)
+            foreach (MetadataDto metadataModel in command.Attachments)
             {
                 PostContent postContent = _mapper.Map<PostContent>(metadataModel);
                 postContent.AuthorId = userId;

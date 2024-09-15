@@ -2,7 +2,7 @@
 
 namespace PostGram.Common.Dtos.Attachment;
 
-public record MetadataModel
+public record MetadataDto
 {
     [Required]
     public Guid TempId { get; init; }
