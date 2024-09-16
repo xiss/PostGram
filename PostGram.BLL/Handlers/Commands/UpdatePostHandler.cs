@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PostGram.BLL.Interfaces.Base.Commands;
 using PostGram.BLL.Interfaces.Providers;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Dtos.Attachment;
 using PostGram.Common.Exceptions;
+using PostGram.Common.Interfaces.Base.Commands;
 using PostGram.Common.Requests.Commands;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
@@ -20,9 +20,9 @@ public class UpdatePostHandler : ICommandHandler<UpdatePostCommand>
     public UpdatePostHandler(DataContext dataContext, IClaimsProvider claimsProvider, IPostService postService,
         IAttachmentService attachmentService)
     {
-        _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
-        _claimsProvider = claimsProvider ?? throw new ArgumentNullException(nameof(claimsProvider));
-        _postService = postService ?? throw new ArgumentNullException(nameof(postService));
+        _dataContext = dataContext ;
+        _claimsProvider = claimsProvider;
+        _postService = postService;
         _attachmentService = attachmentService;
     }
 

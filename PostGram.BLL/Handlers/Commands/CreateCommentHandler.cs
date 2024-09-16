@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using PostGram.BLL.Interfaces.Base.Commands;
 using PostGram.BLL.Interfaces.Providers;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Exceptions;
+using PostGram.Common.Interfaces.Base.Commands;
 using PostGram.Common.Requests.Commands;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
@@ -19,10 +19,10 @@ public class CreateCommentHandler : ICommandHandler<CreateCommentCommand>
 
     public CreateCommentHandler(DataContext dataContext, IMapper mapper, IClaimsProvider claimsProvider, ICommentService commentService)
     {
-        _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
-        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        _claimsProvider = claimsProvider ?? throw new ArgumentNullException(nameof(claimsProvider));
-        _commentService = commentService ?? throw new ArgumentNullException(nameof(commentService));
+        _dataContext = dataContext ;
+        _mapper = mapper;
+        _claimsProvider = claimsProvider;
+        _commentService = commentService;
     }
 
     public async Task Execute(CreateCommentCommand command)

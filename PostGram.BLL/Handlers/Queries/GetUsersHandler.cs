@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using PostGram.BLL.Interfaces.Base.Queries;
 using PostGram.Common.Dtos;
 using PostGram.Common.Exceptions;
+using PostGram.Common.Interfaces.Base.Queries;
 using PostGram.Common.Requests.Queries;
 using PostGram.Common.Results;
 using PostGram.DAL;
@@ -18,8 +18,8 @@ public class GetUsersHandler : IQueryHandler<GetUsersQuery, GetUsersResult>
 
     public GetUsersHandler(IMapper mapper, DataContext dataContext)
     {
-        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
+        _mapper = mapper ;
+        _dataContext = dataContext;
     }
 
     public async Task<GetUsersResult> Execute(GetUsersQuery query)

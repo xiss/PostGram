@@ -1,7 +1,7 @@
-﻿using PostGram.BLL.Interfaces.Base.Commands;
-using PostGram.BLL.Interfaces.Providers;
+﻿using PostGram.BLL.Interfaces.Providers;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Exceptions;
+using PostGram.Common.Interfaces.Base.Commands;
 using PostGram.Common.Requests.Commands;
 using PostGram.DAL.Entities;
 
@@ -14,8 +14,8 @@ public class DeleteCommentHandler : ICommandHandler<DeleteCommentCommand>
 
     public DeleteCommentHandler(IClaimsProvider claimsProvider, ICommentService commentService)
     {
-        _claimsProvider = claimsProvider ?? throw new ArgumentNullException(nameof(claimsProvider));
-        _commentService = commentService ?? throw new ArgumentNullException(nameof(commentService));
+        _claimsProvider = claimsProvider;
+        _commentService = commentService;
     }
 
     public async Task Execute(DeleteCommentCommand command)

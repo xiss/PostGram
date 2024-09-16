@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using PostGram.BLL.Interfaces.Base.Queries;
 using PostGram.BLL.Interfaces.Providers;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Dtos;
 using PostGram.Common.Exceptions;
+using PostGram.Common.Interfaces.Base.Queries;
 using PostGram.Common.Requests.Queries;
 using PostGram.Common.Results;
 using PostGram.DAL;
@@ -22,10 +22,10 @@ public class GetPostsHandler : IQueryHandler<GetPostsQuery, GetPostsResult>
     public GetPostsHandler(DataContext dataContext, IMapper mapper, IClaimsProvider claimsProvider,
         ISubscriptionsService subscriptionsService)
     {
-        _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
-        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        _claimsProvider = claimsProvider ?? throw new ArgumentNullException(nameof(claimsProvider));
-        _subscriptionsService = subscriptionsService ?? throw new ArgumentNullException(nameof(subscriptionsService));
+        _dataContext = dataContext;
+        _mapper = mapper;
+        _claimsProvider = claimsProvider;
+        _subscriptionsService = subscriptionsService;
     }
 
     public async Task<GetPostsResult> Execute(GetPostsQuery query)

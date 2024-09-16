@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PostGram.BLL.Interfaces.Base.Commands;
+using PostGram.Common.Interfaces.Base.Commands;
 using PostGram.Common.Requests.Commands;
 
 namespace PostGram.Api.Controllers;
@@ -18,9 +18,8 @@ public class AvatarController : ControllerBase
         ICommandHandler<DeleteCurrentUserAvatarCommand> deleteCurrentUserAvatarHandlerHandler,
         ICommandHandler<AddAvatarToUserCommand> addAvatarToUserHandler)
     {
-        _deleteCurrentUserAvatarHandlerHandler = deleteCurrentUserAvatarHandlerHandler
-            ?? throw new ArgumentNullException(nameof(deleteCurrentUserAvatarHandlerHandler));
-        _addAvatarToUserHandler = addAvatarToUserHandler ?? throw new ArgumentNullException(nameof(addAvatarToUserHandler));
+        _deleteCurrentUserAvatarHandlerHandler = deleteCurrentUserAvatarHandlerHandler            ;
+        _addAvatarToUserHandler = addAvatarToUserHandler;
     }
 
     [HttpPost]

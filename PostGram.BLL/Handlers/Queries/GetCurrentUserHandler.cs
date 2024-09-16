@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using PostGram.BLL.Interfaces.Base.Queries;
 using PostGram.BLL.Interfaces.Providers;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Dtos;
+using PostGram.Common.Interfaces.Base.Queries;
 using PostGram.Common.Requests.Queries;
 using PostGram.Common.Results;
 using PostGram.DAL.Entities;
@@ -17,9 +17,9 @@ public class GetCurrentUserHandler : IQueryHandler<GetCurrentUserQuery, GetCurre
 
     public GetCurrentUserHandler(IMapper mapper, IClaimsProvider claimsProvider, IUserService userService)
     {
-        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        _claimsProvider = claimsProvider ?? throw new ArgumentNullException(nameof(claimsProvider));
-        _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        _mapper = mapper ;
+        _claimsProvider = claimsProvider;
+        _userService = userService;
     }
 
     public async Task<GetCurrentUserResult> Execute(GetCurrentUserQuery query)

@@ -1,6 +1,7 @@
-﻿namespace PostGram.BLL.Interfaces.Base.Queries;
+﻿namespace PostGram.Common.Interfaces.Base.Queries;
 
-public interface IQueryHandler<in TQuery, TQueryResult> where TQuery : IQuery where TQueryResult : IQueryResult
+public interface IQueryHandler<in TQuery, TResult> 
+    where TQuery : IQuery<TResult> 
 {
-    Task<TQueryResult> Execute(TQuery query);
+    Task<TResult> Execute(TQuery query);
 }

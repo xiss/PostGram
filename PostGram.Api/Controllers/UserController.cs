@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PostGram.BLL.Interfaces.Base.Commands;
-using PostGram.BLL.Interfaces.Base.Queries;
+using PostGram.Common.Interfaces.Base.Commands;
+using PostGram.Common.Interfaces.Base.Queries;
 using PostGram.Common.Requests.Commands;
 using PostGram.Common.Requests.Queries;
 using PostGram.Common.Results;
@@ -27,11 +27,11 @@ public class UserController : ControllerBase
         IQueryHandler<GetUsersQuery, GetUsersResult> getUsersHandler,
         IQueryHandler<GetCurrentUserQuery, GetCurrentUserResult> getCurrentUserHandler)
     {
-        _createUserHandler = createUserHandler ?? throw new ArgumentNullException(nameof(createUserHandler));
-        _updateUserHandler = updateUserHandler ?? throw new ArgumentNullException(nameof(updateUserHandler));
-        _deleteCurrentUserHandler = deleteCurrentUserHandler ?? throw new ArgumentNullException(nameof(deleteCurrentUserHandler));
-        _getUsersHandler = getUsersHandler ?? throw new ArgumentNullException(nameof(getUsersHandler));
-        _getCurrentUserHandler = getCurrentUserHandler ?? throw new ArgumentNullException(nameof(getCurrentUserHandler));
+        _createUserHandler = createUserHandler ;
+        _updateUserHandler = updateUserHandler;
+        _deleteCurrentUserHandler = deleteCurrentUserHandler;
+        _getUsersHandler = getUsersHandler;
+        _getCurrentUserHandler = getCurrentUserHandler;
     }
 
     [HttpDelete]

@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PostGram.DAL.Entities;
 
-namespace PostGram.DAL.Entities.Configs;
+namespace PostGram.DAL.Configs;
 
 internal class CommentConfig : IEntityTypeConfiguration<Comment>
 {

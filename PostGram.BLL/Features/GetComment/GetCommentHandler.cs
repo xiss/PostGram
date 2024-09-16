@@ -1,13 +1,12 @@
 ﻿using AutoMapper;
-using PostGram.BLL.Interfaces.Base.Queries;
+using Microsoft.AspNetCore.Mvc;
 using PostGram.BLL.Interfaces.Providers;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Dtos;
-using PostGram.Common.Requests.Queries;
-using PostGram.Common.Results;
+using PostGram.Common.Interfaces.Base.Queries;
 using PostGram.DAL.Entities;
 
-namespace PostGram.BLL.Handlers.Queries;
+namespace PostGram.BLL.Features.GetComment;
 
 public class GetCommentHandler : IQueryHandler<GetCommentQuery, GetCommentResult>
 {
@@ -17,9 +16,9 @@ public class GetCommentHandler : IQueryHandler<GetCommentQuery, GetCommentResult
 
     public GetCommentHandler(IMapper mapper, IClaimsProvider claimsProvider, ICommentService commentService)
     {
-        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        _claimsProvider = claimsProvider ?? throw new ArgumentNullException(nameof(claimsProvider));
-        _commentService = commentService ?? throw new ArgumentNullException(nameof(commentService));
+        _mapper = mapper;
+        _claimsProvider = claimsProvider;
+        _commentService = commentService;
     }
 
     public async Task<GetCommentResult> Execute(GetCommentQuery query)

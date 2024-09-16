@@ -1,5 +1,5 @@
-﻿using PostGram.BLL.Interfaces.Base.Commands;
-using PostGram.Common.Dtos.Attachment;
+﻿using PostGram.Common.Dtos.Attachment;
+using PostGram.Common.Interfaces.Base.Commands;
 
 namespace PostGram.Common.Requests.Commands;
 

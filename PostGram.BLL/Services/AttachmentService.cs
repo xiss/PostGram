@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using PostGram.BLL.Features.GetComment;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Configs;
 using PostGram.Common.Dtos.Attachment;
 using PostGram.Common.Exceptions;
+using PostGram.Common.Interfaces.Base.Queries;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
 
@@ -55,37 +57,9 @@ public class AttachmentService : IAttachmentService
         }
     }
 
-    public async Task<FileInfoDto> GetAvatarForUser(Guid userId)
-    {
-        Avatar? avatar = await _dataContext.Avatars.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == userId);
-        if (avatar == null)
-            throw new NotFoundPostGramException("Avatar not found in DB for user: " + userId);
+   
 
-        if (!CheckAttachmentsExists(avatar.Id.ToString()))
-            throw new NotFoundPostGramException("File not found: " + avatar.Id);
-
-        return new FileInfoDto() { MimeType = avatar.MimeType, Name = avatar.Name, Path = Path.Combine(_appConfig.AttachmentsFolderPath, avatar.Id.ToString()) };
-    }
-
-    public async Task<FileInfoDto> GetPostContent(Guid postContentId, Guid currentUserId)
-    {
-        PostContent? postContent = await _dataContext.PostContents
-            .Include(pc => pc.Author)
-            .ThenInclude(u => u.Masters)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(a => a.Id == postContentId);
-        if (postContent == null)
-            throw new NotFoundPostGramException("PostContent not found in DB: " + postContentId);
-
-        if (!CheckAttachmentsExists(postContent.Id.ToString()))
-            throw new NotFoundPostGramException("File not found: " + postContentId);
-
-        if (postContent.Author.IsPrivate && postContent.AuthorId != currentUserId &&
-            !postContent.Author.Masters.Any(s => s.SlaveId == currentUserId && s.Status))
-            throw new AuthorizationPostGramException("Access denied");
-
-        return new FileInfoDto() { MimeType = postContent.MimeType, Name = postContent.Name, Path = Path.Combine(_appConfig.AttachmentsFolderPath, postContent.Id.ToString()) };
-    }
+    
 
     // TODO попробовать использовать S3
     public async Task UploadFile(IFormFile file)
@@ -94,7 +68,7 @@ public class AttachmentService : IAttachmentService
         {
             TempId = Guid.NewGuid(),
             Name = file.FileName,
-            MimeType = file.ContentType,
+            MimeType = file. ContentType,
             Size = file.Length
         };
         string newPath = Path.Combine(Path.GetTempPath(), model.TempId.ToString());
@@ -105,10 +79,12 @@ public class AttachmentService : IAttachmentService
         }
     }
 
-    private bool CheckAttachmentsExists(string attachmentName)
+    public bool CheckAttachmentsExists(string attachmentName)
     {
         return new FileInfo(Path.Combine(_appConfig.AttachmentsFolderPath, attachmentName)).Exists;
     }
+
+   
 
     private DirectoryInfo GetOrCreateAttachmentsFolder()
     {

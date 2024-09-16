@@ -1,4 +1,4 @@
-﻿namespace PostGram.BLL.Interfaces.Base.Queries;
+﻿namespace PostGram.Common.Interfaces.Base.Queries;
 
 public interface IQueryResult
 {

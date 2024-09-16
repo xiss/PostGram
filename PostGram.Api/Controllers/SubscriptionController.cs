@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PostGram.BLL.Interfaces.Base.Commands;
-using PostGram.BLL.Interfaces.Base.Queries;
+using PostGram.Common.Interfaces.Base.Commands;
+using PostGram.Common.Interfaces.Base.Queries;
 using PostGram.Common.Requests.Commands;
 using PostGram.Common.Requests.Queries;
 using PostGram.Common.Results;
@@ -24,12 +24,10 @@ public class SubscriptionController : ControllerBase
         IQueryHandler<GetMasterSubscriptionsQuery, GetMasterSubscriptionsResult> getMasterSubscriptionsHandler,
         IQueryHandler<GetSlaveSubscriptionsQuery, GetSlaveSubscriptionsResult> getSlaveSubscriptionsHandler)
     {
-        _createSubscriptionHandler = createSubscriptionHandler ?? throw new ArgumentNullException(nameof(createSubscriptionHandler));
-        _updateSubscriptionHandler = updateSubscriptionHandler ?? throw new ArgumentNullException(nameof(updateSubscriptionHandler));
-        _getMasterSubscriptionsHandler = getMasterSubscriptionsHandler
-            ?? throw new ArgumentNullException(nameof(getMasterSubscriptionsHandler));
-        _getSlaveSubscriptionsHandler = getSlaveSubscriptionsHandler
-            ?? throw new ArgumentNullException(nameof(getSlaveSubscriptionsHandler));
+        _createSubscriptionHandler = createSubscriptionHandler ;
+        _updateSubscriptionHandler = updateSubscriptionHandler;
+        _getMasterSubscriptionsHandler = getMasterSubscriptionsHandler            ;
+        _getSlaveSubscriptionsHandler = getSlaveSubscriptionsHandler            ;
     }
 
     [HttpPost]

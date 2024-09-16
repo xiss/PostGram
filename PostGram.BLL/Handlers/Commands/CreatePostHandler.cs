@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using PostGram.BLL.Interfaces.Base.Commands;
 using PostGram.BLL.Interfaces.Providers;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Dtos.Attachment;
 using PostGram.Common.Exceptions;
+using PostGram.Common.Interfaces.Base.Commands;
 using PostGram.Common.Requests.Commands;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
@@ -20,10 +20,10 @@ public class CreatePostHandler : ICommandHandler<CreatePostCommand>
 
     public CreatePostHandler(DataContext dataContext, IMapper mapper, IClaimsProvider claimsProvider, IAttachmentService attachmentService)
     {
-        _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
-        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        _claimsProvider = claimsProvider ?? throw new ArgumentNullException(nameof(claimsProvider));
-        _attachmentService = attachmentService ?? throw new ArgumentNullException(nameof(attachmentService));
+        _dataContext = dataContext ;
+        _mapper = mapper;
+        _claimsProvider = claimsProvider;
+        _attachmentService = attachmentService;
     }
 
     public async Task Execute(CreatePostCommand command)

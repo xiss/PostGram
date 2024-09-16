@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using PostGram.BLL.Interfaces.Base.Commands;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Exceptions;
+using PostGram.Common.Interfaces.Base.Commands;
 using PostGram.Common.Requests.Commands;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
@@ -16,9 +16,9 @@ public class CreateUserHandler : ICommandHandler<CreateUserCommand>
 
     public CreateUserHandler(DataContext dataContext, IUserService userService, IMapper mapper)
     {
-        _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
-        _userService = userService ?? throw new ArgumentNullException(nameof(userService));
-        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        _dataContext = dataContext ;
+        _userService = userService;
+        _mapper = mapper;
     }
 
     public async Task Execute(CreateUserCommand command)

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PostGram.BLL.Interfaces.Base.Commands;
+using PostGram.Common.Interfaces.Base.Commands;
 using PostGram.Common.Requests.Commands;
 
 namespace PostGram.Api.Controllers;
@@ -17,8 +17,8 @@ public class LikeController : ControllerBase
     public LikeController(ICommandHandler<CreateLikeCommand> createLikeHandler,
         ICommandHandler<UpdateLikeCommand> updateLikeHandler)
     {
-        _createLikeHandler = createLikeHandler ?? throw new ArgumentNullException(nameof(createLikeHandler));
-        _updateLikeHandler = updateLikeHandler ?? throw new ArgumentNullException(nameof(updateLikeHandler));
+        _createLikeHandler = createLikeHandler ;
+        _updateLikeHandler = updateLikeHandler;
     }
 
     [HttpPost]

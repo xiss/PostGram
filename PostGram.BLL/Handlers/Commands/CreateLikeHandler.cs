@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using PostGram.BLL.Interfaces.Base.Commands;
 using PostGram.BLL.Interfaces.Providers;
 using PostGram.Common.Enums;
 using PostGram.Common.Exceptions;
+using PostGram.Common.Interfaces.Base.Commands;
 using PostGram.Common.Requests.Commands;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
@@ -18,9 +18,9 @@ public class CreateLikeHandler : ICommandHandler<CreateLikeCommand>
 
     public CreateLikeHandler(DataContext dataContext, IMapper mapper, IClaimsProvider claimsProvider)
     {
-        _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
-        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        _claimsProvider = claimsProvider ?? throw new ArgumentNullException(nameof(claimsProvider));
+        _dataContext = dataContext;
+        _mapper = mapper;
+        _claimsProvider = claimsProvider;
     }
 
     public async Task Execute(CreateLikeCommand command)

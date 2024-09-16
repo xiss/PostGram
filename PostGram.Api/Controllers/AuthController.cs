@@ -4,7 +4,6 @@ using PostGram.Api.Helpers;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Dtos;
 using PostGram.Common.Requests;
-using PostGram.Common.Requests.Commands;
 
 namespace PostGram.Api.Controllers;
 

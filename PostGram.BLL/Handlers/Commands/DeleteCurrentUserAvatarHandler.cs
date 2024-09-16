@@ -1,7 +1,7 @@
-﻿using PostGram.BLL.Interfaces.Base.Commands;
-using PostGram.BLL.Interfaces.Providers;
+﻿using PostGram.BLL.Interfaces.Providers;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Exceptions;
+using PostGram.Common.Interfaces.Base.Commands;
 using PostGram.Common.Requests.Commands;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
@@ -18,10 +18,10 @@ public class DeleteCurrentUserAvatarHandler : ICommandHandler<DeleteCurrentUserA
     public DeleteCurrentUserAvatarHandler(IClaimsProvider claimsProvider, DataContext dataContext,
         IUserService userService, IAttachmentService attachmentService)
     {
-        _claimsProvider = claimsProvider ?? throw new ArgumentNullException(nameof(claimsProvider));
-        _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
-        _userService = userService ?? throw new ArgumentNullException(nameof(userService));
-        _attachmentService = attachmentService ?? throw new ArgumentNullException(nameof(attachmentService));
+        _claimsProvider = claimsProvider ;
+        _dataContext = dataContext;
+        _userService = userService;
+        _attachmentService = attachmentService;
     }
 
     public async Task Execute(DeleteCurrentUserAvatarCommand command)

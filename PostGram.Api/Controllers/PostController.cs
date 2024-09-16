@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PostGram.BLL.Interfaces.Base.Commands;
-using PostGram.BLL.Interfaces.Base.Queries;
+using PostGram.Common.Interfaces.Base.Commands;
+using PostGram.Common.Interfaces.Base.Queries;
 using PostGram.Common.Requests.Commands;
 using PostGram.Common.Requests.Queries;
 using PostGram.Common.Results;
@@ -27,11 +27,11 @@ public class PostController : ControllerBase
         IQueryHandler<GetPostsQuery, GetPostsResult> getPostsHandler,
         ICommandHandler<UpdatePostCommand> updatePostHandler)
     {
-        _createPostHandler = createPostHandler ?? throw new ArgumentNullException(nameof(createPostHandler));
-        _deletePostHandler = deletePostHandler ?? throw new ArgumentNullException(nameof(deletePostHandler));
-        _getPostHandler = getPostHandler ?? throw new ArgumentNullException(nameof(getPostHandler));
-        _getPostsHandler = getPostsHandler ?? throw new ArgumentNullException(nameof(getPostsHandler));
-        _updatePostHandler = updatePostHandler ?? throw new ArgumentNullException(nameof(updatePostHandler));
+        _createPostHandler = createPostHandler ;
+        _deletePostHandler = deletePostHandler;
+        _getPostHandler = getPostHandler;
+        _getPostsHandler = getPostsHandler;
+        _updatePostHandler = updatePostHandler;
     }
 
     [HttpPost]

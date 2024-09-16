@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PostGram.DAL.Configs;
 using PostGram.DAL.Entities;
-using PostGram.DAL.Entities.Configs;
 
 namespace PostGram.DAL;
 

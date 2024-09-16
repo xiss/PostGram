@@ -48,6 +48,7 @@ public class AuthService : IDisposable, IAuthService
         var session = await _dataContext.UserSessions.AddAsync(new()
         {
             Id = Guid.NewGuid(),
+            // TODO использовать DateTimeProvider
             Created = DateTimeOffset.UtcNow,
             RefreshTokenId = Guid.NewGuid(),
             User = user

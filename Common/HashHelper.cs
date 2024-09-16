@@ -7,17 +7,15 @@ public static class HashHelper
 {
     public static string GetHashSha256(string input)
     {
-        using (SHA256 sha = SHA256.Create())
-        {
-            byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
-            StringBuilder sb = new StringBuilder();
+        using var sha = SHA256.Create();
+        byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
+        var stringBuilder = new StringBuilder();
 
-            foreach (var item in hash)
-            {
-                sb.Append(item.ToString("x2"));
-            }
-            return sb.ToString();
+        foreach (byte item in hash)
+        {
+            stringBuilder.Append(item.ToString("x2"));
         }
+        return stringBuilder.ToString();
     }
 
     public static bool VerifySha256(string input, string hash)

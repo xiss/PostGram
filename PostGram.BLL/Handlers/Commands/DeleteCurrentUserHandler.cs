@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PostGram.BLL.Interfaces.Base.Commands;
 using PostGram.BLL.Interfaces.Providers;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Exceptions;
+using PostGram.Common.Interfaces.Base.Commands;
 using PostGram.Common.Requests.Commands;
 using PostGram.DAL;
 using PostGram.DAL.Entities;
@@ -17,9 +17,9 @@ public class DeleteCurrentUserHandler : ICommandHandler<DeleteCurrentUserCommand
 
     public DeleteCurrentUserHandler(DataContext dataContext, IClaimsProvider claimsProvider, IUserService userService)
     {
-        _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
-        _claimsProvider = claimsProvider ?? throw new ArgumentNullException(nameof(claimsProvider));
-        _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        _dataContext = dataContext ;
+        _claimsProvider = claimsProvider;
+        _userService = userService;
     }
 
     public async Task Execute(DeleteCurrentUserCommand command)

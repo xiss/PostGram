@@ -1,4 +1,4 @@
-﻿using PostGram.BLL.Interfaces.Base.Commands;
+﻿using PostGram.Common.Interfaces.Base.Commands;
 
 namespace PostGram.Common.Requests.Commands;
 

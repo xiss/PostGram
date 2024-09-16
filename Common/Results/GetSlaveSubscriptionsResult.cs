@@ -1,5 +1,5 @@
-﻿using PostGram.BLL.Interfaces.Base.Queries;
-using PostGram.Common.Dtos;
+﻿using PostGram.Common.Dtos;
+using PostGram.Common.Interfaces.Base.Queries;
 
 namespace PostGram.Common.Results;
 
