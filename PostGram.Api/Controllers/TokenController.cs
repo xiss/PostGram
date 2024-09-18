@@ -29,7 +29,7 @@ public class TokenController : ControllerBase
     {
         await _logout.Execute(command);
     }
-
+    // TODO настроить коды ошибок для свагера
     [HttpPost]
     public async Task<TokenDto> RefreshToken(RefreshTokenRequestModel model)
     {

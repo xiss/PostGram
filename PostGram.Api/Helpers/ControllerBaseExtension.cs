@@ -15,8 +15,8 @@ public static class ServiceCollectionExtension
     public static IServiceCollection AddSimpleInjectorConfigured(this IServiceCollection services)
     {
         var container = new Container();
-        container.AddServices();
-        container.Register<IUserService, UserService>(Lifestyle.Singleton);
+        //container.AddServices();
+        //container.Register<IUserService, UserService>(Lifestyle.Singleton);
         services.AddSimpleInjector(container, options =>
         {
             options.AddAspNetCore()
@@ -27,7 +27,7 @@ public static class ServiceCollectionExtension
 
         
 #if DEBUG
-        container.Verify();
+        //container.Verify();
 #endif
 
         return services;
