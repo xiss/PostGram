@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PostGram.BLL.Features.GetComment;
 using PostGram.BLL.Interfaces.Providers;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Configs;

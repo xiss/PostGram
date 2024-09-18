@@ -2,8 +2,6 @@
 
 public record AttachmentDto
 {
-    //TODO Разделить модели на команды и запросы,
-    //TODO добавить объекты результаты
     //TODO Убрать выбрасывание исключений
     //TODO Добавить логирование
     public Guid Id { get; init; }
