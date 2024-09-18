@@ -5,5 +5,5 @@ namespace PostGram.Common.Requests.Commands;
 
 public record AddAvatarToUserCommand : ICommand
 {
-   public MetadataDto Metadata { get; init; }
+    public MetadataDto Metadata { get; init; }
 }

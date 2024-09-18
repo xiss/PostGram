@@ -58,6 +58,7 @@ public class UserController : ControllerBase
         await _updateUserHandler.Execute(command);
     }
 
+    [AllowAnonymous]
     [HttpPost]
     public async Task RegisterUser(CreateUserCommand command)
     {

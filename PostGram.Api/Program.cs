@@ -5,12 +5,14 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog;
 using NLog.Web;
+using PostGram.Api.Helpers;
 using PostGram.Api.Middlewares;
 using PostGram.BLL;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.BLL.Services;
 using PostGram.Common.Configs;
 using PostGram.Common.Constants;
+using PostGram.DAL;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,14 +60,8 @@ builder.Services.AddSwaggerGen(o =>
     o.SwaggerDoc(Api.EndpointAuthorizationName, new OpenApiInfo { Title = Api.EndpointAuthorizationName });
     o.SwaggerDoc(Api.EndpointApiName, new OpenApiInfo { Title = Api.EndpointApiName });
 });
-//TODO перейти на simple injector
-builder.Services.AddAutoMapper(typeof(MapperProfile).Assembly);
-builder.Services.AddScoped<IAuthService, AuthService>();
-//builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IAttachmentService, AttachmentService>();
-builder.Services.AddScoped<IPostService, PostService>();
-builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
+builder.Services.AddSimpleInjectorConfigured();
 builder.Services.Configure<AuthConfig>(authSection);
 builder.Services.Configure<AppConfig>(builder.Configuration.GetSection(AppConfig.SectionName));
 
@@ -76,7 +72,7 @@ builder.Services.Configure<ClientRateLimitOptions>(builder.Configuration.GetSect
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 builder.Services.AddInMemoryRateLimiting();
 
-builder.Services.AddDbContext<PostGram.DAL.DataContext>(options =>
+builder.Services.AddDbContext<DataContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql"),
         ob => ob.MigrationsAssembly(typeof(Program).Assembly.GetName().Name)));
 
@@ -93,7 +89,7 @@ builder.Services.AddAuthentication(o => o.DefaultScheme = JwtBearerDefaults.Auth
             ValidAudience = authConfig.Audience,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = AuthService.GetSymmetricSecurityKey(authConfig.Key),
+            IssuerSigningKey = TokenService.GetSymmetricSecurityKey(authConfig.Key),
             ClockSkew = TimeSpan.Zero
         };
     });

@@ -1,28 +1,53 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AspNetCoreRateLimit;
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using PostGram.BLL;
+using PostGram.BLL.Interfaces.Services;
+using PostGram.BLL.Services;
 using PostGram.Common.Constants;
 using PostGram.Common.Exceptions;
+using SimpleInjector;
 
 namespace PostGram.Api.Helpers;
 
-// TODO удалить класс
-public static class ControllerBaseExtension
+public static class ServiceCollectionExtension
 {
-    
-    public static Guid GetCurrentUserId(this ControllerBase controller)
+    public static IServiceCollection AddSimpleInjectorConfigured(this IServiceCollection services)
     {
-        string? userIdStr = controller.User.Claims.FirstOrDefault(c => c.Type == ClaimNames.UserId)?.Value;
-        if (Guid.TryParse(userIdStr, out var userId))
-            return userId;
+        var container = new Container();
+        container.AddServices();
+        container.Register<IUserService, UserService>(Lifestyle.Singleton);
+        services.AddSimpleInjector(container, options =>
+        {
+            options.AddAspNetCore()
+                .AddControllerActivation()
+                .AddViewComponentActivation();
+            options.AddLogging();
+        });
 
-        throw new AuthorizationPostGramException("You are not authorized");
+        
+#if DEBUG
+        container.Verify();
+#endif
+
+        return services;
     }
 
-    public static Guid GetCurrentSessionId(this ControllerBase controller)
+    private static Container AddServices(this Container container)
     {
-        string? sessionIdStr = controller.User.Claims.FirstOrDefault(c => c.Type == ClaimNames.SessionId)?.Value;
-        if (Guid.TryParse(sessionIdStr, out var userId))
-            return userId;
+        container.Register<ITokenService, TokenService>(Lifestyle.Scoped);
+        container.Register<IAttachmentService, AttachmentService>(Lifestyle.Scoped);
+        container.Register<IPostService, PostService>(Lifestyle.Scoped);
+        //container.Register<IRateLimitConfiguration, RateLimitConfiguration>(Lifestyle.Singleton);
 
-        throw new AuthorizationPostGramException("You are not authorized");
+        var config = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile(new MapperProfile());
+        });
+        container.RegisterInstance<MapperConfiguration>(config);
+        container.Register<IMapper>(() => config.CreateMapper(container.GetInstance));
+
+        return container;
     }
+
 }

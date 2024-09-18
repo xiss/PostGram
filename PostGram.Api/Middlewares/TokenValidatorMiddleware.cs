@@ -12,7 +12,7 @@ public class TokenValidatorMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context, IAuthService authService)
+    public async Task InvokeAsync(HttpContext context, ITokenService authService)
     {
         bool flag = true;
         string? sessionIdString = context.User.Claims.FirstOrDefault(c => c.Type == ClaimNames.SessionId)?.Value;

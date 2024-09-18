@@ -8,3 +8,4 @@ public record GetPostContentQuery : IQuery<FileInfoDto>
     public Guid PostContentId { get; init; }
     public bool IsDownload { get; init; }
 }
+

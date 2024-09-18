@@ -1,26 +1,16 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using PostGram.BLL.Features.GetComment;
-using PostGram.BLL.Interfaces.Services;
+﻿using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Configs;
-using PostGram.Common.Dtos.Attachment;
 using PostGram.Common.Exceptions;
-using PostGram.Common.Interfaces.Base.Queries;
-using PostGram.DAL;
-using PostGram.DAL.Entities;
 
 namespace PostGram.BLL.Services;
 
 public class AttachmentService : IAttachmentService
 {
     private readonly AppConfig _appConfig;
-    private readonly DataContext _dataContext;
 
-    public AttachmentService(DataContext dataContext, IOptions<AppConfig> appConfig)
+    public AttachmentService(AppConfig appConfig)
     {
-        _dataContext = dataContext;
-        _appConfig = appConfig.Value;
+        _appConfig = appConfig;
     }
 
     public async Task<string> ApplyFile(string temporaryFileId)
@@ -57,34 +47,10 @@ public class AttachmentService : IAttachmentService
         }
     }
 
-   
-
-    
-
-    // TODO попробовать использовать S3
-    public async Task UploadFile(IFormFile file)
-    {
-        MetadataDto model = new()
-        {
-            TempId = Guid.NewGuid(),
-            Name = file.FileName,
-            MimeType = file. ContentType,
-            Size = file.Length
-        };
-        string newPath = Path.Combine(Path.GetTempPath(), model.TempId.ToString());
-
-        using (var stream = File.Create(newPath))
-        {
-            await file.CopyToAsync(stream);
-        }
-    }
-
     public bool CheckAttachmentsExists(string attachmentName)
     {
         return new FileInfo(Path.Combine(_appConfig.AttachmentsFolderPath, attachmentName)).Exists;
     }
-
-   
 
     private DirectoryInfo GetOrCreateAttachmentsFolder()
     {

@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PostGram.Common;
 using PostGram.Common.Configs;
@@ -16,17 +15,17 @@ using PostGram.Common.Dtos;
 
 namespace PostGram.BLL.Services;
 
-public class AuthService : IDisposable, IAuthService
+public class TokenService :  ITokenService
 {
     private readonly AuthConfig _authConfig;
     private readonly DataContext _dataContext;
     private readonly IMapper _mapper;
 
     //TODO IOptions<AuthConfig> надо прокидывать как AuthConfig
-    public AuthService(DataContext dataContext, IOptions<AuthConfig> authConfig, IMapper mapper)
+    public TokenService(DataContext dataContext, AuthConfig authConfig, IMapper mapper)
     {
         _dataContext = dataContext;
-        _authConfig = authConfig.Value;
+        _authConfig = authConfig;
         _mapper = mapper;
     }
 
@@ -34,11 +33,6 @@ public class AuthService : IDisposable, IAuthService
     public static SymmetricSecurityKey GetSymmetricSecurityKey(string key)
     {
         return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
-    }
-
-    public void Dispose()
-    {
-        _dataContext.Dispose();
     }
 
     public async Task<TokenDto> GetToken(string login, string password)
@@ -104,29 +98,6 @@ public class AuthService : IDisposable, IAuthService
         return _mapper.Map<UserSessionDto>(session);
     }
 
-    public async Task Logout(Guid userId, Guid sessionId)
-    {
-        UserSession? session = await _dataContext.UserSessions
-            .FirstOrDefaultAsync(us => us.Id == sessionId);
-        if (session == null)
-            throw new NotFoundPostGramException($"Session: {sessionId} for user: {userId} not found");
-        session.IsActive = false;
-
-        try
-        {
-            _dataContext.UserSessions.Update(session);
-            await _dataContext.SaveChangesAsync();
-        }
-        catch (DbUpdateException e)
-        {
-            if (e.InnerException != null)
-            {
-                throw new PostGramException(e.InnerException.Message, e.InnerException);
-            }
-            throw new PostGramException(e.Message, e);
-        }
-    }
-
     private TokenDto GenerateTokens(UserSession session)
     {
         DateTime now = DateTime.Now;
@@ -189,3 +160,4 @@ public class AuthService : IDisposable, IAuthService
         return session;
     }
 }
+
