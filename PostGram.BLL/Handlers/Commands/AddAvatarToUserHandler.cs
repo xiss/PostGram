@@ -14,15 +14,16 @@ public class AddAvatarToUserHandler : ICommandHandler<AddAvatarToUserCommand>
     private readonly DataContext _dataContext;
     private readonly IUserService _userService;
     private readonly IAttachmentService _attachmentService;
-
+    private readonly TimeProvider _timeProvider;
 
     public AddAvatarToUserHandler(IClaimsProvider claimsProvider, DataContext dataContext,
-        IUserService userService, IAttachmentService attachmentService)
+    IUserService userService, IAttachmentService attachmentService, TimeProvider timeProvider)
     {
         _claimsProvider = claimsProvider;
         _dataContext = dataContext;
         _userService = userService;
         _attachmentService = attachmentService;
+        _timeProvider = timeProvider;
     }
 
     public async Task Execute(AddAvatarToUserCommand command)
@@ -41,7 +42,7 @@ public class AddAvatarToUserHandler : ICommandHandler<AddAvatarToUserCommand>
             MimeType = command.Metadata.MimeType,
             Name = command.Metadata.Name,
             Size = command.Metadata.Size,
-            Created = DateTimeOffset.UtcNow
+            Created = _timeProvider.GetUtcNow()
         };
         user.Avatar = avatar;
 

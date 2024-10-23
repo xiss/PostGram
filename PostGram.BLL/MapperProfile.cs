@@ -21,14 +21,12 @@ namespace PostGram.BLL
             CreateMap<Avatar, AttachmentDto>();
             CreateMap<PostContent, AttachmentDto>();
             CreateMap<MetadataDto, PostContent>()
-                .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow))
                 .ForMember(d => d.Id, m => m.MapFrom(s => s.TempId));
 
             //Post
             CreateMap<CreatePostCommand, Post>()
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()))
-                .ForMember(d => d.PostContents, m => m.MapFrom(s => new List<PostContent>()))
-                .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow));
+                .ForMember(d => d.PostContents, m => m.MapFrom(s => new List<PostContent>()));
             CreateMap<Post, PostDto>()
                 .ForMember(d => d.Content, m => m.MapFrom(s => s.PostContents))
                 .ForMember(d => d.DislikeCount, m => m.MapFrom(s => s.Likes.Count(l => l.IsLike == false)))
@@ -37,7 +35,6 @@ namespace PostGram.BLL
 
             //Comment
             CreateMap<CreateCommentCommand, Comment>()
-                .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow))
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()));
 
             CreateMap<Comment, CommentDto>()
@@ -46,7 +43,6 @@ namespace PostGram.BLL
 
             //Like
             CreateMap<CreateLikeCommand, Like>()
-                .ForMember(d => d.Created, m => m.MapFrom(s => DateTimeOffset.UtcNow))
                 .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()));
             CreateMap<Like, LikeDto>();
 

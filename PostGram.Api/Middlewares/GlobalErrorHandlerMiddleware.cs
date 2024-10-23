@@ -1,20 +1,16 @@
 ﻿using PostGram.Common.Exceptions;
-using LogLevel = NLog.LogLevel;
 
 namespace PostGram.Api.Middlewares;
 
 public class GlobalErrorHandlerMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly NLog.Logger _logger;
+    private readonly ILogger _logger;
 
-    //private readonly ILogger _logger2;
-    public GlobalErrorHandlerMiddleware(RequestDelegate next)
+    public GlobalErrorHandlerMiddleware(RequestDelegate next, ILogger<GlobalErrorHandlerMiddleware> logger)
     {
         _next = next;
-        // TODO Выпилить это, юзать ILogger
-        _logger = NLog.LogManager.GetCurrentClassLogger();
-        //_logger2 = logger2;
+        _logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -25,19 +21,19 @@ public class GlobalErrorHandlerMiddleware
         }
         catch (BadRequestPostGramException e)
         {
-            await ResponseHandler(context, e, LogLevel.Warn, 400);
+            await ResponseHandler(context, e, LogLevel.Warning, 400);
         }
         catch (UnprocessableRequestPostGramException e)
         {
-            await ResponseHandler(context, e, LogLevel.Warn, 422);
+            await ResponseHandler(context, e, LogLevel.Warning, 422);
         }
         catch (NotFoundPostGramException e)
         {
-            await ResponseHandler(context, e, LogLevel.Warn, 404);
+            await ResponseHandler(context, e, LogLevel.Warning, 404);
         }
         catch (AuthorizationPostGramException e)
         {
-            await ResponseHandler(context, e, LogLevel.Warn, 401);
+            await ResponseHandler(context, e, LogLevel.Warning, 401);
         }
         catch (PostGramException e)
         {
@@ -45,13 +41,13 @@ public class GlobalErrorHandlerMiddleware
         }
         catch (Exception e)
         {
-            await ResponseHandler(context, e, LogLevel.Fatal, 500);
+            await ResponseHandler(context, e, LogLevel.Critical, 500);
         }
     }
 
     private async Task ResponseHandler(HttpContext context, Exception e, LogLevel logLevel, int httpStatusCode)
     {
-        _logger.Log(logLevel, e);
+        _logger.Log(logLevel, e, null);
         context.Response.StatusCode = httpStatusCode;
         if (e.InnerException != null)
             await context.Response.WriteAsJsonAsync(e.InnerException.Message);

@@ -12,11 +12,13 @@ public class CreateSubscriptionHandler : ICommandHandler<CreateSubscriptionComma
 {
     private readonly DataContext _dataContext;
     private readonly IClaimsProvider _claimsProvider;
+    private readonly TimeProvider _timeProvider;
 
-    public CreateSubscriptionHandler(DataContext dataContext, IClaimsProvider claimsProvider)
+    public CreateSubscriptionHandler(DataContext dataContext, IClaimsProvider claimsProvider, TimeProvider timeProvider)
     {
         _dataContext = dataContext ;
         _claimsProvider = claimsProvider;
+        _timeProvider = timeProvider;
     }
 
     public async Task Execute(CreateSubscriptionCommand command)
@@ -32,7 +34,7 @@ public class CreateSubscriptionHandler : ICommandHandler<CreateSubscriptionComma
         Subscription subscription = new()
         {
             Id = Guid.NewGuid(),
-            Created = DateTimeOffset.UtcNow,
+            Created = _timeProvider.GetUtcNow(),
             SlaveId = userId,
             MasterId = command.MasterId,
             Status = false

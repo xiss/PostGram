@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PostGram.BLL.Interfaces.Services;
+using PostGram.Common.Constants;
 using PostGram.Common.Dtos;
 using PostGram.Common.Interfaces.Base.Commands;
 using PostGram.Common.Requests;
@@ -8,7 +9,7 @@ using PostGram.Common.Requests.Commands;
 
 namespace PostGram.Api.Controllers;
 
-[ApiExplorerSettings(GroupName = Common.Constants.Api.EndpointAuthorizationName)]
+[ApiExplorerSettings(GroupName = EndpointApiNames.Authorization)]
 [Route("api/[controller]/[action]")]
 [ApiController]
 public class TokenController : ControllerBase

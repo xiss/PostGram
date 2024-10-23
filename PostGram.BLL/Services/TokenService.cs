@@ -15,18 +15,19 @@ using PostGram.Common.Dtos;
 
 namespace PostGram.BLL.Services;
 
-public class TokenService :  ITokenService
+public class TokenService : ITokenService
 {
     private readonly AuthConfig _authConfig;
     private readonly DataContext _dataContext;
     private readonly IMapper _mapper;
+    private readonly TimeProvider _timeProvider;
 
-    //TODO IOptions<AuthConfig> надо прокидывать как AuthConfig
-    public TokenService(DataContext dataContext, AuthConfig authConfig, IMapper mapper)
+    public TokenService(DataContext dataContext, AuthConfig authConfig, IMapper mapper, TimeProvider timeProvider)
     {
         _dataContext = dataContext;
         _authConfig = authConfig;
         _mapper = mapper;
+        _timeProvider = timeProvider;
     }
 
     //TODO Метод точно должен быть тут и быть статичным?
@@ -42,8 +43,7 @@ public class TokenService :  ITokenService
         var session = await _dataContext.UserSessions.AddAsync(new()
         {
             Id = Guid.NewGuid(),
-            // TODO использовать DateTimeProvider
-            Created = DateTimeOffset.UtcNow,
+            Created = _timeProvider.GetUtcNow(),
             RefreshTokenId = Guid.NewGuid(),
             User = user
         });
@@ -100,7 +100,7 @@ public class TokenService :  ITokenService
 
     private TokenDto GenerateTokens(UserSession session)
     {
-        DateTime now = DateTime.Now;
+        DateTime now = _timeProvider.GetUtcNow().DateTime;
 
         //SecurityToken
         Claim[] claims =

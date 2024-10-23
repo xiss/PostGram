@@ -12,11 +12,13 @@ public class UpdateSubscriptionHandler : ICommandHandler<UpdateSubscriptionComma
 {
     private readonly DataContext _dataContext;
     private readonly IClaimsProvider _claimsProvider;
+    private readonly TimeProvider _timeProvider;
 
-    public UpdateSubscriptionHandler(DataContext dataContext, IClaimsProvider claimsProvider)
+    public UpdateSubscriptionHandler(DataContext dataContext, IClaimsProvider claimsProvider, TimeProvider timeProvider)
     {
         _dataContext = dataContext ;
         _claimsProvider = claimsProvider;
+        _timeProvider = timeProvider;
     }
 
     public async Task Execute(UpdateSubscriptionCommand command)
@@ -34,7 +36,7 @@ public class UpdateSubscriptionHandler : ICommandHandler<UpdateSubscriptionComma
                 "Can not confirm subscription being slave to this subscription");
 
         subscription.Status = command.Status;
-        subscription.Edited = DateTimeOffset.UtcNow;
+        subscription.Edited = _timeProvider.GetUtcNow();
 
         await _dataContext.SaveChangesAsync();
     }

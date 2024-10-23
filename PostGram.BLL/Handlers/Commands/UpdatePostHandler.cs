@@ -16,14 +16,16 @@ public class UpdatePostHandler : ICommandHandler<UpdatePostCommand>
     private readonly IClaimsProvider _claimsProvider;
     private readonly IPostService _postService;
     private readonly IAttachmentService _attachmentService;
+    private readonly TimeProvider _timeProvider;
 
     public UpdatePostHandler(DataContext dataContext, IClaimsProvider claimsProvider, IPostService postService,
-        IAttachmentService attachmentService)
+        IAttachmentService attachmentService, TimeProvider timeProvider)
     {
         _dataContext = dataContext ;
         _claimsProvider = claimsProvider;
         _postService = postService;
         _attachmentService = attachmentService;
+        _timeProvider = timeProvider;
     }
 
     public async Task Execute(UpdatePostCommand command)
@@ -63,7 +65,7 @@ public class UpdatePostHandler : ICommandHandler<UpdatePostCommand>
                     Id = postContent.TempId,
                     PostId = post.Id,
                     AuthorId = userId,
-                    Created = DateTimeOffset.UtcNow,
+                    Created = _timeProvider.GetUtcNow(),
                     MimeType = postContent.MimeType,
                     Name = postContent.Name,
                     Size = postContent.Size
@@ -72,7 +74,7 @@ public class UpdatePostHandler : ICommandHandler<UpdatePostCommand>
             }
 
         //Edit timestamp
-        post.Edited = DateTimeOffset.UtcNow;
+        post.Edited = _timeProvider.GetUtcNow();
 
         //Delete postContent
         if (command.ContentToDelete.Count > 0)

@@ -11,11 +11,13 @@ public class UpdateCommentHandler : ICommandHandler<UpdateCommentCommand>
 {
     private readonly IClaimsProvider _claimsProvider;
     private readonly ICommentService _commentService;
+    private readonly TimeProvider _timeProvider;
 
-    public UpdateCommentHandler(IClaimsProvider claimsProvider, ICommentService commentService)
+    public UpdateCommentHandler(IClaimsProvider claimsProvider, ICommentService commentService, TimeProvider timeProvider)
     {
         _claimsProvider = claimsProvider ;
         _commentService = commentService;
+        _timeProvider = timeProvider;
     }
 
     public async Task Execute(UpdateCommentCommand command)
@@ -25,7 +27,7 @@ public class UpdateCommentHandler : ICommandHandler<UpdateCommentCommand>
         if (comment.AuthorId != userId)
             throw new AuthorizationPostGramException("Cannot modify comment created by another user");
         comment.Body = command.NewBody;
-        comment.Edited = DateTimeOffset.UtcNow;
+        comment.Edited = _timeProvider.GetUtcNow();
 
         await _commentService.UpdateComment(comment);
     }

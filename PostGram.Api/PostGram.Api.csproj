@@ -21,6 +21,7 @@
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.2" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.12" />
     <PackageReference Include="SimpleInjector" Version="5.5.0" />
+    <PackageReference Include="SimpleInjector.Integration.AspNetCore" Version="5.5.0" />
     <PackageReference Include="SimpleInjector.Integration.AspNetCore.Mvc" Version="5.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />

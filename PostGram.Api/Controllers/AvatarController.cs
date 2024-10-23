@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PostGram.Common.Constants;
 using PostGram.Common.Interfaces.Base.Commands;
 using PostGram.Common.Requests.Commands;
 
 namespace PostGram.Api.Controllers;
 
-[ApiExplorerSettings(GroupName = Common.Constants.Api.EndpointApiName)]
+[ApiExplorerSettings(GroupName = EndpointApiNames.Api)]
 [Route("api/[controller]/[action]")]
 [ApiController]
 [Authorize]
