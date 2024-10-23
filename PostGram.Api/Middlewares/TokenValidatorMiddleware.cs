@@ -1,5 +1,6 @@
 ﻿using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Constants;
+using PostGram.Common.Dtos;
 
 namespace PostGram.Api.Middlewares;
 
@@ -14,11 +15,11 @@ public class TokenValidatorMiddleware
 
     public async Task InvokeAsync(HttpContext context, ITokenService authService)
     {
-        bool flag = true;
+        var flag = true;
         string? sessionIdString = context.User.Claims.FirstOrDefault(c => c.Type == ClaimNames.SessionId)?.Value;
         if (Guid.TryParse(sessionIdString, out Guid sessionId))
         {
-            var session = await authService.GetUserSessionById(sessionId);
+            UserSessionDto session = await authService.GetUserSessionById(sessionId);
             if (!session.IsActive)
             {
                 flag = false;

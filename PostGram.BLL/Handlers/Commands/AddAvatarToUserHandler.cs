@@ -34,7 +34,7 @@ public class AddAvatarToUserHandler : ICommandHandler<AddAvatarToUserCommand>
         User user = await _userService.GetUserById(userId);
         if (user.Avatar != null)
             throw new UnprocessableRequestPostGramException($"User {user.Id} already has avatar {user.AvatarId}. Delete it before add new.");
-        Avatar avatar = new Avatar()
+        var avatar = new Avatar()
         {
             UserId = user.Id,
             AuthorId = user.Id,

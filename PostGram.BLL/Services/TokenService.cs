@@ -10,6 +10,7 @@ using PostGram.DAL.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using PostGram.BLL.Interfaces.Services;
 using PostGram.Common.Dtos;
 
@@ -40,7 +41,7 @@ public class TokenService : ITokenService
     {
         User user = await GetUserByCredential(login, password);
 
-        var session = await _dataContext.UserSessions.AddAsync(new()
+        EntityEntry<UserSession> session = await _dataContext.UserSessions.AddAsync(new()
         {
             Id = Guid.NewGuid(),
             Created = _timeProvider.GetUtcNow(),
@@ -61,7 +62,7 @@ public class TokenService : ITokenService
             ValidateLifetime = true,
             IssuerSigningKey = GetSymmetricSecurityKey(_authConfig.Key)
         };
-        var principal = new JwtSecurityTokenHandler().ValidateToken(refreshToken, validationParameters, out var securityToken);
+        ClaimsPrincipal? principal = new JwtSecurityTokenHandler().ValidateToken(refreshToken, validationParameters, out SecurityToken? securityToken);
 
         if (securityToken is not JwtSecurityToken jwtSecurityToken
             || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
@@ -71,7 +72,7 @@ public class TokenService : ITokenService
         }
 
         if (Enumerable.FirstOrDefault<Claim>(principal.Claims, c => c.Type == ClaimNames.RefreshTokenId)?.Value is string refreshIdString
-            && Guid.TryParse(refreshIdString, out var refreshTokenId))
+            && Guid.TryParse(refreshIdString, out Guid refreshTokenId))
         {
             UserSession session = await GetUserSessionByRefreshToken(refreshTokenId);
             if (!session.IsActive)
@@ -110,7 +111,7 @@ public class TokenService : ITokenService
             new(ClaimNames.UserId, session.User.Id.ToString()),
             new(ClaimNames.SessionId, session.Id.ToString())
         };
-        JwtSecurityToken securityToken = new JwtSecurityToken(
+        var securityToken = new JwtSecurityToken(
             issuer: _authConfig.Issuer,
             audience: _authConfig.Audience,
             notBefore: now,
@@ -125,7 +126,7 @@ public class TokenService : ITokenService
         {
             new(ClaimNames.RefreshTokenId, session.RefreshTokenId.ToString()),
         };
-        JwtSecurityToken refreshToken = new JwtSecurityToken(
+        var refreshToken = new JwtSecurityToken(
             notBefore: now,
             claims: claims,
             expires: now.AddHours(_authConfig.LifeTime),

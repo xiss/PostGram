@@ -21,7 +21,7 @@ public class AttachmentService : IAttachmentService
         DirectoryInfo attachmentsDirectory = GetOrCreateAttachmentsFolder();
         try
         {
-            var destFile = Path.Combine(attachmentsDirectory.FullName, temporaryFileId);
+            string? destFile = Path.Combine(attachmentsDirectory.FullName, temporaryFileId);
             File.Move(tempFile.FullName, destFile, true);
 
             return await Task.Run(() => destFile);
@@ -56,7 +56,7 @@ public class AttachmentService : IAttachmentService
     {
         try
         {
-            DirectoryInfo directory = new DirectoryInfo(_appConfig.AttachmentsFolderPath);
+            var directory = new DirectoryInfo(_appConfig.AttachmentsFolderPath);
             if (!directory.Exists)
                 directory.Create();
             return directory;

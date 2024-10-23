@@ -28,16 +28,13 @@ try
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerConfigured();
-
     builder.Services.AddOptions();
     builder.Services.AddMemoryCache();
     builder.Services.AddInMemoryRateLimiting();
-
     builder.Services.AddDbContext<DataContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql"),
             ob => ob.MigrationsAssembly(typeof(Program).Assembly.GetName().Name)));
     builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
-
     builder.Services.AddAuth(authConfig);
     builder.Services.AddSimpleInjectorConfigured(builder.Configuration, out Container container);
 
